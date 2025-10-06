@@ -1,5 +1,5 @@
-import React, { useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { FilePenLine, Save, Plus, Trash2, GripVertical, Edit3, Undo2 } from "lucide-react";
+import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { FilePenLine, Save, Plus, Trash2, GripVertical, Undo2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -15,15 +15,9 @@ import TagInput from "../../components/ui/TagInput";
 import CheckboxGroup from "../../components/ui/CheckboxGroup";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
+import ImageUploader from "../../components/ui/ImageUploader";
+import CheckBox from "../../components/ui/CheckBox";
 
-/*
-const suggestions = [
-	{ id: 1, tag_name: "React" },
-	{ id: 2, tag_name: "Vue" },
-	{ id: 3, tag_name: "Angular" },
-	{ id: 4, tag_name: "Svelte" },
-];
-*/
 
 export default function NewQuiz() {
 	const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
@@ -49,43 +43,23 @@ export default function NewQuiz() {
 	const questionRefs = useRef({});
 
 	// Title + Icon
-	const titleRef = useRef(null);
-	const measureRef = useRef(null);
-	const [iconLeft, setIconLeft] = useState(0);
+	const inputRef = useRef(null);
+	const descRef = useRef(null);
 
 	// Data
 	const [coverImageFile, setCoverImageFile] = useState(null);
 	const [coverImageUrl, setCoverImageUrl]   = useState("");
-	// Aperçu local quand un fichier est choisi
-	const [coverPreview, setCoverPreview] = useState("");
 
 	const [modules, setModules] = useState([]);
-	const [tags, setTags] = useState([]);
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [selectedModuleIds, setSelectedModuleIds] = useState([]);
 	const [selectedTagIds, setSelectedTagIds] = useState([]);
-	const [newTagInput, setNewTagInput] = useState("");
-	const [newTags, setNewTags] = useState([]);
-	const [newModuleInput, setNewModuleInput] = useState("");
-	const [creatingModule, setCreatingModule] = useState(false);
 
-	const [selected, setSelected] = useState([]);
 
 	useEffect(() => {
 		document.body.classList.add('page-newquiz');
 		return () => document.body.classList.remove('page-newquiz');
 	}, []);
-
-	// Gère l'aperçu local de l'image choisie
-	useEffect(() => {
-		if (coverImageFile) {
-			const url = URL.createObjectURL(coverImageFile);
-			setCoverPreview(url);
-			return () => URL.revokeObjectURL(url);
-		} else {
-			setCoverPreview("");
-		}
-	}, [coverImageFile]);
 
 	useEffect(() => {
 		let alive = true;
@@ -94,7 +68,6 @@ export default function NewQuiz() {
 			const [mods, tgs] = await Promise.all([getModules(), getTags()]);
 			if (!alive) return;
 			setModules(mods || []);
-			setTags(tgs || []);
 
 			if (isEdit) {
 			const q = await getQuiz(quizId);
@@ -285,134 +258,43 @@ export default function NewQuiz() {
 		setDraggingId(null); setDragOverIndex(null); setDragOverPosition(null);
 	};
 
-	useLayoutEffect(() => {
-		const el = titleRef.current;
-		const meas = measureRef.current;
-		if (!el || !meas) return;
-
-		const recompute = () => {
-		const text = el.value?.trim() ? el.value : (el.getAttribute("placeholder") || "");
-		meas.textContent = text;
-		const cs = getComputedStyle(el);
-		const paddingLeft = parseFloat(cs.paddingLeft) || 0;
-		const borderLeft = parseFloat(cs.borderLeftWidth) || 0;
-		const x = paddingLeft + borderLeft + meas.offsetWidth;
-		setIconLeft(x + 6);
-		};
-
-		recompute();
-		const ro = new ResizeObserver(recompute);
-		ro.observe(el);
-		window.addEventListener("resize", recompute);
-		return () => { ro.disconnect(); window.removeEventListener("resize", recompute); };
-	}, [title, t]);
-
-	const toggleId = (id, list, setter) => {
-		setter(list.includes(id) ? list.filter(x => x !== id) : [...list, id]);
-		setIsDirty(true);
-	};
-
-	const toggleTagChip = (tg) => {
-	const isSelected = selectedTagIds.includes(tg.id);
-
-	setSelectedTagIds(prev =>
-		isSelected ? prev.filter(id => id !== tg.id) : [...prev, tg.id]
-	);
-
-	setSelectedTags(prev => {
-		if (isSelected) {
-			return prev.filter(x => x.id !== tg.id);
-		}
-		return prev.find(x => x.id === tg.id)
-			? prev
-			: [...prev, { id: tg.id, tag_name: tg.tag_name }];
-	});
-
-	setIsDirty(true);
-	};
-		
-	const addNewTag = () => {
-		const name = newTagInput.trim();
-		if (!name) return;
-		const exists = tags.find(t => t.tag_name.toLowerCase() === name.toLowerCase());
-		if (exists) {
-		if (!selectedTagIds.includes(exists.id)) {
-			setSelectedTagIds(prev => [...prev, exists.id]); setIsDirty(true);
-		}
-		} else if (!newTags.some(n => n.toLowerCase() === name.toLowerCase())) {
-		setNewTags(prev => [...prev, name]); setIsDirty(true);
-		}
-		setNewTagInput("");
-	};
-
-	const createModuleInline = async () => {
-		const name = newModuleInput.trim();
-		if (!name) return;
-		const exists = modules.find(m => m.module_name.toLowerCase() === name.toLowerCase());
-		if (exists) {
-		if (!selectedModuleIds.includes(exists.id)) {
-			setSelectedModuleIds(prev => [...prev, exists.id]); setIsDirty(true);
-		}
-		setNewModuleInput(""); return;
-		}
-		try {
-		setCreatingModule(true);
-		const res = await fetch(`${API_URL}/api/modules`, {
-			method: "POST",
-			credentials: "omit",
-			headers: { "Content-Type": "application/json", Accept: "application/json" },
-			body: JSON.stringify({ module_name: name }),
-		});
-		const data = await res.json().catch(() => ({}));
-		if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-		setModules(prev => [...prev, data].sort((a,b)=>a.module_name.localeCompare(b.module_name)));
-		setSelectedModuleIds(prev => (prev.includes(data.id) ? prev : [...prev, data.id]));
-		setNewModuleInput(""); setIsDirty(true);
-		} catch (e) {
-		console.error(e); alert(e.message || "Erreur lors de la création du module");
-		} finally {
-		setCreatingModule(false);
-		}
-	};
 
   return (
     <>
-		<FaviconTitle 
-			title={t("pages.createPage")} iconHref={faviconUrl} 
-		/>
+		<FaviconTitle title={t("pages.createPage")}
+					  iconHref={faviconUrl} />
+
 		<Main>
 			<UnsavedChangesGuard when={isDirty} />
 
 			<DesktopHeaderWrap>
-			<Header
-				title={
-				<TitleInline>
-					<BackIconButton onClick={() => navigate(-1)} aria-label={t("actions.back")}>
-					<Undo2 size={24} />
-					</BackIconButton>
-					<FilePenLine size={20} />
-					<span>{isEdit ? (t("quiz.editTitle") || "Éditer le quiz") : t("quiz.title")}</span>
-				</TitleInline>
-				}
-				icon={null}
-				actions={[
-				<Controls key="controls">
-					<ToggleSwitch
-					checked={active}
-					onChange={(v) => { setActive(v); setIsDirty(true); }}
-					onLabel={t("common.active")}
-					offLabel={t("common.inactive")}
-					onColor="#22c55e"
-					offColor="#e5e7eb"
-					/>
-					<LanguageSelector />
-					<SaveButton onClick={onSave}>
-					<Save size={16} />{t("actions.saveChanges")}
-					</SaveButton>
-				</Controls>
-				]}
-				showBurger
-			/>
+				<Header title={
+						<TitleInline>
+							<BackIconButton onClick={() => navigate(-1)} aria-label={t("actions.back")}>
+								<Undo2 size={24} />
+							</BackIconButton>
+							<FilePenLine size={20} />
+							<span>{isEdit ? (t("quiz.editTitle") || "Éditer le quiz") : t("quiz.title")}</span>
+						</TitleInline>
+					}
+					icon={null}
+					actions={[
+						<Controls key="controls">
+							<ToggleSwitch
+							checked={active}
+							onChange={(v) => { setActive(v); setIsDirty(true); }}
+							onLabel={t("common.active")}
+							offLabel={t("common.inactive")}
+							onColor="#22c55e"
+							offColor="#e5e7eb"
+							/>
+							<LanguageSelector />
+							<SaveButton onClick={onSave}>
+							<Save size={16} />{t("actions.saveChanges")}
+							</SaveButton>
+						</Controls>
+					]}
+					showBurger />
 			</DesktopHeaderWrap>
 
 			<Body>
@@ -420,210 +302,179 @@ export default function NewQuiz() {
 					<LeftTitle>{t("quiz.sections.questions")}</LeftTitle>
 
 					<AddQuestionButton type="button" onClick={addSingleQuestion}>
-					<Plus size={16} /> {t("actions.addQuestion") || "Ajouter une question"}
+						<Plus size={16} /> {t("actions.addQuestion") || "Ajouter une question"}
 					</AddQuestionButton>
 
 					<LeftList>
-					{questions.map((q, idx) => (
-						<LeftRow
-						key={q.id}
-						onDragOver={handleDragOver(idx)}
-						onDrop={handleDrop(idx)}
-						data-drop-pos={dragOverIndex === idx ? dragOverPosition : undefined}
-						>
-						<DragDock
-							draggable
-							onDragStart={handleDragStart(q.id)}
-							onDragEnd={handleDragEnd}
-							onClick={(e) => e.stopPropagation()}
-							aria-label={t("actions.reorder")}
-							title={t("actions.reorder")}
-							data-dragging={draggingId === q.id ? "true" : undefined}
-						>
-							<GripVertical size={16} />
-						</DragDock>
+						{questions.map((q, idx) => (
+							<LeftRow
+							key={q.id}
+							onDragOver={handleDragOver(idx)}
+							onDrop={handleDrop(idx)}
+							data-drop-pos={dragOverIndex === idx ? dragOverPosition : undefined}
+							>
+								<DragDock
+									draggable
+									onDragStart={handleDragStart(q.id)}
+									onDragEnd={handleDragEnd}
+									onClick={(e) => e.stopPropagation()}
+									aria-label={t("actions.reorder")}
+									title={t("actions.reorder")}
+									data-dragging={draggingId === q.id ? "true" : undefined}
+								>
+									<GripVertical size={16} />
+								</DragDock>
 
-						<LeftCard onClick={() => scrollToQuestion(q.id)} title={t("quiz.hints.goToQuestion") || "Aller à la question"}>
-							<LeftCardIndex>{idx + 1}</LeftCardIndex>
-							<LeftCardMain>
-								<LeftCardTitle>{q.title?.trim() ? q.title : untitled}</LeftCardTitle>
-								<TypePill>{(q.correctIndices?.length ?? 0) > 1 ? t("quiz.types.multi") : t("quiz.types.single")}</TypePill>
-							</LeftCardMain>
-						</LeftCard>
-						</LeftRow>
-					))}
+								<LeftCard onClick={() => scrollToQuestion(q.id)} title={t("quiz.hints.goToQuestion") || "Aller à la question"}>
+									<LeftCardHeader>
+										<LeftCardIndex>{idx + 1}</LeftCardIndex>
+										<TypePill>{(q.correctIndices?.length ?? 0) > 1 ? t("quiz.types.multi") : t("quiz.types.single")}</TypePill>
+									</LeftCardHeader>
+									<LeftCardMain>
+										<LeftCardTitle>{q.title?.trim() ? q.title : untitled}</LeftCardTitle>
+									</LeftCardMain>
+								</LeftCard>
+							</LeftRow>
+						))}
 					</LeftList>
 				</LeftPanel>
 
 					<CenterPanel>
 						<CenterInner>
-						<TitleLine>
-							<TitleField onClick={() => titleRef.current?.focus()}>
-							<TitleInput
-								ref={titleRef}
-								value={title}
-								onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
-								placeholder={t("quiz.placeholders.title")}
-								aria-label={t("quiz.placeholders.title")}
+
+							<div>
+								<TitleInput
+									ref={inputRef}
+									value={title}
+									width={"100%"}
+									inputWrapperBg={"transparent"}
+									onChange={(e) => setTitle(e.target.value)}
+									placeholder="Enter quiz title..."
+								/>
+
+								<DescTextarea
+									ref={descRef}
+									value={quiz_description}
+									width={"100%"}
+									inputWrapperStyle={{ background: "transparent"}}
+									onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
+									placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
+									rows={2}
+								/>
+							</div>
+
+							<ImageUploader
+								style={{ marginBottom: "var(--spacing" }}
+								value={coverImageFile || (coverImageUrl ? coverImageUrl : null)}
+								onChange={(file) => {
+									setCoverImageFile(file);
+									setCoverImageUrl("");
+									setIsDirty(true);
+								}}
+								onClear={() => {
+									setCoverImageFile(null);
+									setCoverImageUrl("");
+									setIsDirty(true);
+								}}
+								placeholderText={t("quiz.fields.coverImage") || "Glissez-déposez une image ici ou cliquez"}
+								changeText={t("quiz.hints.changeImage") || "Cliquez pour changer l'image"}
 							/>
-							<MeasureSpan ref={measureRef} aria-hidden="true" />
-							<EditIcon style={{ left: iconLeft }} aria-hidden="true" />
-							</TitleField>
-							<EditHint aria-hidden="true"><FilePenLine size={16} /></EditHint>
-						</TitleLine>
 
-					<DescBlock>
-						<DescTextarea
-							value={quiz_description}
-							onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
-							placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
-							rows={2}
-						/>
-					</DescBlock>
-
-					<Field>
-						<FieldLabel>{t("quiz.sections.module")}</FieldLabel>
-						<ChipsWrap>
-						{modules.map(m => (
-							<Chip
-							key={m.id}
-							data-active={selectedModuleIds.includes(m.id) ? "1" : undefined}
-							type="button"
-							onClick={() => toggleId(m.id, selectedModuleIds, setSelectedModuleIds)}
-							title={m.module_name}
-							>
-							{m.module_name}
-							</Chip>						))}
-						{modules.length === 0 && <Hint>{t("quiz.sections.noModule")}</Hint>}
-						</ChipsWrap>
-					</Field>
-
-					<CheckboxGroup
-							label="Choisissez vos options"
-							options={[
-								{ id: "1", label: "Option A" },
-								{ id: "2", label: "Option B" },
-								{ id: "3", label: "Option C" },
-							]}
-							value={selected}
-							onChange={setSelected}
-							direction="row"
-					/>
-
-					<TagInput
-							label={t("quiz.sections.existingTag")}
-							placeholder ="Ajouter un tag..."
-							prefixAdd ="Ajouter"
-							allowNew
-							// suggestions={suggestions}
-							value={selectedTags}
-							onChange={(arr) => {
-								setSelectedTags(arr);
-								setSelectedTagIds(arr.map(t => t.id));
-								setIsDirty(true);
-							}}
-							width={"100%"}
-							apiUrl={import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}
-							fetchFromApi
-					/>
-
-					<Field>
-						<FieldLabel>{t("quiz.sections.moduleAdd")}</FieldLabel>
-						<div style={{ display: "flex", gap: 8 }}>
-						<MyInput
-							value={newModuleInput}
-							onChange={e => setNewModuleInput(e.target.value)}
-							placeholder={t("quiz.placeholders.module")}
-							onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); createModuleInline(); } }}
-						/>
-						<Button type="button" onClick={createModuleInline} disabled={creatingModule}>
-							{creatingModule ? "Ajout..." : "+"}
-						</Button>
-						</div>
-					</Field>
-
-					{/* --- NOUVELLE ZONE D'IMAGE : Drag & Drop + Choisir un fichier --- */}
-					<Field>
-						<FieldLabel>{t("quiz.fields.coverImage") || "Image de couverture"}</FieldLabel>
-
-						<CoverDropzone
-							previewUrl={coverPreview}
-							existingUrl={coverImageFile ? "" : (coverImageUrl || "")}
-							onPickFile={(file) => {
-								setCoverImageFile(file);
-								setCoverImageUrl("");
-								setIsDirty(true);
-							}}
-							onClear={() => {
-								setCoverImageFile(null);
-								setCoverImageUrl("");
-								setIsDirty(true);
-							}}
-							t={t}
-						/>
-					</Field>
-					{/* --- FIN ZONE D'IMAGE --- */}
-					</CenterInner>
-
-					{questions.length === 0 ? (
-					<DropPlaceholder>
-						{t("quiz.hints.emptyDrop") || "Ajoutez votre première question avec le bouton à gauche."}
-					</DropPlaceholder>
-					) : (
-					<QuestionList>
-						{questions.map((q) => (
-						<QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
-							<QuestionHeader>
-							<Badge>{(q.correctIndices?.length ?? 0) > 1 ? t("quiz.types.multi") : t("quiz.types.single")}</Badge>
-							<DeleteBtn onClick={() => removeQuestion(q.id)} title={t("actions.delete")} aria-label={t("actions.delete")}>
-								<Trash2 size={16} />
-							</DeleteBtn>
-							</QuestionHeader>
-
-						<Field>
-							<FieldLabel>{t("quiz.fields.title")}</FieldLabel>
-							<MyInput
-								value={q.title}
-								onChange={(e) => updateQuestion(q.id, { title: e.target.value })}
-								placeholder={t("common.placeholders.typeHere")}
+							<CheckboxGroup
+								label={t("quiz.sections.module")}
+								options={modules.map((m) => ({ id: m.id, label: m.module_name }))}
+								value={selectedModuleIds}
+								onChange={(ids) => {
+									setSelectedModuleIds(ids);
+									setIsDirty(true);
+								}}
+								direction="row"
 							/>
-						</Field>
 
-						<Field>
-							<FieldLabel>{t("quiz.fields.description")}</FieldLabel>
-							<MyTextArea
-								value={q.description}
-								onChange={(e) => updateQuestion(q.id, { description: e.target.value })}
-								placeholder={t("common.placeholders.typeHere")}
-								rows={3}
+							<TagInput
+								label={t("quiz.sections.existingTag")}
+								placeholder ="Ajouter un tag..."
+								prefixAdd ="Ajouter"
+								allowNew
+								// suggestions={suggestions}
+								value={selectedTags}
+								onChange={(arr) => {
+									setSelectedTags(arr);
+									setSelectedTagIds(arr.map(t => t.id));
+									setIsDirty(true);
+								}}
+								width={"100%"}
+								apiUrl={import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}
+								fetchFromApi
 							/>
-							</Field>
 
 							<Divider />
-							<OptionsHeader>{t("quiz.sections.options")}</OptionsHeader>
 
-							{(q.options || []).map((opt, idx) => (
-							<OptionRow key={idx}>
-								<FakeCheck
-									type="checkbox"
-									checked={(q.correctIndices ?? []).includes(idx)}
-									onChange={() => toggleCorrect(q.id, idx)}
-									aria-label={`${t("quiz.sections.options")} #${idx + 1}`}
-								/>
-								<OptionInput value={opt} onChange={(e) => updateOption(q.id, idx, e.target.value)} />
-								<RemoveOpt onClick={() => removeOption(q.id, idx)} title={t("actions.delete")} aria-label={t("actions.delete")}>
-								<Trash2 size={16} />
-								</RemoveOpt>
-							</OptionRow>
-							))}
+							{questions.length === 0 ? (
+								<DropPlaceholder>
+									{t("quiz.hints.emptyDrop") || "Ajoutez votre première question avec le bouton à gauche."}
+									<AddQuestionButton type="button" onClick={addSingleQuestion}>
+										<Plus size={16} /> {t("actions.addQuestion") || "Ajouter une question"}
+									</AddQuestionButton>
+								</DropPlaceholder>
+								) : (
+								<QuestionList>
+									{questions.map((q) => (
+									<QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
+										<QuestionHeader>
+											<Badge>{(q.correctIndices?.length ?? 0) > 1 ? t("quiz.types.multi") : t("quiz.types.single")}</Badge>
+											<DeleteBtn onClick={() => removeQuestion(q.id)} title={t("actions.delete")} aria-label={t("actions.delete")}>
+												<Trash2 size={16} />
+											</DeleteBtn>
+										</QuestionHeader>
 
-							<AddOption type="button" onClick={() => addOption(q.id)}>
-							<Plus size={16} /> {t("quiz.options.new")}
-							</AddOption>
-						</QuestionCard>
-						))}
-					</QuestionList>
-					)}
+										<Input
+											value={q.title}
+											width={"100%"}
+											label={t("quiz.fields.title")}
+											onChange={(e) => updateQuestion(q.id, { title: e.target.value })}
+											placeholder={t("quiz.fields.title")}
+										/>
+
+										<TextArea
+											value={q.description}
+											width={"100%"}
+											onChange={(e) => updateQuestion(q.id, { description: e.target.value })}
+											placeholder={t("quiz.fields.description")}
+											rows={3}
+										/>
+
+
+										<OptionsContainer>
+											<OptionsHeader>{t("quiz.sections.options")}</OptionsHeader>
+
+											<OptionsContent>
+												{(q.options || []).map((opt, idx) => (
+													<OptionRow key={idx}>
+														<CheckBox
+															checked={(q.correctIndices ?? []).includes(idx)}
+															onChange={() => toggleCorrect(q.id, idx)}
+															type="checkbox"
+															aria-label={`${t("quiz.sections.options")} #${idx + 1}`}
+														/>
+														<OptionInput width={"100%"} value={opt} onChange={(e) => updateOption(q.id, idx, e.target.value)} />
+														<RemoveOpt onClick={() => removeOption(q.id, idx)} title={t("actions.delete")} aria-label={t("actions.delete")}>
+															<Trash2 size={16} />
+														</RemoveOpt>
+													</OptionRow>
+												))}
+											</OptionsContent>
+
+											<Button type="button" onClick={() => addOption(q.id)}>
+												<Plus size={16} /> {t("quiz.options.new")}
+											</Button>
+										</OptionsContainer>
+									</QuestionCard>
+									))}
+								</QuestionList>
+							)}
+
+						</CenterInner>
 				</CenterPanel>
 			</Body>
 		</Main>
@@ -631,88 +482,15 @@ export default function NewQuiz() {
   );
 }
 
-	function CoverDropzone({
-	previewUrl,
-	existingUrl,
-	onPickFile,
-	onClear,
-	t,
-	}) {
-	const inputRef = useRef(null);
-	const [isOver, setIsOver] = useState(false);
 
-	const openPicker = () => inputRef.current?.click();
-
-	const handleFiles = (files) => {
-		const file = files?.[0];
-		if (!file) return;
-		if (!file.type?.startsWith("image/")) {
-		alert("Veuillez sélectionner une image.");
-		return;
-		}
-		onPickFile(file);
-	};
-
-	const onDrop = (e) => {
-		e.preventDefault();
-		setIsOver(false);
-		handleFiles(e.dataTransfer.files);
-	};
-
-	return (
-		<DropZone
-		role="button"
-		tabIndex={0}
-		onClick={openPicker}
-		onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPicker()}
-		onDragOver={(e) => { e.preventDefault(); setIsOver(true); }}
-		onDragLeave={() => setIsOver(false)}
-		onDrop={onDrop}
-		data-over={isOver ? "1" : undefined}
-		title={t("quiz.fields.coverImage") || "Image de couverture"}
-		>
-		{(previewUrl || existingUrl) ? (
-			<PreviewWrap>
-			<PreviewImg src={previewUrl || existingUrl} alt="aperçu" />
-			<PreviewActions>
-				<SmallButton type="button" onClick={openPicker}>
-				Remplacer
-				</SmallButton>
-				<SmallDanger type="button" onClick={onClear}>
-				Supprimer
-				</SmallDanger>
-			</PreviewActions>
-			</PreviewWrap>
-		) : (
-			<DropInner>
-			<span style={{ fontWeight: 600 }}>
-				Glissez-déposez une image ici
-			</span>
-			<span style={{ fontSize: 12, opacity: 0.9 }}>
-				ou cliquez pour choisir un fichier
-			</span>
-			</DropInner>
-		)}
-
-		<input
-			ref={inputRef}
-			type="file"
-			accept="image/*"
-			style={{ display: "none" }}
-			onChange={(e) => handleFiles(e.target.files)}
-		/>
-		</DropZone>
-	);
-}
 
 const Main = styled.main`
 	flex:1;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	height: 100vh;
 	background-color: var(--color-background);
-	min-height: 100vh;
-	min-height: 100dvh;
 	overflow: hidden;
 `;
 
@@ -731,77 +509,41 @@ const SaveButton = styled(Button)`
 `;
 
 const Body = styled.div`
-	display:grid;
-	grid-template-columns:280px 1fr;
-	grid-template-areas:"sidebar main";
-	gap:16px;
-	height:calc(100vh - 64px);
-	flex: 1;
-	min-height: 0;
-	padding:16px 16px 24px 16px;
-	background-color:var(--color-background);
-	overflow:hidden;
-
-	@media (max-width: 1024px){
-		grid-template-columns:240px 1fr;
-		gap:12px;
-	} 
-	@media (max-width: 768px){
-		grid-template-columns:1fr;
-		grid-template-areas:
-		"sidebar"
-		"main";
-		height:auto;
-		min-height:calc(100vh - 64px);
-		overflow:visible;
-		gap:12px;
-		padding:12px;
-	}
+    display: flex;
+    flex: 1;
+    min-height: 0;
+	height: 100%;
+    background-color: var(--color-background);
 `;
 
 const LeftPanel = styled.aside`
-	grid-area: sidebar;
-	border-right:1px solid var(--quiz-border);
-	padding-right:16px;
-	display:flex;
-	flex-direction:column;
-	gap:12px;
-	background-color:var(--color-background);
-	color:var(--color-text);
-	overflow:auto;
-	min-height: 0;
+    width: var(--spacing-8xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-s);
+    padding: var(--spacing-l);
+    border-right: 1px solid var(--color-border);
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-	@media (max-width: 768px){
-		border-right:none;
-		border-bottom:1px solid var(--quiz-border);
-		padding-right:0;
-		padding-bottom:12px;
-		max-height:40vh;   
-		overflow:auto;
-	}
+    @media (max-width: 768px) {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--color-border);
+        max-height: 40vh;
+    }
 `;
 
+
 const LeftTitle = styled.h2`
-	font-size:14px;
-	font-weight:700;
-	margin:0;
+	font-size: var(--font-size);
+	font-weight: 600;
+	margin: 0;
 `;
 
 const AddQuestionButton = styled(Button)`
-	display:inline-flex;
-	align-items:center;
-	gap:8px;
-	background-color: #2563eb;
-	border:1px solid #e5e7eb;
-	border-radius:10px;
-	padding:10px 12px;
-	cursor:pointer;
-	color: #fff;
-	font-weight:600;
-	&:hover{
-		background-color: #1e40af;
-	}
-
 	@media (max-width: 768px){
 		width:100%;
 		justify-content:center;
@@ -811,52 +553,51 @@ const AddQuestionButton = styled(Button)`
 const LeftList = styled.div`
 	display:flex;
 	flex-direction:column;
-	gap:8px;
+    gap:var(--spacing);
 	user-select:none;
+	height: 30000px;
+	flex: 1;
+	min-height: 0;
 
 	@media (max-width: 768px){
-		gap:6px;
+		gap:var(--spacing);
 	}
 `;
 
 const LeftRow = styled.div`
-	display:grid;
-	grid-template-columns:24px 1fr; 
+	display: flex;
+	width: 100%;
 	align-items:center;
-	gap:6px;
-	position:relative; 
-	&::before{
-		content:"";
-		position:absolute;
-		left:0; right:0;
-		height:2px;
-		background:#3b82f6;
-		border-radius:1px;
-		opacity:0;
-		transition:opacity .1s ease;
-	}
-	&[data-drop-pos="before"]::before{ top:-3px; opacity:1; }
-	&[data-drop-pos="after"]::before{ bottom:-3px; opacity:1; }
+	gap: var(--spacing-xs);
+`;
 
-	@media (max-width: 768px){
-		grid-template-columns:28px 1fr;
-	}
+const TypePill = styled.span`
+	font-size: var(--font-size-xs);
+	line-height:1;
+	border:1px solid var(--color-border);
+	border-radius: 999px;
+	padding: 4px 6px;
+	font-weight:500;
+	color:var(--color-text);
+	white-space:nowrap;
+    transition : all 0.2s ease;
 `;
 
 const LeftCard = styled(Button)`
-	display:grid;
-	grid-template-columns:28px 1fr;
-	align-items:center;
-	gap:8px;
-	border:1px solid var(--quiz-border);
-	border-radius:10px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	border: none;
 	background-color:var(--quiz-surface-muted);
 	color:var(--color-text);
-	padding:8px 10px;
-	cursor:pointer;
-	text-align:left;
-	position:relative;
-	cursor:grab;
+	cursor: pointer;
+	text-align: left;
+	position: relative;
+    overflow: hidden;
+	width: 100%;
+	flex: 1;
+	
 	&[data-dragging="true"] {
 		opacity:0.6;
 		cursor:grabbing;
@@ -878,32 +619,48 @@ const LeftCard = styled(Button)`
 	&[data-drop-pos="after"]::before {
 		bottom:-1px; top:auto; opacity:1;
 	}
-	&:hover{
-		filter:brightness(0.98);
-	}
+
+    &:hover {
+        background-color: var(--color-primary-bg) !important;
+
+        ${TypePill} {
+            border-color: var(--color-text);
+        }
+    }
 
 	@media (max-width: 768px){
 		padding:10px;
 	}
 `;
 
+const LeftCardHeader = styled.div`
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	flex-direction: row;
+	gap: var(--spacing-xs);
+`;
+
 const LeftCardMain = styled.div`
 	display:flex;
 	align-items:center;
 	justify-content:space-between;
-	gap:8px;
-	min-width:0;
+	gap: var(--spacing-xs);
+	width: 100%;
 `;
 
 const DragDock = styled.div`
 	display:flex;
 	align-items:center;
 	justify-content:center;
-	width:24px;
-	height:32px;
-	color: #94a3b8;
+	width: var(--spacing-l);
+	height: var(--spacing-l);
+	color: var(--color-placeholder);
 	cursor:grab;
-	&:hover{ color: #64748b; }
+	
+	&:hover{ 
+		color: var(--color-primary-bg) 
+	}
 	&[data-dragging="true"]{
 		opacity:.7;
 		cursor:grabbing;
@@ -915,205 +672,87 @@ const DragDock = styled.div`
 	}
 `;
 
-const LeftCardIndex = styled.span`
-	display:inline-grid;
-	place-items:center;
-	width:24px;
-	height:24px;
-	font-size:12px;
-	border-radius:999px;
-	border:1px solid #c7d2fe;
-	background:var(--color-background);
+const LeftCardIndex = styled.p`
+    font-size: var(--font-size-s);
+    position: relative;
+    top: 1px;
 `;
 
 const LeftCardTitle = styled.span`
-	flex:1;
-	font-size:14px;
+	flex: 1;
+	font-size: var(--font-size-s);
+	font-weight: 400;
 	overflow:hidden;
 	white-space:nowrap;
 	text-overflow:ellipsis;
-`;
-
-const TypePill = styled.span`
-	font-size:11px;
-	line-height:1;
-	border:1px solid #c7d2fe;
-	border-radius:999px;
-	padding:3px 6px;
-	font-weight:600;
-	background-color:var(--color-background);
-	color:var(--color-text);
-	white-space:nowrap;
+	width: 100%;
 `;
 
 const CenterPanel = styled.section`
-	grid-area: main;
-	padding-left:8px;
-	display:flex;
-	flex-direction:column;
-	overflow:hidden;
-	min-height:0;
-	border-radius:12px;
-	background-color:var(--color-background);
-	--content-width: clamp(900px, 48vw, 560px);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-l);
 
-	@media (max-width: 768px){
-		padding-left:0;
-	}
+    /* This allows main content to scroll independently */
+    overflow-y: auto;
+    overflow-x: hidden;
+
 `;
 
 const CenterInner = styled.div `
 	width:100%;
-	max-width:var(--content-width);
-	margin:0 auto 12px auto;
-
-	@media (max-width: 768px){
-		margin:0 auto 10px auto;
-	}
-`;
-
-const TitleLine = styled.div`
-	display:flex;
-	align-items:center;
-	gap:8px;
-	margin: 6px 0 2px 0;
-	&:hover ${''} svg {
-		opacity: 0.6;
-	}
+	max-width:var(--spacing-12xl);
+	margin: 0 auto var(--spacing) auto;
+	gap: var(--spacing);
+	display: flex;
+	flex-direction: column;
 `;
 
 const TitleInput = styled(Input)`
-	border: none;
-	background-color: var(--color-background);
-	outline: none;
-	padding: 0;
-	margin: 0;
-	width: 100%;
-	font-weight: 700;
-	line-height: 1.2;
-	color: var(--color-text);
-	font-size: clamp(18px, 2.8vw, 28px);
-
-	&::placeholder { color: #64748b; }
-`;
-
-const EditIcon = styled(Edit3).attrs({ size: 18 })`
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	color: #64748b;
-	pointer-events: none;
-	line-height: 0;
-	transition: opacity .12s ease, transform .12s ease;
-	svg { display: block; }
-`;
-
-const TitleField = styled.div`
-	position: relative;
-	display: block;
-	width: 100%;
-	cursor: text;
-
-	&:has(${TitleInput}:not(:placeholder-shown)) ${EditIcon} {
-		opacity: 0;
-		transform: translateY(-50%) scale(0.98);
-		pointer-events: none;
-	}
-`;
-
-const MeasureSpan = styled.span`
-	position: absolute;
-	left: 0;
-	top: 0;
-	visibility: hidden;
-	white-space: pre;
-	pointer-events: none;
-
-	font-weight: 700;
-	line-height: 1.2;
-	font-size: clamp(18px, 2.8vw, 28px);
-	font-family: inherit;
-
-	color: #64748b;
-`;
-
-const EditHint = styled.span`
-	display:inline-grid;
-	place-items:center;
-	width:20px;
-	height:20px;
-	color:#94a3b8;
-	opacity:0;
-	transition: opacity .12s ease;
-`;
-
-const DescBlock = styled.div`
-  	margin-top: 2px;
+    width: 100%;
+    border: none;
+    font-size: var(--font-size-3xl);
+    line-height: var(--line-height-xl);
+    font-weight: 500;
+    color: var(--color-text);
+    padding-left: 0;
+    background: transparent!important;
+    resize: none;
+    overflow: hidden;
+    height: auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    outline: none;
 `;
 
 const DescTextarea = styled(TextArea)`
-	width:100%;
-	border:none;
-	outline:none;
-	resize:vertical;
-	background:transparent;
-	color:var(--color-text);
-	line-height:1.4;
-	font-size: 14px;
-	padding: 2px 0;
-	&::placeholder{
-		color: #94a3b8;
-	}
-`;
-
-const MyTextArea = styled(TextArea)`
-  	background-color:var(--quiz-surface);
-`;
-
-const AddDescButton = styled(Button)`
-	border:none;
-	background:transparent;
-	color: #94a3b8;
-	padding:0;
-	margin: 2px 0 0;
-	font-size:14px;
-	cursor:text;
-	&:hover{
-		color: #64748b;
-	}
-`;
-
-const Field = styled.div`
-	display:grid;
-	gap:6px;
-	margin-bottom:10px;
-`;
-
-const FieldLabel = styled.label`
-	font-size:12px;
-	color:var(--color-text);
-`;
-
-const MyInput = styled(Input)`
-	height:38px;
-	border:1px solid #fff;
-	border-radius:8px;
-	padding:0 10px;
-	background-color:var(--quiz-surface);
-	color:var(--color-text);
+    width: 100%;
+    border: none;
+    font-size: var(--font-size);
+    line-height: var(--line-height-2xl);
+    background: transparent!important;
+    font-weight: 500;
+    padding-left: 0;
+    color: var(--color-placeholder);
+    resize: none;
+    overflow: hidden;
+    height: auto;
+    outline: none!important;
 `;
 
 const DropPlaceholder = styled.div`
 	height:160px;
-	border:2px dashed var(--quiz-border);
-	border-radius:12px;
-	display:grid;
-	place-items:center;
+	border:2px dashed var(--color-border);
+	border-radius: var(--border-radius);
+	display:flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-s);
 	color: var(--quiz-placeholder);
 	background-color:var(--quiz-surface-muted);
 	width:100%;
-	max-width:var(--content-width);
-	margin:0 auto;
 
 	@media (max-width: 768px){
 		height:140px;
@@ -1123,37 +762,31 @@ const DropPlaceholder = styled.div`
 const QuestionList = styled.div`
 	display:flex;
 	flex-direction:column;
-	gap:12px;
+	gap:var(--spacing-s);
 	flex:1;
 	min-height:0;
 	overflow-y:auto;
-	padding:0 12px;
 	align-items:center;
-
-	@media (max-width: 768px){
-		padding:0 8px;
-	}
+	width: 100%;
 `;
 
 const QuestionCard = styled.div`
 	border:1px solid var(--quiz-border);
 	border-radius:12px;
 	background-color:var(--quiz-surface-muted);
-	padding:12px;
+	padding: var(--spacing);
 	width:100%;
-	max-width:var(--content-width);
 	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-s);
 
-	@media (max-width: 768px){
-		padding:10px;
-	}
 `;
 
 const QuestionHeader = styled.div`
 	display:flex;
 	align-items:center;
 	justify-content:space-between;
-	margin-bottom:10px;
 `;
 
 const Badge = styled.span`
@@ -1174,34 +807,51 @@ const DeleteBtn = styled.button`
 	transition: background-color .15s ease;
 
 	&:hover {
-		background-color: var(--brand-error-600);
+		background-color: var(--color-error-bg-hover)!important;
 		color: #000;
 	}
 `;
 
+const OptionsContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-s)
+`;
+
 const OptionsHeader = styled.div`
-	font-size:14px;
-	font-weight:600;
-	margin-bottom:8px;
+	font-size:var(--font-size);
+	font-weight:500;
 	color:var(--color-text);
 `;
 
-const OptionRow = styled.div`
-	display:grid;
-	grid-template-columns:auto 1fr auto;
-	align-items:center;
-	gap:8px;
-	padding:6px 8px;
-	border:1px solid var(--quiz-border);
-	border-radius:8px;
-	background-color:var(--quiz-surface);
-	margin-bottom:8px;
+const OptionsContent = styled.div`
+	display: flex;
+	flex-direction: column;
 `;
 
-const FakeCheck = styled(Input)``;
+const OptionRow = styled.div`
+	display:flex;
+	flex-direction: row;
+	align-items: center;
+	gap: var(--spacing-xs);
+	padding: var(--spacing-xs) var(--spacing);
+	background-color:var(--quiz-surface);
+	border-bottom: 1px solid var(--color-border);
+	
+	&:first-child {
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+	}
+	
+	&:last-child {
+        border-bottom-left-radius: var(--border-radius);
+        border-bottom-right-radius: var(--border-radius);
+		border-bottom: none;
+	}
+`;
 
 const OptionInput = styled(Input)`
-	height:34px;
+	flex: 1;
 	border:none;
 	background:transparent;
 	outline:none;
@@ -1213,34 +863,19 @@ const RemoveOpt = styled.button`
 	background:transparent;
 	color: var(--color-text);
 	cursor: pointer;
-	transition: background-color .15s ease;
+	transition: all .2s ease;
+	padding-top: 0;
+	padding-bottom: 0;
 
 	&:hover {
-		background-color: var(--brand-error-600);
-		color: #000;
-	}
-`;
-
-const AddOption = styled(Button)`
-	display:inline-flex;
-	align-items:center;
-	gap:6px;
-	background-color: #2563eb;
-	border:1px solid #e5e7eb;
-	border-radius:8px;
-	padding:8px 10px;
-	cursor:pointer;
-	font-weight:500;
-	color:#fff;
-	&:hover{
-		background-color: #1e40af;
+        background:transparent;
+		color: var(--color-error-bg);
 	}
 `;
 
 const Divider = styled.hr`
-	margin:10px 0;
-	border:none;
-	border-top:1px solid var(--quiz-border);
+	margin: var(--spacing) 0;
+	border-color: var(--color-separator);
 `;
 
 const DesktopHeaderWrap = styled.div`
@@ -1273,110 +908,8 @@ const BackIconButton = styled(Button)`
 
 	svg { display: block; }
 
-	&:hover { background: var(--quiz-border)!important; }
-`;
-
-const ChipsWrap = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-`;
-
-const Chip = styled.button`
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	border: 1px solid var(--quiz-border);
-	border-radius: 999px;
-	padding: 6px 10px;
-	background: var(--quiz-surface);
-	color: var(--color-text);
-	cursor: pointer;
-	font-size: 13px;
-	&[data-active="1"]{
-		background: #059b19ff;
-		color: #fff;
-		border-color: #059b19ff;
+	&:hover {
+		background: transparent!important;
+		color: var(--color-primary-bg);
 	}
-	&:hover { filter: brightness(0.98); }
-`;
-
-const ChipClose = styled.span`
-	display: inline-grid;
-	place-items: center;
-	width: 16px;
-	height: 16px;
-	border-radius: 999px;
-	cursor: pointer;
-	line-height: 0;
-	background: transparent;
-	&:hover { background: rgba(255, 255, 255, 0.2); }
-`;
-
-const Hint = styled.span`
-	font-size: 12px;
-	color: #94a3b8;
-`;
-
-const DropZone = styled.div`
-	border: 2px dashed var(--quiz-border);
-	background: var(--quiz-surface-muted);
-	border-radius: 12px;
-	padding: 14px;
-	min-height: 140px;
-	display: grid;
-	place-items: center;
-	cursor: pointer;
-	outline: none;
-	transition: border-color .15s ease, background-color .15s ease, transform .05s ease;
-
-	&[data-over="1"]{
-		border-color: #3b82f6;
-		background: rgba(59,130,246,.08);
-		transform: scale(0.999);
-	}
-`;
-
-const DropInner = styled.div`
-	display: grid;
-	gap: 6px;
-	text-align: center;
-	color: var(--color-text);
-`;
-
-const PreviewWrap = styled.div`
-	width: 100%;
-	display: grid;
-	gap: 10px;
-`;
-
-const PreviewImg = styled.img`
-	width: 100%;
-	max-height: 280px;
-	object-fit: cover;
-	border-radius: 10px;
-	border: 1px solid var(--quiz-border);
-	background: #000;
-`;
-
-const PreviewActions = styled.div`
-  	display: flex;
-  	gap: 8px;
-  	justify-content: flex-end;
-`;
-
-const SmallButton = styled(Button)`
-	padding: 6px 10px;
-	border-radius: 8px;
-	background: #2563eb;
-	color: #fff;
-	&:hover { background: #1e40af; }
-`;
-
-const SmallDanger = styled(Button)`
-	padding: 6px 10px;
-	border-radius: 8px;
-	background: var(--brand-error-600);
-	color: #000;
-	&:hover { filter: brightness(0.95); }
 `;

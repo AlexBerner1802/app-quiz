@@ -3,7 +3,7 @@ body.dark-mode {
 	--color-primary-text: var(--brand-primary-100);
 	--color-primary-bg: var(--brand-primary-600);
 	--color-primary-bg-hover: var(--brand-primary-500);
-	--color-primary-muted: var(--brand-primary-800);
+    --color-primary-muted: rgba(var(--brand-primary-rgb), 0.12);
 
     /* Secondary */
     --color-secondary-text: var(--gray-100);
@@ -48,7 +48,7 @@ body.dark-mode {
     --color-background-input: var(--gray-700);			/* Background for input fields and form elements */
     --color-background-input-focused: var(--gray-800);  /* Background for input fields and form elements when focused */
     --color-border: var(--gray-600);                    /* Color for borders, dividers, and separators */
-    --color-separator: var(--gray-600);
+    --color-separator: var(--gray-700);
 
     --color-skeleton-base: var(--gray-600);
     --color-skeleton-highlight: var(--gray-700);

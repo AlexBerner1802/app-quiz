@@ -51,15 +51,9 @@ const variants = {
     background-color: var(--color-primary-bg);
     color: var(--color-btn-text);
     border: 1px solid transparent;
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.05),
-      0 1px 0 rgba(255, 255, 255, 0.1) inset;
 
     &:hover:not(:disabled) {
       background-color: var(--color-primary-bg-hover);
-      box-shadow:
-        0 4px 6px rgba(50, 50, 93, 0.11),
-        0 1px 3px rgba(0, 0, 0, 0.08);
     }
 
     &:focus-visible {
@@ -103,7 +97,7 @@ const disabledStyles = css`
 
 const StyledButton = styled.button`
 	font-family: inherit;
-	font-weight: 600;
+	font-weight: 500;
 	border: none;
 	cursor: pointer;
 	transition: background-color 0.2s ease, box-shadow 0.15s ease;

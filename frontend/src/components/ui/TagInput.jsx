@@ -268,7 +268,7 @@ const TagContainer = styled.div`
 	flex-wrap: wrap;
 	align-items: flex-start;
 	gap: var(--spacing-xs, 0.25rem);
-	border: 1px solid var(--color-border, #ccc);
+	border: 2px solid var(--color-border, #ccc);
 	border-radius: var(--border-radius);
 	padding: var(--spacing-xs, 0.25rem);
 	background: var(--color-background-input, #fff);
