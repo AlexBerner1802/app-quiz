@@ -68,7 +68,7 @@
     "fields": {
       "title": "Titolo",
       "description": "Descrizione",
-	  "coverImage": "Immagine di sfondo (URL)",
+	  "coverImage": "Immagine di sfondo",
 	  "orUpload": "Oppure carica un file"
     },
     "category": {

@@ -56,7 +56,6 @@ export default function NewQuiz() {
 	// Data
 	const [coverImageFile, setCoverImageFile] = useState(null);
 	const [coverImageUrl, setCoverImageUrl]   = useState("");
-	// Aperçu local quand un fichier est choisi
 	const [coverPreview, setCoverPreview] = useState("");
 
 	const [modules, setModules] = useState([]);
@@ -66,8 +65,6 @@ export default function NewQuiz() {
 	const [selectedTagIds, setSelectedTagIds] = useState([]);
 	const [newTagInput, setNewTagInput] = useState("");
 	const [newTags, setNewTags] = useState([]);
-	const [newModuleInput, setNewModuleInput] = useState("");
-	const [creatingModule, setCreatingModule] = useState(false);
 
 	const [selected, setSelected] = useState([]);
 
@@ -76,7 +73,6 @@ export default function NewQuiz() {
 		return () => document.body.classList.remove('page-newquiz');
 	}, []);
 
-	// Gère l'aperçu local de l'image choisie
 	useEffect(() => {
 		if (coverImageFile) {
 			const url = URL.createObjectURL(coverImageFile);
@@ -375,6 +371,13 @@ export default function NewQuiz() {
 		}
 	};
 
+	const moduleOptions = useMemo(
+		() => (modules || [])
+			.slice(0, 3)
+			.map(m => ({ id: String(m.id), label: m.module_name })),
+		[modules]
+	);
+
   return (
     <>
 		<FaviconTitle 
@@ -457,113 +460,84 @@ export default function NewQuiz() {
 
 					<CenterPanel>
 						<CenterInner>
-						<TitleLine>
-							<TitleField onClick={() => titleRef.current?.focus()}>
-							<TitleInput
-								ref={titleRef}
-								value={title}
-								onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
-								placeholder={t("quiz.placeholders.title")}
-								aria-label={t("quiz.placeholders.title")}
+								<TitleLine>
+									<TitleField onClick={() => titleRef.current?.focus()}>
+									<TitleInput
+										ref={titleRef}
+										value={title}
+										onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
+										placeholder={t("quiz.placeholders.title")}
+										aria-label={t("quiz.placeholders.title")}
+									/>
+									<MeasureSpan ref={measureRef} aria-hidden="true" />
+									<EditIcon style={{ left: iconLeft }} aria-hidden="true" />
+									</TitleField>
+									<EditHint aria-hidden="true"><FilePenLine size={16} /></EditHint>
+								</TitleLine>
+
+							<DescBlock>
+								<DescTextarea
+									value={quiz_description}
+									onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
+									placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
+									rows={2}
+								/>
+							</DescBlock>
+
+							<Field>
+								<CheckboxGroup
+									label={t("quiz.sections.module")}
+									options={moduleOptions}
+									value={selectedModuleIds.map(String)}
+									onChange={(ids) => {
+									setSelectedModuleIds(ids.map(Number));
+									setIsDirty(true);
+									}}
+									direction="row"
+								/>
+
+								{moduleOptions.length === 0 && (
+									<Hint>{t("quiz.sections.noModule")}</Hint>
+								)}
+							</Field>
+
+							<TagInput
+									label={t("quiz.sections.existingTag")}
+									placeholder ="Ajouter un tag..."
+									prefixAdd ="Ajouter"
+									allowNew
+									// suggestions={suggestions}
+									value={selectedTags}
+									onChange={(arr) => {
+										setSelectedTags(arr);
+										setSelectedTagIds(arr.map(t => t.id));
+										setIsDirty(true);
+									}}
+									width={"100%"}
+									apiUrl={import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}
+									fetchFromApi
 							/>
-							<MeasureSpan ref={measureRef} aria-hidden="true" />
-							<EditIcon style={{ left: iconLeft }} aria-hidden="true" />
-							</TitleField>
-							<EditHint aria-hidden="true"><FilePenLine size={16} /></EditHint>
-						</TitleLine>
 
-					<DescBlock>
-						<DescTextarea
-							value={quiz_description}
-							onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
-							placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
-							rows={2}
-						/>
-					</DescBlock>
+							<Field>
+								<FieldLabel>{t("quiz.fields.coverImage") || "Image de couverture"}</FieldLabel>
 
-					<Field>
-						<FieldLabel>{t("quiz.sections.module")}</FieldLabel>
-						<ChipsWrap>
-						{modules.map(m => (
-							<Chip
-							key={m.id}
-							data-active={selectedModuleIds.includes(m.id) ? "1" : undefined}
-							type="button"
-							onClick={() => toggleId(m.id, selectedModuleIds, setSelectedModuleIds)}
-							title={m.module_name}
-							>
-							{m.module_name}
-							</Chip>						))}
-						{modules.length === 0 && <Hint>{t("quiz.sections.noModule")}</Hint>}
-						</ChipsWrap>
-					</Field>
-
-					<CheckboxGroup
-							label="Choisissez vos options"
-							options={[
-								{ id: "1", label: "Option A" },
-								{ id: "2", label: "Option B" },
-								{ id: "3", label: "Option C" },
-							]}
-							value={selected}
-							onChange={setSelected}
-							direction="row"
-					/>
-
-					<TagInput
-							label={t("quiz.sections.existingTag")}
-							placeholder ="Ajouter un tag..."
-							prefixAdd ="Ajouter"
-							allowNew
-							// suggestions={suggestions}
-							value={selectedTags}
-							onChange={(arr) => {
-								setSelectedTags(arr);
-								setSelectedTagIds(arr.map(t => t.id));
-								setIsDirty(true);
-							}}
-							width={"100%"}
-							apiUrl={import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}
-							fetchFromApi
-					/>
-
-					<Field>
-						<FieldLabel>{t("quiz.sections.moduleAdd")}</FieldLabel>
-						<div style={{ display: "flex", gap: 8 }}>
-						<MyInput
-							value={newModuleInput}
-							onChange={e => setNewModuleInput(e.target.value)}
-							placeholder={t("quiz.placeholders.module")}
-							onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); createModuleInline(); } }}
-						/>
-						<Button type="button" onClick={createModuleInline} disabled={creatingModule}>
-							{creatingModule ? "Ajout..." : "+"}
-						</Button>
-						</div>
-					</Field>
-
-					{/* --- NOUVELLE ZONE D'IMAGE : Drag & Drop + Choisir un fichier --- */}
-					<Field>
-						<FieldLabel>{t("quiz.fields.coverImage") || "Image de couverture"}</FieldLabel>
-
-						<CoverDropzone
-							previewUrl={coverPreview}
-							existingUrl={coverImageFile ? "" : (coverImageUrl || "")}
-							onPickFile={(file) => {
-								setCoverImageFile(file);
-								setCoverImageUrl("");
-								setIsDirty(true);
-							}}
-							onClear={() => {
-								setCoverImageFile(null);
-								setCoverImageUrl("");
-								setIsDirty(true);
-							}}
-							t={t}
-						/>
-					</Field>
-					{/* --- FIN ZONE D'IMAGE --- */}
-					</CenterInner>
+								<CoverDropzone
+									previewUrl={coverPreview}
+									existingUrl={coverImageFile ? "" : (coverImageUrl || "")}
+									onPickFile={(file) => {
+										setCoverImageFile(file);
+										setCoverImageUrl("");
+										setIsDirty(true);
+									}}
+									onClear={() => {
+										setCoverImageFile(null);
+										setCoverImageUrl("");
+										setIsDirty(true);
+									}}
+									t={t}
+								/>
+							</Field>
+						</CenterInner>
 
 					{questions.length === 0 ? (
 					<DropPlaceholder>
@@ -1070,19 +1044,6 @@ const MyTextArea = styled(TextArea)`
   	background-color:var(--quiz-surface);
 `;
 
-const AddDescButton = styled(Button)`
-	border:none;
-	background:transparent;
-	color: #94a3b8;
-	padding:0;
-	margin: 2px 0 0;
-	font-size:14px;
-	cursor:text;
-	&:hover{
-		color: #64748b;
-	}
-`;
-
 const Field = styled.div`
 	display:grid;
 	gap:6px;
@@ -1276,43 +1237,6 @@ const BackIconButton = styled(Button)`
 	&:hover { background: var(--quiz-border)!important; }
 `;
 
-const ChipsWrap = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-`;
-
-const Chip = styled.button`
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	border: 1px solid var(--quiz-border);
-	border-radius: 999px;
-	padding: 6px 10px;
-	background: var(--quiz-surface);
-	color: var(--color-text);
-	cursor: pointer;
-	font-size: 13px;
-	&[data-active="1"]{
-		background: #059b19ff;
-		color: #fff;
-		border-color: #059b19ff;
-	}
-	&:hover { filter: brightness(0.98); }
-`;
-
-const ChipClose = styled.span`
-	display: inline-grid;
-	place-items: center;
-	width: 16px;
-	height: 16px;
-	border-radius: 999px;
-	cursor: pointer;
-	line-height: 0;
-	background: transparent;
-	&:hover { background: rgba(255, 255, 255, 0.2); }
-`;
-
 const Hint = styled.span`
 	font-size: 12px;
 	color: #94a3b8;
@@ -1373,10 +1297,13 @@ const SmallButton = styled(Button)`
 	&:hover { background: #1e40af; }
 `;
 
-const SmallDanger = styled(Button)`
+const SmallDanger = styled.button`
 	padding: 6px 10px;
 	border-radius: 8px;
 	background: var(--brand-error-600);
-	color: #000;
-	&:hover { filter: brightness(0.95); }
+	color: #ffffffff;
+	&:hover { 
+		filter: brightness(0.95); 
+		background-color: #af1e1eff;
+	}
 `;
