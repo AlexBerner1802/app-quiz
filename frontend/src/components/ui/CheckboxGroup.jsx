@@ -81,7 +81,7 @@ const OptionBox = styled.div`
     align-items: center;
     gap: var(--spacing-xs, 0.5rem);
     padding: var(--spacing-xs, 0.5rem) var(--spacing-s, 0.75rem);
-    border: 1px solid ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-border)")};
+    border: 2px solid ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-border)")};
     border-radius: var(--border-radius, 4px);
     background-color: ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-background-input)")};
     color: ${({ checked }) => (checked ? "#fff" : "var(--color-text, #333)")};

@@ -3,7 +3,7 @@
     --color-primary-text: var(--brand-primary-100);
     --color-primary-bg: var(--brand-primary-500);
     --color-primary-bg-hover: var(--brand-primary-600);
-    --color-primary-muted: var(--brand-primary-100);
+    --color-primary-muted: rgba(var(--brand-primary-rgb), 0.12);
 
     /* Secondary */
     --color-secondary-text: var(--gray-900);

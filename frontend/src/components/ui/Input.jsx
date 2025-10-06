@@ -11,7 +11,9 @@ const Input = ({
                    size = 'm',
                    icon = null,
                    textAlign,
-                   wrapperStyle,
+				   wrapperStyle,
+				   inputWrapperStyle,
+				   inputWrapperBg,
                    labelStyle,
                    inputStyle,
                    wrapperClassName,
@@ -24,7 +26,7 @@ const Input = ({
     return (
         <Wrapper style={wrapperStyle} className={wrapperClassName} width={width}>
             {label && <Label htmlFor={id} style={labelStyle} className={labelClassName}>{label}</Label>}
-            <InputWrapper $size={size}>
+            <InputWrapper style={inputWrapperStyle} $size={size} $bgColor={inputWrapperBg}>
                 {icon && <IconWrapper $size={size}>{icon}</IconWrapper>}
                 <StyledInput
                     id={id}
@@ -62,8 +64,8 @@ const InputWrapper = styled.div`
 	display: flex;
 	width: 100%;
 	align-items: center;
-	border: 1px solid transparent;
-	background-color: var(--color-background-input, #fff);
+	border: 2px solid transparent;
+    background-color: ${({ $bgColor }) => $bgColor || "var(--color-background-input, #fff)"};
 	color: var(--color-text);
 	border-radius: ${({ $size }) =>
     $size === 's' ? '0.25rem' :

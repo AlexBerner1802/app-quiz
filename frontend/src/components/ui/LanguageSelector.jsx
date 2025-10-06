@@ -74,7 +74,7 @@ const DropdownContainer = styled.div`
 
 const DropdownHeader = styled.div`
     border-radius: var(--border-radius);
-    background-color: var(--color-background-surface);
+    background-color: var(--color-background-input);
     padding: var(--spacing-xs) var(--spacing);
     cursor: pointer;
     display: flex;

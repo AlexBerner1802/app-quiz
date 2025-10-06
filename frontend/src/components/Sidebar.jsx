@@ -61,7 +61,7 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 
 const Aside = styled.aside`
     width: 64px;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     justify-content: space-between;

@@ -14,12 +14,14 @@ import faviconUrl from "../../assets/images/favicon.ico?url";
 const NUM_PLACEHOLDERS = 10;
 
 export default function HomePage() {
+
 	const navigate = useNavigate();
 	const { t } = useTranslation();
 
-	const [quizzes, setQuizzes] = useState(["", "", "" , ""]);
+	const [quizzes, setQuizzes] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [err, setErr] = useState("");
+
 
 	useEffect(() => {
 		let alive = true;
@@ -40,6 +42,7 @@ export default function HomePage() {
 		})();
 		return () => { alive = false; };
 	}, []);
+
 
   	// Open the editor
 	const handleEdit = useCallback(
@@ -63,6 +66,7 @@ export default function HomePage() {
 		[t] // dependencies: only `t` because `setQuizzes` is stable
 	);
 
+
 	const cards = useMemo(() => {
 		const fallbackImg =
 			"https://img.freepik.com/free-vector/gradient-ui-ux-background-illustrated_23-2149050187.jpg?semt=ais_hybrid&w=740&q=80";
@@ -71,6 +75,7 @@ export default function HomePage() {
 			// Return an array of skeleton placeholders
 			return Array.from({ length: NUM_PLACEHOLDERS }, (_, i) => ({ id: `skeleton-${i}`, loading: true }));
 		}
+
 
 		return quizzes.map((q) => ({
 			id: q.id,
@@ -88,71 +93,73 @@ export default function HomePage() {
 		}));
 	}, [loading, quizzes, handleEdit, handleDelete, navigate]);
 
+
 	return (
-   	<>
-    	<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
+		<>
+			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
+
 			<Main>
-			<Header
-				title={t("pages.home.title")}
-				icon={<FlaskConical size={20} aria-hidden="true" />}
-				actions={[
-				<LanguageSelector key="lang" />,
-				<NewQuizButton
-					key="new"
-					onClick={() => navigate("/quizzes/new")}
-					aria-label={t("actions.newQuiz")}
-					title={t("actions.newQuiz")}
-				>
-					<Plus size={16} aria-hidden="true" />
-					{t("actions.newQuiz")}
-				</NewQuizButton>,
-				]}
-			/>
 
-			<Content>
-				{err && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</pre>}
+				<Header
+					title={t("pages.home.title")}
+					icon={<FlaskConical size={20} aria-hidden="true" />}
+					actions={[
+					<LanguageSelector key="lang" />,
+					<NewQuizButton
+						key="new"
+						onClick={() => navigate("/quizzes/new")}
+						aria-label={t("actions.newQuiz")}
+						title={t("actions.newQuiz")}
+					>
+						<Plus size={16} aria-hidden="true" />
+						{t("actions.newQuiz")}
+					</NewQuizButton>,
+					]}
+				/>
 
-				{!err && (
-					<QuizGrid>
-						{cards.length === 0 ? (
-							<p>{t("quiz.empty")}</p>
-						) : (
-							cards.map((item) => <QuizCard key={item.id} {...item} />)
-						)}
-					</QuizGrid>
-				)}
-			</Content>
+				<Content>
+					{err && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</pre>}
+
+					{!err && (
+						<QuizGrid>
+							{!cards || cards.length === 0 ? (
+								<NoCards>{t("quiz.empty")}</NoCards>
+							) : (
+								cards.map((item) => <QuizCard key={item.id} {...item} />)
+							)}
+						</QuizGrid>
+					)}
+				</Content>
 			</Main>
-    </>
+		</>
   );
 }
 
 const Main = styled.main`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  background-color: var(--color-background);
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	background-color: var(--color-background);
 `;
 
 const NewQuizButton = styled(Button)`
-  background-color: #2563eb;
-  transition: background 0.2s;
-
-  &:hover {
-    background-color: #1e40af;
-  }
 `;
 
 const Content = styled.section`
-  flex: 1;
-  padding: 24px;
+	flex: 1;
+	padding: var(--spacing-xl);
 `;
 
 const QuizGrid = styled.section`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--spacing);
-  width: 100%;
-  padding: var(--spacing-l);
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+	gap: var(--spacing);
+	width: 100%;
+`;
+
+const NoCards = styled.p`
+	font-size: var(--font-size-l);
+	font-weight: 600;
+	color: var(--color-placeholder);
 `;
