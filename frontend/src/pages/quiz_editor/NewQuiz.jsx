@@ -128,7 +128,8 @@ export default function NewQuiz() {
 		setQuestions(prev => [...prev, q]);
 		setIsDirty(true);
 		setTimeout(() => {
-		questionRefs.current[q.id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+		const el = questionRefs.current[q.id];
+		el?.scrollIntoView?.({ behavior: "smooth", block: "start" });
 		}, 0);
 	};
 

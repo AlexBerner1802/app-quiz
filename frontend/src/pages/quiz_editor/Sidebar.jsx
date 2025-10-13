@@ -5,7 +5,8 @@ import Button from "../../components/ui/Button";
 
 export default function Sidebar({ questions, questionRefs, setQuestions, setIsDirty, untitled }) {
 	const scrollToQuestion = (id) => {
-		questionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+		const el = questionRefs.current[id];
+		el?.scrollIntoView?.({ behavior: "smooth", block: "start" });
 	};
 
 	return (
