@@ -68,7 +68,7 @@ export default function ImageUploader({
 			{preview ? (
 				<PreviewContainer>
 					<PreviewImage src={preview} alt="preview" />
-					<Overlay show={isHover}>
+					<Overlay $show={isHover}>
 						<EditIcon size={20} />
 						<OverlayText>Click to change image</OverlayText>
 					</Overlay>

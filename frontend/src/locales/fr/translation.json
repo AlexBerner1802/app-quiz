@@ -63,7 +63,7 @@
 		},
 		"hints": {
 		"dragCenter": "Glissez-déposez au centre",
-		"emptyDrop": "Ajoutez votre première question avec le bouton à gauche"
+		"emptyDrop": "Ajoutez votre première question avec le bouton à gauche ou celui ci-dessous"
 		},
 		"fields": {
 		"title": "Intitulé",
@@ -88,6 +88,10 @@
 		"option": "Option",
 		"true": "Vrai",
 		"false": "Faux"
+		},
+		"labels": {
+			"single": "Simple",
+			"multi": "Multi"
 		},
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"

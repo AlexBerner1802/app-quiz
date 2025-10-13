@@ -63,7 +63,7 @@
     },
     "hints": {
       "dragCenter": "Ziehen und in der Mitte ablegen",
-      "emptyDrop": "Fügen Sie Ihre erste Frage mit der Schaltfläche links hinzu"
+      "emptyDrop": "Fügen Sie Ihre erste Frage mit der Schaltfläche links oder unten hinzu"
     },
     "fields": {
       "title": "Titel",
@@ -89,6 +89,10 @@
       "true": "Wahr",
       "false": "Falsch"
     },
+    "labels": {
+			"single": "Einzel",
+			"multi": "Multi"
+		},
 		"empty": "Noch keine Quiz.",
 		"confirmDelete": "Möchten Sie dieses Quiz wirklich löschen?"
   },

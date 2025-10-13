@@ -1,128 +1,157 @@
 import React from "react";
 import styled from "styled-components";
 import Input from "../../components/ui/Input";
-import TextArea from "../../components/ui/TextArea";
 import Button from "../../components/ui/Button";
+import TextArea from "../../components/ui/TextArea";
 import CheckBox from "../../components/ui/CheckBox";
-import TagInput from "../../components/ui/TagInput";
-import CheckboxGroup from "../../components/ui/CheckboxGroup";
-import ImageUploader from "../../components/ui/ImageUploader";
-import { Plus, Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Content({
-									questions,
-									setQuestions,
-									setIsDirty,
-									title,
-									setTitle,
-									quiz_description,
-									setQuizDescription,
-									modules,
-									selectedModuleIds,
-									setSelectedModuleIds,
-									selectedTags,
-									setSelectedTags,
-									selectedTagIds,
-									setSelectedTagIds,
-									questionRefs,
-								}) {
-	const toggleCorrect = (id, idx) => {
-		setQuestions((prev) =>
-			prev.map((q) => {
-				if (q.id !== id) return q;
-				const s = new Set(q.correctIndices || []);
-				s.has(idx) ? s.delete(idx) : s.add(idx);
-				return { ...q, correctIndices: Array.from(s).sort((a, b) => a - b) };
-			})
-		);
-		setIsDirty(true);
-	};
+  questions,
+  setQuestions,
+  setIsDirty,
+  questionRefs,
+}) {
+  const { t } = useTranslation();
 
-	return (
-		<CenterPanel>
-			<CenterInner>
-				<Input
-					value={title}
-					width={"100%"}
-					onChange={(e) => setTitle(e.target.value)}
-					placeholder="Enter quiz title..."
-				/>
-				<TextArea
-					value={quiz_description}
-					width={"100%"}
-					onChange={(e) => {
-						setQuizDescription(e.target.value);
-						setIsDirty(true);
-					}}
-					placeholder="Quiz description..."
-					rows={2}
-				/>
+  const toggleCorrect = (id, idx) => {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+        const s = new Set(q.correctIndices || []);
+        s.has(idx) ? s.delete(idx) : s.add(idx);
+        return { ...q, correctIndices: Array.from(s).sort((a, b) => a - b) };
+      })
+    );
+    setIsDirty(true);
+  };
 
-				{questions.map((q) => (
-					<QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
-						<Input
-							value={q.title}
-							width={"100%"}
-							onChange={(e) => setQuestions((prev) => prev.map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x)))}
-						/>
-						<TextArea
-							value={q.description}
-							width={"100%"}
-							onChange={(e) =>
-								setQuestions((prev) => prev.map((x) => (x.id === q.id ? { ...x, description: e.target.value } : x)))
-							}
-							rows={3}
-						/>
+  const addOption = (id) => {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+        const base = t("quiz.defaults.option") || "Option";
+        const nextIndex = (q.options?.length || 0) + 1;
+        return { ...q, options: [...(q.options || []), `${base} ${nextIndex}`] };
+      })
+    );
+    setIsDirty(true);
+  };
 
-						{(q.options || []).map((opt, idx) => (
-							<OptionRow key={idx}>
-								<CheckBox checked={(q.correctIndices || []).includes(idx)} onChange={() => toggleCorrect(q.id, idx)} />
-								<OptionInput
-									value={opt}
-									onChange={(e) =>
-										setQuestions((prev) =>
-											prev.map((x) => {
-												if (x.id !== q.id) return x;
-												const next = [...(x.options ?? [])];
-												next[idx] = e.target.value;
-												return { ...x, options: next };
-											})
-										)
-									}
-								/>
-								<RemoveOpt
-									onClick={() =>
-										setQuestions((prev) =>
-											prev.map((x) => {
-												if (x.id !== q.id) return x;
-												const newOptions = (x.options ?? []).filter((_, i) => i !== idx);
-												const nextCorrect = (x.correctIndices ?? []).filter((i) => i !== idx).map((i) => (i > idx ? i - 1 : i));
-												return { ...x, options: newOptions, correctIndices: nextCorrect };
-											})
-										)
-									}
-								>
-									<Trash2 size={16} />
-								</RemoveOpt>
-							</OptionRow>
-						))}
-					</QuestionCard>
-				))}
-			</CenterInner>
-		</CenterPanel>
-	);
+  const deleteOption = (qId, idx) => {
+    setQuestions((prev) =>
+      prev.map((x) => {
+        if (x.id !== qId) return x;
+        const newOptions = (x.options ?? []).filter((_, i) => i !== idx);
+        const nextCorrect = (x.correctIndices ?? [])
+          .filter((i) => i !== idx)
+          .map((i) => (i > idx ? i - 1 : i));
+        return { ...x, options: newOptions, correctIndices: nextCorrect };
+      })
+    );
+    setIsDirty(true);
+  };
+
+  const deleteQuestion = (id) => {
+    setQuestions((prev) => prev.filter((q) => q.id !== id));
+    setIsDirty(true);
+    // Optionnel : nettoyer la ref
+    if (questionRefs?.current) delete questionRefs.current[id];
+  };
+
+  const correctModeLabel = (count) => {
+    if (count <= 0) return "";
+    if (count === 1) return t("quiz.labels.single") || "Single";
+    return t("quiz.labels.multi") || "Multi";
+  };
+
+  return (
+    <CenterInner>
+      {questions.map((q) => {
+        const correctCount = q?.correctIndices?.length || 0;
+        const tagBadge = correctCount > 0;
+        return (
+          <QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
+            <CardHeader>
+              <QuestionTitleInput
+                value={q.title}
+                placeholder={t("quiz.placeholders.title")}
+                onChange={(e) =>
+                  setQuestions((prev) =>
+                    prev.map((x) => (x.id === q.id ? { ...x, title: e.target.value } : x))
+                  )
+                }
+              />
+              <HeaderActions>
+                {tagBadge && <ModeBadge data-multi={correctCount > 1 ? "1" : undefined}>
+                  {correctModeLabel(correctCount)}
+                </ModeBadge>}
+                <IconButton
+                  type="button"
+                  onClick={() => deleteQuestion(q.id)}
+                  title={t("actions.deleteQuestion") || "Supprimer la question"}
+                  aria-label={t("actions.deleteQuestion") || "Supprimer la question"}
+                >
+                  <Trash2 size={18} />
+                </IconButton>
+              </HeaderActions>
+            </CardHeader>
+
+            <QuestionDescTextArea
+              value={q.description}
+              placeholder={t("quiz.sections.descriptionAdd")}
+              rows={2}
+              onChange={(e) =>
+                setQuestions((prev) =>
+                  prev.map((x) => (x.id === q.id ? { ...x, description: e.target.value } : x))
+                )
+              }
+            />
+
+            {(q.options || []).map((opt, idx) => (
+              <OptionRow key={idx}>
+                <CheckBox
+                  checked={(q.correctIndices || []).includes(idx)}
+                  onChange={() => toggleCorrect(q.id, idx)}
+                />
+                <OptionInput
+                  value={opt}
+                  onChange={(e) =>
+                    setQuestions((prev) =>
+                      prev.map((x) => {
+                        if (x.id !== q.id) return x;
+                        const next = [...(x.options ?? [])];
+                        next[idx] = e.target.value;
+                        return { ...x, options: next };
+                      })
+                    )
+                  }
+                />
+                <RemoveOpt
+                  type="button"
+                  onClick={() => deleteOption(q.id, idx)}
+                  title={t("actions.deleteAnswer") || "Supprimer la réponse"}
+                  aria-label={t("actions.deleteAnswer") || "Supprimer la réponse"}
+                >
+                  <Trash2 size={16} />
+                </RemoveOpt>
+              </OptionRow>
+            ))}
+
+            <CardFooter>
+              <AddOptionBtn type="button" onClick={() => addOption(q.id)}>
+                <Plus size={16} /> {t("actions.addOption") || "Ajouter une option"}
+              </AddOptionBtn>
+            </CardFooter>
+          </QuestionCard>
+        );
+      })}
+    </CenterInner>
+  );
 }
 
-/* Styled Components for Content */
-const CenterPanel = styled.section`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-l);
-  overflow-y: auto;
-  overflow-x: hidden;
-`;
-
+/* Styled Components */
 const CenterInner = styled.div`
   width: 100%;
   max-width: var(--spacing-12xl);
@@ -144,6 +173,55 @@ const QuestionCard = styled.div`
   gap: var(--spacing-s);
 `;
 
+const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing);
+`;
+
+const HeaderActions = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-left: auto;
+`;
+
+const ModeBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--color-primary-muted);
+  color: var(--color-primary-text);
+
+  /* teinte différente si multi */
+  &[data-multi="1"] {
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
+  }
+`;
+
+const IconButton = styled(Button)`
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  line-height: 0;
+  transition: color .15s ease;
+  &:hover {
+  	background: transparent !important;
+    color: var(--color-error-bg) !important;
+  }
+`;
+
+const QuestionTitleInput = styled(Input)``;
+
+const QuestionDescTextArea = styled(TextArea)``;
+
 const OptionRow = styled.div`
   display: flex;
   flex-direction: row;
@@ -162,14 +240,36 @@ const OptionInput = styled(Input)`
   color: var(--color-text);
 `;
 
-const RemoveOpt = styled.button`
+const RemoveOpt = styled(Button)`
   border: none;
   background: transparent;
-  color: var(--color-text);
+  color: var(--color-text) !important;
   cursor: pointer;
   transition: all 0.2s ease;
   &:hover {
-    background: transparent;
-    color: var(--color-error-bg);
+    background: transparent !important;
+    color: var(--color-error-bg) !important;
+  }
+`;
+
+const CardFooter = styled.div`
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const AddOptionBtn = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed var(--color-border);
+  background: var(--quiz-surface);
+  color: var(--color-text);
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+  &:hover {
+    background: var(--quiz-surface-muted);
+    border-color: var(--color-primary-bg);
   }
 `;

@@ -63,7 +63,7 @@
     },
     "hints": {
       "dragCenter": "Drag and drop in the center",
-      "emptyDrop": "Add your first question with the button on the left"
+      "emptyDrop": "Add your first question with the button on the left or the one below"
     },
     "fields": {
       "title": "Title",
@@ -89,6 +89,10 @@
       "true": "True",
       "false": "False"
     },
+		"labels": {
+			"single": "Single",
+			"multi": "Multi"
+		},
 		"empty": "No quizzes yet.",
 		"confirmDelete": "Do you really want to delete this quiz?"
   },
