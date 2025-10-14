@@ -1,9 +1,13 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import {useTranslation} from "react-i18next";
 
 
 export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], itemsBottom = [], avatarText }) {
+
+	const {t} = useTranslation();
+
 	// Get the current URL to know which button is active
 	const location = useLocation();
 
@@ -18,9 +22,12 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 
 		// Buttons with dynamic styles according to $active
 		const Btn = (
-			<IconButton title={item.title} $active={isActive} onClick={item.onClick} aria-label={item.title}>
-				{item.icon}
-			</IconButton>
+			<TooltipWrapper key={item.key}>
+				<IconButton title={item.title} $active={isActive} onClick={item.onClick} aria-label={item.title}>
+					{item.icon}
+				</IconButton>
+				<Tooltip className="tooltip">{item.title}</Tooltip>
+			</TooltipWrapper>
 		);
 
 		// If the element has a "to" route, we surround it with a <Link>
@@ -53,7 +60,13 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 			{/* Down part of the sidebar with itemsBottom and the avatar */}
 			<Stack>
 				{itemsBottom.map(renderItem)}
-				{avatarText ? <Avatar title="User">{avatarText}</Avatar> : null}
+
+				{avatarText ? (
+					<TooltipWrapper>
+						<Avatar>{avatarText}</Avatar>
+						<Tooltip className="tooltip">{t("pages.accountPage")}</Tooltip>
+					</TooltipWrapper>
+				) : null}
 			</Stack>
 		</Aside>
 	);
@@ -131,4 +144,34 @@ const Avatar = styled.div`
     font-weight: bold;
     color: #6b7280;
     margin-bottom: 4px;
+`;
+
+const TooltipWrapper = styled.div`
+	position: relative;
+	display: inline-block;
+
+	&:hover .tooltip {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(-50%) translateX(8px);
+	}
+`;
+
+const Tooltip = styled.div`
+	position: absolute;
+	top: 50%;
+	left: 100%;
+	transform: translateY(-50%) translateX(0);
+	background-color: var(--color-background-elevated);
+	color: var(--color-text);
+	padding: var(--spacing-xs) var(--spacing-s);
+	border-radius: var(--border-radius);
+	font-size: var(--font-size);
+    box-shadow: var(--box-shadow);
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition: all 0.2s ease-in-out;
+	pointer-events: none;
+	z-index: 10;
 `;

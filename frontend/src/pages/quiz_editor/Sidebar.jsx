@@ -61,7 +61,6 @@ export default function Sidebar({ questions, questionRefs, setQuestions, setIsDi
 		<LeftTitle>{t("quiz.sections.questions")}</LeftTitle>
 
 		<AddQuestionButton
-			type="button"
 			onClick={() => {
 			const id = `q_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 			const newQ = { id, title: "", description: "", options: ["Option 1", "Option 2"], correctIndices: [] };
@@ -95,10 +94,10 @@ export default function Sidebar({ questions, questionRefs, setQuestions, setIsDi
 				</DragDock>
 				<LeftCard>
 					<LeftCardHeader>
-					<LeftCardIndex>{idx + 1}</LeftCardIndex>
+						<LeftCardIndex>{idx + 1}</LeftCardIndex>
 					</LeftCardHeader>
 					<LeftCardMain>
-					<LeftCardTitle>{q.title?.trim() ? q.title : untitled}</LeftCardTitle>
+						<LeftCardTitle>{q.title?.trim() ? q.title : untitled}</LeftCardTitle>
 					</LeftCardMain>
 				</LeftCard>
 				</LeftRow>
@@ -139,7 +138,7 @@ export const AddQuestionButton = styled(Button)`
 const LeftList = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
+	gap: var(--spacing-xs);
 	user-select: none;
 	flex: 1;
 	min-height: 0;
@@ -182,6 +181,7 @@ const LeftCard = styled(Button)`
 	text-align: left;
 	width: 100%;
 	flex: 1;
+    overflow: auto;
 `;
 
 const LeftCardHeader = styled.div`
@@ -196,6 +196,7 @@ const LeftCardMain = styled.div`
 	justify-content: space-between;
 	gap: var(--spacing-xs);
 	width: 100%;
+    line-height: normal;
 `;
 
 const LeftCardIndex = styled.p`

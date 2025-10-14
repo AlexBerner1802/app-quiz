@@ -1,73 +1,78 @@
 body.dark-mode {
-    /* Primary */
-	--color-primary-text: var(--brand-primary-100);
-	--color-primary-bg: var(--brand-primary-600);
-	--color-primary-bg-hover: var(--brand-primary-500);
-    --color-primary-muted: rgba(var(--brand-primary-rgb), 0.12);
+    /* === Primary / Links / Buttons === */
+    --color-primary-text: var(--blue-200);
+    --color-primary-bg: var(--blue-700);
+    --color-primary-bg-hover: var(--blue-600);
+    --color-primary-muted: rgba(3, 102, 214, 0.12);
 
-    /* Secondary */
-    --color-secondary-text: var(--gray-100);
-    --color-secondary-bg: var(--gray-800);
+    /* === Secondary / UI elements / surfaces === */
+    --color-secondary-text: var(--gray-300);
+    --color-secondary-bg: var(--gray-900);  /* main background like GitHub dark */
     --color-secondary-border: var(--gray-700);
 
-    /* Success */
-	--color-success-text: var(--brand-success-100);
-	--color-success-bg: var(--brand-success-800);
-	--color-success-bg-hover: var(--brand-success-600);
-	--color-success-muted: var(--brand-success-500);
+    /* === Success / Green accent === */
+    --color-success-text: var(--green-200);
+    --color-success-bg: var(--green-700);
+    --color-success-bg-hover: var(--green-600);
+    --color-success-muted: rgba(34, 134, 58, 0.15);
 
-    /* Error */
-	--color-error-text: var(--brand-error-100);
-	--color-error-bg: var(--brand-error-600);
-	--color-error-bg-hover: var(--brand-error-500);
-	--color-error-muted: var(--brand-error-800);
+    /* === Error / Red accent === */
+    --color-error-text: var(--red-200);
+    --color-error-bg: var(--red-700);
+    --color-error-bg-hover: var(--red-600);
+    --color-error-muted: rgba(215, 58, 73, 0.15);
 
-    /* Warning */
-	--color-warning-text: var(--brand-warning-100);
-	--color-warning-bg: var(--brand-warning-600);
-	--color-warning-bg-hover: var(--brand-warning-500);
-	--color-warning-muted: var(--brand-warning-800);
+    /* === Warning / Yellow accent === */
+    --color-warning-text: var(--yellow-100);
+    --color-warning-bg: var(--yellow-500);
+    --color-warning-bg-hover: var(--yellow-400);
+    --color-warning-muted: rgba(187, 136, 0, 0.15);
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, var(--brand-primary-400), var(--brand-primary-900));
-    --gradient-success: linear-gradient(135deg, var(--brand-success-500), var(--brand-success-800));
-    --gradient-error: linear-gradient(135deg, var(--brand-error-500), var(--brand-error-900));
-    --gradient-warning: linear-gradient(135deg, var(--brand-warning-500), var(--brand-warning-700));
-    --gradient-background: linear-gradient(135deg, var(--gray-700) 0%, var(--slate-800) 50%, var(--slate-900) 100%);
+    /* === Gradients (soft, subtle) === */
+    --gradient-primary: linear-gradient(135deg, var(--blue-700), var(--blue-800));
+    --gradient-success: linear-gradient(135deg, var(--green-700), var(--green-800));
+    --gradient-error: linear-gradient(135deg, var(--red-700), var(--red-800));
+    --gradient-warning: linear-gradient(135deg, var(--yellow-700), var(--yellow-600));
+    --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-800) 100%);
 
-    /* Neutral / UI */
-    --color-text: var(--gray-100);						/* Primary text color (headings, paragraphs, main content) */
-	--color-btn-text: var(--gray-100);					/* Text color on dark or colored buttons */
-	--color-placeholder: var(--gray-400);				/* Placeholder text color in input fields */
+    /* === Text / UI neutral === */
+    --color-text: var(--gray-200);   /* main text like GitHub dark */
+    --color-btn-text: var(--gray-100);
+    --color-placeholder: var(--gray-500);
 
-    --color-background: var(--gray-900);				/* General app background color (main page or container background) */
-    --color-background-surface: var(--gray-900);		/* Background for secondary surfaces, like section backgrounds or less prominent areas */
-    --color-surface: var(--gray-800);					/* Background for primary surfaces (cards, modals, main containers that are white) */
-    --color-background-elevated: var(--gray-800);		/* Background for elevated elements relative to the base background, e.g. dropdowns, tooltips, floating menus */
-    --color-background-overlay: rgba(0, 0, 0, 0.6);		/* Semi-transparent overlay background (modals, menus that block the background) */
-    --color-background-input: var(--gray-700);			/* Background for input fields and form elements */
-    --color-background-input-focused: var(--gray-800);  /* Background for input fields and form elements when focused */
-    --color-border: var(--gray-600);                    /* Color for borders, dividers, and separators */
+    /* === Surfaces / cards / panels === */
+    --color-background: var(--gray-900);
+    --color-background-surface: var(--gray-800);
+    --color-surface: var(--gray-700);
+    --color-background-elevated: var(--gray-700);
+    --color-background-overlay: rgba(0,0,0,0.6);
+    --color-background-input: var(--gray-800);
+    --color-background-input-focused: var(--gray-700);
+    --color-border: var(--gray-700);
     --color-separator: var(--gray-700);
 
-    --color-skeleton-base: var(--gray-600);
-    --color-skeleton-highlight: var(--gray-700);
+    /* === Skeletons === */
+    --color-skeleton-base: var(--gray-700);
+    --color-skeleton-highlight: var(--gray-600);
 
-    --box-shadow-xs: 0 0 0 1px rgba(255, 255, 255, 0.02);
-    --box-shadow-s: 0 1px 2px 0 rgba(255, 255, 255, 0.02);
-    --box-shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.04), 0 1px 2px 0 rgba(255, 255, 255, 0.02);
-    --box-shadow-l: 0 10px 15px -3px rgba(255, 255, 255, 0.04), 0 4px 6px -2px rgba(255, 255, 255, 0.02);
-    --box-shadow-xl: 0 20px 25px -5px rgba(255, 255, 255, 0.04), 0 10px 10px -5px rgba(255, 255, 255, 0.02);
+    /* === Shadows === */
+    --box-shadow-xs: 0 0 0 1px rgba(0,0,0,0.15);
+    --box-shadow-s: 0 1px 2px rgba(0,0,0,0.2);
+    --box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    --box-shadow-l: 0 6px 12px rgba(0,0,0,0.3);
+    --box-shadow-xl: 0 12px 24px rgba(0,0,0,0.35);
 
-    --liquidglass-bg: rgba(18, 18, 18, 0.5);                /* translucent dark panel */
-    --liquidglass-blur: blur(12px);                         /* slightly stronger blur */
-    --liquidglass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);  /* deeper shadow for contrast */
+    /* === Glass / frosted effect === */
+    --liquidglass-bg: rgba(32, 34, 37, 0.6);
+    --liquidglass-blur: blur(12px);
+    --liquidglass-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 
+/* === Page-specific overrides === */
 body.dark-mode.page-newquiz {
-  --quiz-surface: var(--gray-700);
-  --quiz-surface-muted: var(--gray-800);
-  --quiz-border: var(--gray-600);
-  --quiz-border-strong: var(--gray-600);
-  --quiz-placeholder: var(--gray-400);
+    --quiz-surface: var(--gray-800);
+    --quiz-surface-muted: var(--gray-700);
+    --quiz-border: var(--gray-700);
+    --quiz-border-strong: var(--gray-600);
+    --quiz-placeholder: var(--gray-500);
 }
