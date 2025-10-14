@@ -39,7 +39,8 @@
       "on": "Ein",
       "off": "Aus"
     },
-		"loading": "Laden..."
+		"loading": "Laden...",
+		"error": "Fehler: "
   },
   "quiz": {
     "title": "Ein Quiz erstellen und bearbeiten",
@@ -92,6 +93,14 @@
     "labels": {
 			"single": "Einzel",
 			"multi": "Multi"
+		},
+    "show": {
+		  "cantFind": "Quiz nicht gefunden...",
+			"noQuestion": "Noch keine Fragen",
+			"createdAt": "Erstellt am ",
+			"modifiedAt": "Geändert am ",
+			"finished": "Bestätigen Sie das Quiz",
+			"validation": "Validierung abgeschlossen"
 		},
 		"empty": "Noch keine Quiz.",
 		"confirmDelete": "Möchten Sie dieses Quiz wirklich löschen?"

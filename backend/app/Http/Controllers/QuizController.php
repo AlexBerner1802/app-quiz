@@ -15,10 +15,11 @@ use App\Models\Tag;
 class QuizController extends Controller
 {
     // GET /api/quizzes
-    public function index()
+    public function index(Request $request)
     {
         $quizzes = Quiz::query()
             ->select(['id','title','quiz_description','is_active','cover_image_url','created_at','updated_at'])
+            ->when($request->boolean('only_active'), fn($q) => $q->where('is_active', 1))
             ->with([
                 'tags:id,tag_name',
                 'modules:id,module_name',
@@ -29,7 +30,7 @@ class QuizController extends Controller
     }
 
     // GET /api/quizzes/{id}
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $quiz = Quiz::with([
             'tags:id,tag_name',
@@ -41,13 +42,18 @@ class QuizController extends Controller
             'id','title','quiz_description','is_active','cover_image_url','created_at','updated_at'
         ]);
 
+        // Forbid show if inactive
+        if (!$quiz->is_active) {
+            return response()->json(['message' => 'Quiz is inactive'], 403);
+        }
+
         return response()->json($quiz);
     }
 
     // POST /api/quizzes
-    public function store(Request $req)
+    public function store(Request $request)
     {
-        $validated = $req->validate([
+        $validated = $request->validate([
             'title'            => 'required|string|max:30',
             'quiz_description' => 'nullable|string|max:255',
             'cover_image_url'  => 'nullable|url',
@@ -64,14 +70,14 @@ class QuizController extends Controller
         ]);
 
         $coverUrl = null;
-        if ($req->hasFile('cover_image')) {
-            $path = $req->file('cover_image')->store('quiz-cards', 'public');
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('quiz-cards', 'public');
             $coverUrl = url(Storage::url($path));
         } elseif (!empty($validated['cover_image_url'])) {
             $coverUrl = $validated['cover_image_url'];
         }
 
-        $questions = $req->input('questions');
+        $questions = $request->input('questions');
         if (is_string($questions)) {
             $questions = json_decode($questions, true) ?? [];
         } elseif (!is_array($questions)) {
@@ -147,11 +153,11 @@ class QuizController extends Controller
     }
 
     // PUT/PATCH /api/quizzes/{id}
-    public function update(Request $req, $id)
+    public function update(Request $request, $id)
     {
         $quiz = Quiz::findOrFail($id);
 
-        $validated = $req->validate([
+        $validated = $request->validate([
             'title'            => 'required|string|max:30',
             'quiz_description' => 'nullable|string|max:255',
             'cover_image_url'  => 'nullable|url',
@@ -167,8 +173,8 @@ class QuizController extends Controller
             'questions'        => 'nullable',
         ]);
 
-        if ($req->hasFile('cover_image')) {
-            $path = $req->file('cover_image')->store('quiz-cards', 'public');
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('quiz-cards', 'public');
             $quiz->cover_image_url = url(Storage::url($path));
         } elseif (!empty($validated['cover_image_url'])) {
             $quiz->cover_image_url = $validated['cover_image_url'];
@@ -182,7 +188,7 @@ class QuizController extends Controller
         try {
             $quiz->save();
 
-            if ($req->has('module_ids')) {
+            if ($request->has('module_ids')) {
                 $quiz->modules()->sync($validated['module_ids'] ?? []);
             }
 
@@ -196,12 +202,12 @@ class QuizController extends Controller
                     $createdTagIds[] = $tag->id;
                 }
             }
-            if ($req->has('tag_ids') || $req->has('new_tags')) {
+            if ($request->has('tag_ids') || $request->has('new_tags')) {
                 $quiz->tags()->sync(array_merge($tagIds, $createdTagIds));
             }
 
-            if ($req->has('questions')) {
-                $questions = $req->input('questions');
+            if ($request->has('questions')) {
+                $questions = $request->input('questions');
                 if (is_string($questions)) $questions = json_decode($questions, true) ?? [];
                 if (!is_array($questions))  $questions = [];
 

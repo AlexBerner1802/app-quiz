@@ -39,7 +39,8 @@
 		"on": "Activé",
 		"off": "Désactivé"
 		},
-		"loading": "Chargement..."
+		"loading": "Chargement...",
+		"error": "Erreur: "
 	},
 	"quiz": {
 		"title": "Créer et éditer un quiz",
@@ -92,6 +93,14 @@
 		"labels": {
 			"single": "Simple",
 			"multi": "Multi"
+		},
+		"show": {
+			"cantFind": "Quiz introuvable...",
+			"noQuestion": "Aucune question pour le moment",
+			"createdAt": "Créé le ",
+			"modifiedAt": "Modifié le ",
+			"finished": "Valider le quiz",
+			"validation": "Validation terminée"
 		},
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"

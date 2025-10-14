@@ -39,7 +39,8 @@
       "on": "Attivo",
       "off": "Disattivo"
     },
-		"loading": "Caricamento..."
+		"loading": "Caricamento...",
+		"error": "Errore: "
   },
   "quiz": {
     "title": "Crea e modifica un quiz",
@@ -92,6 +93,14 @@
 		"labels": {
 			"single": "Singola",
 			"multi": "Multiplo"
+		},
+		"show": {
+			"cantFind": "Quiz non trovato...",
+			"noQuestion": "Nessuna domanda ancora",
+			"createdAt": "Creato il ",
+			"modifiedAt": "Modificato il ",
+			"finished": "Convalida il quiz",
+			"validation": "Convalida completata"
 		},
 		"empty": "Ancora nessun quiz.",
 		"confirmDelete": "Vuoi davvero eliminare questo quiz?"

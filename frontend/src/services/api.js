@@ -23,6 +23,11 @@ async function toJsonResponse(res) {
 	return data;
 }
 
+// Calls sanctum's CSRF cookie before state-changing request
+async function ensureCsrf() {
+	await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
+}
+
 function buildQuizFormData(payload = {}) {
 	const fd = new FormData();
 
@@ -52,12 +57,17 @@ function buildQuizFormData(payload = {}) {
 
 // QUIZZES
 
-export async function getQuizzes() {
-	const res = await fetch(`${API_URL}/api/quizzes`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
-	});
-	return toJsonResponse(res);
+/**
+ * Quiz list
+ * @param {{onlyActive?: boolean}=} opts
+ */
+export async function getQuizzes(opts = {}) {
+  const qs = opts.onlyActive ? "?only_active=1" : "";
+  const res = await fetch(`${API_URL}/api/quizzes${qs}`, {
+    credentials: "omit",
+    headers: { Accept: "application/json" },
+  });
+  return toJsonResponse(res);
 }
 
 export async function getQuiz(id) {
@@ -69,16 +79,19 @@ export async function getQuiz(id) {
 }
 
 export async function createQuiz(payload) {
+	await ensureCsrf();
 	const body = buildQuizFormData(payload);
 	const res = await fetch(`${API_URL}/api/quizzes`, {
 		method: "POST",
-		credentials: "omit",
+		credentials: "include",
+		headers: { Accept: "application/json" },
 		body,
 	});
 	return toJsonResponse(res);
 }
 
 export async function updateQuiz(id, payload) {
+	await ensureCsrf();
 	const body = buildQuizFormData(payload);
 	// Important: Method override for Laravel when multipart
 	body.append("_method", "PUT");
@@ -91,6 +104,7 @@ export async function updateQuiz(id, payload) {
 }
 
 export async function deleteQuiz(id) {
+	await ensureCsrf();
 	const res = await fetch(`${API_URL}/api/quizzes/${id}`, {
 		method: "DELETE",
 		credentials: "omit",

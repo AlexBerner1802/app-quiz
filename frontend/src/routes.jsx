@@ -4,6 +4,7 @@ import LoginPage from "./pages/login/LoginPage.jsx";
 import NewQuiz from "./pages/quiz_editor/NewQuiz.jsx";
 import SettingsPage from "./pages/settings/Settings.jsx";
 import Users from "./pages/users/Users.jsx";
+import ShowQuiz from "./pages/showquiz/ShowQuiz.jsx";
 import AppLayout from "./components/layout/AppLayout";
 
 export const routes = [
@@ -36,7 +37,13 @@ export const routes = [
 	},
 	{
 		path: "/users",
-		element: <Users/>,
+		element: <Users />,
+		protected: true,
+		layout: AppLayout
+	},
+	{
+		path: "/quizzes/:id",
+		element: <ShowQuiz />,
 		protected: true,
 		layout: AppLayout
 	},

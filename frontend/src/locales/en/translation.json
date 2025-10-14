@@ -39,7 +39,8 @@
       "on": "On",
       "off": "Off"
     },
-		"loading": "Loading..."
+		"loading": "Loading...",
+		"error": "Error: "
   },
   "quiz": {
     "title": "Create and edit a quiz",
@@ -92,6 +93,14 @@
 		"labels": {
 			"single": "Single",
 			"multi": "Multi"
+		},
+    "show": {
+			"cantFind": "Can't find quiz...",
+			"noQuestion": "No question right now",
+			"createdAt": "Created at ",
+			"modifiedAt": "Modified at ",
+			"finished": "Validate the quiz",
+			"validation": "Validation over"
 		},
 		"empty": "No quizzes yet.",
 		"confirmDelete": "Do you really want to delete this quiz?"
