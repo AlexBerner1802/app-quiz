@@ -107,9 +107,8 @@ export default function Sidebar({ questions, questionRefs, setQuestions, setIsDi
 		</LeftList>
 		</LeftPanel>
 	);
-	}
+}
 
-/* Styled Components for Sidebar */
 const LeftPanel = styled.aside`
 	width: var(--spacing-8xl);
 	display: flex;
@@ -121,6 +120,28 @@ const LeftPanel = styled.aside`
 	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
+
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-primary) var(--quiz-surface-muted);
+
+	&::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: var(--quiz-surface-muted);
+		border-radius: 8px;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: var(--color-primary);
+		border-radius: 8px;
+		border: 2px solid var(--quiz-surface-muted);
+	}
+
+	&::-webkit-scrollbar-thumb:hover {
+		background-color: var(--color-primary-hover);
+	}
 `;
 
 const LeftTitle = styled.h2`
