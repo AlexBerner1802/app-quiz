@@ -3,6 +3,7 @@ import * as msal from "@azure/msal-browser";
 import { AuthContext } from "./AuthContext";
 
 const redirectUri = import.meta.env.VITE_AZURE_REDIRECT_URI || window.location.origin;
+const apiUrl = (import.meta?.env?.VITE_API_URL || "http://127.0.0.1:8000");
 
 const pca = new msal.PublicClientApplication({
 	auth: {
@@ -46,6 +47,20 @@ export function AuthProvider({ children }) {
 		initAuth();
 	}, []);
 
+	const personalLogin = async (azureRes) => {
+		const account = azureRes.account;
+		const name = account.name;
+		const username = account.username;
+		const azure_id = account.localAccountId;
+		const res = await fetch(`${apiUrl}/api/user`, {
+			method: "POST",
+			headers: { Accept: "application/json" },
+			body: JSON.stringify({name: name, username: username, azure_id: azure_id}),
+		});
+
+		console.log(await res.json())
+	}
+
 	const login = async () => {
 		if (!isReady) {
 			console.error("MSAL not initialized yet");
@@ -61,6 +76,9 @@ export function AuthProvider({ children }) {
 				account: loginResponse.account,
 			});
 			setToken(tokenResponse.accessToken);
+			personalLogin(loginResponse);
+
+
 		} catch (err) {
 			console.error("Login failed", err);
 		}

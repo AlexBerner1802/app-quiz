@@ -22,7 +22,7 @@
 		"url": "https://github.com/Mathieu-2305/app-quiz/issues"
 	},
 	"homepage": "https://github.com/Mathieu-2305/app-quiz#readme",
-	"devDependencies": {
-		
+	"dependencies": {
+		"@azure/msal-browser": "^4.25.0"
 	}
 }
