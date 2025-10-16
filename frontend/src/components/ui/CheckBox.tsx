@@ -42,7 +42,7 @@ const HiddenInput = styled.input`
 const CustomBox = styled.div`
     width: 20px;
     height: 20px;
-    border: 1px solid var(--color-border, #ccc);
+    border: 2px solid var(--color-border, #ccc);
     border-radius: ${({ $type }) => ($type === "radio" ? "50%" : "4px")};
     background-color: ${({ checked }) => (checked ? "var(--color-primary-bg, #3b82f6)" : "transparent")};
     display: flex;

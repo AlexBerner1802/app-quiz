@@ -140,7 +140,7 @@ const Main = styled.main`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	background-color: var(--color-background);
+	background-color: var(--color-background-surface);
 `;
 
 const NewQuizButton = styled(Button)`

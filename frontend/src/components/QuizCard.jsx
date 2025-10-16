@@ -142,13 +142,14 @@ const ImageWrapper = styled.div`
 
 const Section = styled.div`
 	flex: 1;
-	background: transparent;
+	background: var(--color-background);
 	display: flex;
 	flex-direction: column;
 	gap: var(--spacing-xs);
 	padding: 0 var(--spacing-s) var(--spacing-s);
 	transition: height 0.3s ease-in-out, opacity 0.2s ease, visibility 0.2s ease, padding 0.2s ease;
-`;
+	border-radius: var(--border-radius);
+	`;
 
 const Overlay = styled.div`
 	position: absolute;
@@ -181,11 +182,11 @@ const OverlayTitle = styled.h3`
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	padding: var(--spacing-2xs);
+	padding: 1px;
 	height: 100%;
 	min-height: 280px;
-	border-radius: var(--border-radius-l);
-	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	border: 2px solid var(--color-border);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 	cursor: pointer;
 
@@ -262,6 +263,7 @@ const TagsRow = styled.div`
 	flex-wrap: wrap;
 	gap: var(--spacing-2xs);
 	margin-bottom: var(--spacing);
+
 `;
 
 const Timestamp = styled.div`

@@ -56,9 +56,9 @@ const TagInput = ({
 		try {
 			const qs = val ? `?search=${encodeURIComponent(val)}` : "";
 			const res = await fetch(`${apiUrl}/api/tags${qs}`, {
-			method: "GET",
-			headers: { Accept: "application/json" },
-			credentials: "omit",
+				method: "GET",
+				headers: { Accept: "application/json" },
+				credentials: "omit",
 			});
 			const data = await res.json().catch(() => ([]));
 			if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);

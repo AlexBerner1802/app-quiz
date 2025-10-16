@@ -64,9 +64,9 @@ export default function Sidebar({ questions, questionRefs, setQuestions, setIsDi
 			onClick={() => {
 			const id = `q_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 			const newQ = { id, title: "", description: "", options: ["Option 1", "Option 2"], correctIndices: [] };
-			setQuestions((prev) => [...prev, newQ]);
-			setIsDirty(true);
-			setTimeout(() => scrollToQuestion(id), 0);
+				setQuestions((prev) => [...prev, newQ]);
+				setIsDirty(true);
+				setTimeout(() => scrollToQuestion(id), 0);
 			}}
 		>
 			{t("actions.addQuestion")}
@@ -78,16 +78,16 @@ export default function Sidebar({ questions, questionRefs, setQuestions, setIsDi
 			const isOver = overIndex === idx;
 			return (
 				<LeftRow
-				key={q.id}
-				draggable
-				onDragStart={(e) => onDragStart(e, idx)}
-				onDragOver={(e) => onDragOver(e, idx)}
-				onDrop={(e) => onDrop(e, idx)}
-				onDragEnd={onDragEnd}
-				data-dragging={isDragging ? "1" : undefined}
-				data-over={isOver ? "1" : undefined}
-				onClick={() => scrollToQuestion(q.id)}
-				title={q.title?.trim() ? q.title : untitled}
+					key={q.id}
+					draggable
+					onDragStart={(e) => onDragStart(e, idx)}
+					onDragOver={(e) => onDragOver(e, idx)}
+					onDrop={(e) => onDrop(e, idx)}
+					onDragEnd={onDragEnd}
+					data-dragging={isDragging ? "1" : undefined}
+					data-over={isOver ? "1" : undefined}
+					onClick={() => scrollToQuestion(q.id)}
+					title={q.title?.trim() ? q.title : untitled}
 				>
 				<DragDock title={t("quiz.hints.dragToReorder")}>
 					<GripVertical size={16} />
@@ -119,6 +119,7 @@ const LeftPanel = styled.aside`
 	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
+	background-color: var(--color-background);
 
 	scrollbar-width: thin;
 	scrollbar-color: var(--color-primary) var(--quiz-surface-muted);
@@ -203,6 +204,7 @@ const LeftCard = styled(Button)`
 	width: 100%;
 	flex: 1;
     overflow: auto;
+	background-color: var(--color-background-surface);
 `;
 
 const LeftCardHeader = styled.div`
@@ -218,6 +220,7 @@ const LeftCardMain = styled.div`
 	gap: var(--spacing-xs);
 	width: 100%;
     line-height: normal;
+	
 `;
 
 const LeftCardIndex = styled.p`

@@ -24,5 +24,8 @@
 	"homepage": "https://github.com/Mathieu-2305/app-quiz#readme",
 	"dependencies": {
 		"@azure/msal-browser": "^4.25.0"
+	},
+	"devDependencies": {
+		"concurrently": "^9.2.1"
 	}
 }

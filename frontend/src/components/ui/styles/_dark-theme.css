@@ -48,7 +48,7 @@ body.dark-mode {
     --color-background-overlay: rgba(0,0,0,0.6);
     --color-background-input: var(--gray-800);
     --color-background-input-focused: var(--gray-700);
-    --color-border: var(--gray-700);
+    --color-border: var(--gray-500);
     --color-separator: var(--gray-700);
 
     /* === Skeletons === */

@@ -9,7 +9,7 @@ const variants = {
         border: 1px solid transparent;
   `,
 	secondary: css`
-        background: var(--color-secondary-bg);
+        background: var(--color-background-elevated);
         color: var(--color-secondary-text);
         border: 1px solid transparent;
   `,
@@ -60,4 +60,5 @@ const StyledTag = styled.span`
     line-height: 1;
     white-space: nowrap;
     cursor: default;
+    color: var(--color-text);
 `;

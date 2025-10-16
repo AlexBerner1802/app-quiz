@@ -1,10 +1,10 @@
 {
   "app": {
-    "name": "Rafisa App"
+    "name": "Rafisa Quiz"
   },
 	"login": {
-		"description": "A smart web-based tool to create, manage, and archive projects seamlessly across all RAFISA branches.",
-		"copyright": "Project Manager © 2025. All rights reserved.",
+		"description": "A smart web tool to seamlessly create, manage and play quizzes across all RAFISA branches.",
+		"copyright": "Rafisa Quiz © 2025. All rights reserved.",
 		"sign_in": "Sign in"
 	},
   "nav": {

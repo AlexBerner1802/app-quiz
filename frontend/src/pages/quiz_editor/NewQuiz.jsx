@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { FilePenLine, Save, Plus, Undo2 } from "lucide-react";
+import { FilePenLine, Save, Plus, Undo2, PenLine } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
@@ -207,17 +207,26 @@ export default function NewQuiz() {
 				<CenterInner>
 
 				<QuizHeaderBlock>
-					<TitleInput
-					value={title}
-					onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
-					placeholder={t("quiz.placeholders.untitled") || "Sans titre"}
-					/>
-					<DescTextarea
-					value={quiz_description}
-					onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
-					placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
-					rows={2}
-					/>
+					<InputShell data-variant="title">
+						<PenLine aria-hidden="true" className="icon" />
+						<TitleInput
+							$withIcon
+							value={title}
+							onChange={(e) => { setTitle(e.target.value); setIsDirty(true); }}
+							placeholder={t("quiz.placeholders.untitled") || "Sans titre"}
+						/>
+					</InputShell>
+
+					<InputShell data-variant="body" data-multiline="true">
+						<PenLine aria-hidden="true" className="icon" />
+						<DescTextarea
+							$withIcon
+							value={quiz_description}
+							onChange={(e) => { setQuizDescription(e.target.value); setIsDirty(true); }}
+							placeholder={t("quiz.sections.descriptionAdd") || t("common.placeholders.typeHere")}
+							rows={2}
+						/>
+					</InputShell>
 				</QuizHeaderBlock>
 
 				{/* Image */}
@@ -321,7 +330,7 @@ const Body = styled.div`
 	flex: 1;
 	min-height: 0;
 	height: 100%;
-	background-color: var(--color-background);
+	background-color: var(--color-background-surface);
 `;
 
 const CenterPanel = styled.section`
@@ -355,7 +364,7 @@ const TitleInput = styled.input`
 	line-height: var(--line-height-xl);
 	font-weight: 500;
 	color: var(--color-text);
-	padding-left: 0;
+	padding-left: ${({ $withIcon }) => ($withIcon ? "var(--icon-inset)" : "0")};
 	background: transparent!important;
 	outline: none;
 `;
@@ -367,7 +376,7 @@ const DescTextarea = styled.textarea`
 	line-height: var(--line-height-2xl);
 	background: transparent!important;
 	font-weight: 500;
-	padding-left: 0;
+	padding-left: ${({ $withIcon }) => ($withIcon ? "var(--icon-inset)" : "0")};
 	color: var(--color-placeholder);
 	resize: none;
 	outline: none!important;
@@ -429,5 +438,38 @@ const BackIconButton = styled(Button)`
 	&:hover {
 		background: transparent!important;
 		color: var(--color-primary-bg);
+	}
+`;
+
+const InputShell = styled.div`
+	--icon-inset: 28px;
+	--icon-size: 18px;
+	--baseline-tweak: 8px;
+
+	position: relative;
+
+	&[data-variant="title"] {
+		--icon-inset: 30px;
+
+		--icon-size: 28px;
+		--baseline-tweak: 2px;
+	}
+
+	.icon {
+		position: absolute;
+		left: 0;
+		width: var(--icon-size);
+		height: var(--icon-size);
+		pointer-events: none;
+		color: var(--color-placeholder);
+
+		top: calc(50% + var(--baseline-tweak));
+		transform: translateY(-50%);
+	}
+
+	&[data-multiline="true"] .icon {
+
+		top: calc(0.2em + var(--baseline-tweak));
+		transform: none;
 	}
 `;

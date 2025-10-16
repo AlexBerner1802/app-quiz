@@ -23,6 +23,7 @@ const Header = styled.header`
     gap: 1rem;
     border-bottom: 1px solid var(--color-border);
     color: var(--color-text);
+    background-color: var(--color-background);
 `;
 
 const Left = styled.div`
