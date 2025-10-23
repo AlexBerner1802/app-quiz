@@ -1,11 +1,13 @@
+// src/components/layout/AppLayout.jsx
+
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import Sidebar from "../../components/Sidebar";
+import Sidebar from "./Sidebar";
 import MyLogo from "../../assets/images/raflogo.png";
 import {useAuth} from "../../context/auth";
+
 
 export default function AppLayout({ children }) {
 	const { t } = useTranslation();

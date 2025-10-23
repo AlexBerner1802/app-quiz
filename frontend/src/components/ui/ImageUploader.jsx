@@ -7,8 +7,10 @@ export default function ImageUploader({
 										  value,
 										  onChange,
 										  placeholder = "Click or drag an image here",
+										  hoverPlaceholder = "Click to change image",
 										  width = "100%",
 										  height = "240px",
+										  minHeight = "240px",
 										  style
 									  }) {
 	const inputRef = useRef(null);
@@ -63,17 +65,17 @@ export default function ImageUploader({
 			onDragLeave={() => setIsHover(false)}
 			onDrop={handleDrop}
 			tabIndex={0}
-			style={{ width, height, ...style }}
+			style={{ width, height, minHeight, ...style }}
 		>
 			{preview ? (
 				<PreviewContainer>
 					<PreviewImage src={preview} alt="preview" />
 					<Overlay $show={isHover}>
-						<EditIcon size={20} />
-						<OverlayText>Click to change image</OverlayText>
+						<EditIcon size={20} color={"var(--color-primary-text)"}/>
+						<OverlayText>{hoverPlaceholder}</OverlayText>
 					</Overlay>
 					<ClearButton onClick={clearImage}>
-						<Trash2 size={16} />
+						<Trash2 size={16} color={"var(--color-error-text"} />
 					</ClearButton>
 				</PreviewContainer>
 			) : (
@@ -109,9 +111,9 @@ const Placeholder = styled.div`
 `;
 
 const DropZone = styled.div`
-    border: 2px dashed var(--color-border, #ccc);
-    border-radius: 12px;
-    background-color: var(--quiz-surface-muted, #f9f9f9);
+    border: 1px dashed var(--color-border, #ccc);
+    border-radius: var(--border-radius);
+    background-color: var(--color-background-input, #f9f9f9);
     cursor: pointer;
     outline: none;
     display: flex;
@@ -123,7 +125,7 @@ const DropZone = styled.div`
 
     &:hover {
         background-color: var(--color-primary-muted, #f9f9f9);
-        border: 2px dashed var(--color-primary-bg, #ccc);
+        border: 1px dashed var(--color-primary-bg, #ccc);
 
         ${Placeholder}{
             color: var(--color-primary-bg);
@@ -168,7 +170,9 @@ const PreviewContainer = styled.div`
     }
 `;
 
-const OverlayText = styled.span``;
+const OverlayText = styled.p`
+    color: var(--color-primary-text);
+`;
 
 const EditIcon = styled(Edit3)`
     color: #fff;
@@ -183,7 +187,7 @@ const ClearButton = styled.button`
     color: var(--color-error-text, #fff);
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;

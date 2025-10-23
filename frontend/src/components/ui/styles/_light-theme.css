@@ -17,7 +17,7 @@
     --color-success-muted: var(--brand-success-100);
 
     /* Error */
-    --color-error-text: var(--brand-error-800);
+    --color-error-text: var(--brand-error-200);
     --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
     --color-error-muted: var(--brand-error-100);
@@ -39,15 +39,17 @@
     --color-text: var(--gray-900);                      /* Primary text color (headings, paragraphs, main content) */
     --color-btn-text: var(--gray-100);                  /* Text color on dark or colored buttons */
     --color-placeholder: var(--gray-500);               /* Placeholder text color in input fields */
+    --color-disabled: var(--gray-400);                  /* Disabled text color in input fields */
 
-    --color-background: var(--gray-300);                /* General app background color (main page or container background) */
-    --color-background-surface: var(--gray-100);        /* Background for secondary surfaces, like section backgrounds or less prominent areas */
-    --color-surface: #ffffff;                           /* Background for primary surfaces (cards, modals, main containers that are white) */
-    --color-background-elevated: var(--gray-200);       /* Background for elevated elements relative to the base background, e.g. dropdowns, tooltips, floating menus */
+    --color-background: var(--gray-50);                /* General app background color (main page or container background) */
+    --color-background-surface: var(--gray-200);        /* Background for secondary surfaces, like section backgrounds or less prominent areas */
+    --color-surface: var(--gray-50);                           /* Background for primary surfaces (cards, modals, main containers that are white) */
+    --color-background-elevated: var(--gray-300);       /* Background for elevated elements relative to the base background, e.g. dropdowns, tooltips, floating menus */
     --color-background-overlay: rgba(0, 0, 0, 0.7);    /* Semi-transparent overlay background (modals, menus that block the background) */
     --color-background-input: var(--gray-200);          /* Background for input fields and form elements */
-    --color-background-input-focused: #ffffff;          /* Background for input fields and form elements when focused */
-    --color-border: var(--gray-400);                    /* Color for borders, dividers, and separators */
+    --color-background-input-focused: var(--gray-50);          /* Background for input fields and form elements when focused */
+    --color-border: var(--gray-300);                    /* Color for borders, dividers, and separators */
+    --color-separator: var(--gray-300);
 
     --color-skeleton-base: var(--gray-300);
     --color-skeleton-highlight: var(--gray-200);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Sidebar from '../Sidebar.jsx';
+import LeftSidebar from '../LeftSidebar.jsx';
 
 function Harness() {
   const [questions, setQuestions] = React.useState([]);
@@ -10,7 +10,7 @@ function Harness() {
   const untitled = 'Untitled';
 
   return (
-    <Sidebar
+    <LeftSidebar
       questions={questions}
       setQuestions={setQuestions}
       setIsDirty={setIsDirty}

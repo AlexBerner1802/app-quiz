@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import NewQuiz from '../NewQuiz.jsx';
+import NewQuiz from '../_index.jsx';
 
 vi.mock('react-router-dom', async (orig) => {
   const actual = await orig();

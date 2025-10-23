@@ -18,11 +18,9 @@ export default function SettingsPage() {
 				<Header 
 					title ={t("pages.settings.title")}
 					icon ={<Settings size={20}/>}
-					actions={[
-					<LanguageSelector key="lang" />
-					]}
 				/>
 				<Content>
+					<LanguageSelector key="lang" />
 					<ToggleThemeSwitch />
 				</Content>
 			</Main>
@@ -31,14 +29,14 @@ export default function SettingsPage() {
 }
 
 const Main = styled.main` 
-  flex: 1; 
-  display: flex; 
-  flex-direction: column; 
-  width: 100%; 
-  background-color: var(--color-background);
+	flex: 1; 
+	display: flex; 
+	flex-direction: column; 
+	width: 100%; 
+	background-color: var(--color-background);
 `;
 
 const Content = styled.section` 
-  flex: 1; 
-  padding: 24px; 
+	flex: 1; 
+	padding: 24px; 
 `;

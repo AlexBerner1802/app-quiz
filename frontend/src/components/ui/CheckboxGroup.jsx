@@ -43,7 +43,7 @@ const CheckboxGroup = ({
 							onClick={() => handleToggle(opt.id)}
 						>
 							<CheckIconWrapper checked={isChecked}>
-								 <Check size={16} color={isChecked ? "var(--color-btn-text)" : "var(--color-placeholder)"}/>
+								 <Check size={16} strokeWidth={2.7} color={isChecked ? "var(--color-btn-text)" : "var(--color-placeholder)"}/>
 							</CheckIconWrapper>
 							<OptionLabel checked={isChecked}>{opt.label}</OptionLabel>
 						</OptionBox>
@@ -72,27 +72,15 @@ const Label = styled.label`
 const Options = styled.div`
     display: flex;
     flex-direction: ${({ direction }) => (direction === "row" ? "row" : "column")};
-    gap: var(--spacing-s, 0.75rem);
+    gap: var(--spacing-s);
     flex-wrap: wrap;
 `;
 
-const OptionBox = styled.div`
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs, 0.5rem);
-    padding: var(--spacing-xs, 0.5rem) var(--spacing-s, 0.75rem);
-    border: 2px solid ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-border)")};
-    border-radius: var(--border-radius, 4px);
-    background-color: ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-background-input)")};
-    color: ${({ checked }) => (checked ? "#fff" : "var(--color-text, #333)")};
-    cursor: pointer;
-    transition: all 0.2s;
-	height: 34px;
-
-    &:hover {
-        border-color: var(--color-primary-bg, #2684ff);
-        background-color: var(--color-primary-bg-hover, #2684ff);
-    }
+const OptionLabel = styled.p`
+    line-height: var(--line-height-l);
+    font-size: var(--font-size);
+	font-weight: 400;
+	color: ${({ checked }) => (checked ? "var(--color-text, #333)" : "var(--color-placeholder, #333)")};
 `;
 
 const CheckIconWrapper = styled.div`
@@ -102,7 +90,45 @@ const CheckIconWrapper = styled.div`
     color: ${({ checked }) => (checked ? "#fff" : "#ccc")};
 `;
 
-const OptionLabel = styled.span`
-    font-size: var(--font-size-s, 0.875rem);
-	color: ${({ checked }) => (checked ? "var(--color-text, #333)" : "var(--color-placeholder, #333)")};
+const OptionBox = styled.div`
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs, 0.5rem);
+    padding: 0 var(--spacing-s, 0.75rem);
+    border: 1px solid ${({ checked }) => (checked ? "var(--color-primary-bg-hover, #2684ff)" : "var(--color-border)")};
+    border-radius: var(--border-radius, 4px); 
+    background-color: ${({ checked }) => (checked ? "var(--color-primary-muted, #2684ff)" : "var(--color-background-input)")};
+    color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+    cursor: pointer;
+    transition: all 0.2s;
+	min-height: 34px;
+
+    ${OptionLabel} {
+        color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+    }
+	
+    ${CheckIconWrapper} {
+        svg {
+            stroke: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+        }
+    }
+	
+	&:active {
+		transform: scale(0.96);
+	}
+
+    &:hover {
+        border-color: var(--color-primary-bg, #2684ff);
+        background-color: var(--color-primary-bg-hover, #2684ff);
+
+        ${OptionLabel} {
+            color: var(--color-primary-text, #000);
+        }
+
+        ${CheckIconWrapper} {
+			svg {
+                stroke: var(--color-primary-text, #000);
+            }
+        }
+    }
 `;
