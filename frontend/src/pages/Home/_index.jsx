@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import { FlaskConical, Plus } from "lucide-react";
+import { FlaskConical, Plus, SearchX } from "lucide-react";
 import styled from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
@@ -104,16 +104,15 @@ export default function HomePage() {
 					title={t("pages.home.title")}
 					icon={<FlaskConical size={20} aria-hidden="true" />}
 					actions={[
-					<LanguageSelector key="lang" />,
-					<NewQuizButton
-						key="new"
-						onClick={() => navigate("/quizzes/new")}
-						aria-label={t("actions.newQuiz")}
-						title={t("actions.newQuiz")}
-					>
-						<Plus size={16} aria-hidden="true" />
-						{t("actions.newQuiz")}
-					</NewQuizButton>,
+						<NewQuizButton
+							key="new"
+							onClick={() => navigate("/quizzes/new")}
+							aria-label={t("actions.newQuiz")}
+							title={t("actions.newQuiz")}
+						>
+							<Plus size={16} aria-hidden="true" />
+							{t("actions.newQuiz")}
+						</NewQuizButton>,
 					]}
 				/>
 
@@ -123,7 +122,10 @@ export default function HomePage() {
 					{!err && (
 						<QuizGrid>
 							{!cards || cards.length === 0 ? (
-								<NoCards>{t("quiz.empty")}</NoCards>
+								<NoCards>
+									<SearchX size={50} color={"var(--color-disabled)"} />
+									<NoCardsText>{t("quiz.empty")}</NoCardsText>
+								</NoCards>
 							) : (
 								cards.map((item) => <QuizCard key={item.id} {...item} />)
 							)}
@@ -140,7 +142,7 @@ const Main = styled.main`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	background-color: var(--color-background-surface);
+    background-color: var(--color-background);
 `;
 
 const NewQuizButton = styled(Button)`
@@ -153,13 +155,27 @@ const Content = styled.section`
 
 const QuizGrid = styled.section`
 	display: grid;
+    width: 100%;
+    min-height: 50%;
 	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 	gap: var(--spacing);
-	width: 100%;
 `;
 
-const NoCards = styled.p`
+const NoCards = styled.div`
+	flex: 1;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: var(--spacing);
 	font-size: var(--font-size-l);
 	font-weight: 600;
-	color: var(--color-placeholder);
+	color: var(--color-disabled);
+`;
+
+const NoCardsText = styled.p`
+	font-size: var(--font-size-xl);
+	font-weight: 500;
 `;

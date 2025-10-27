@@ -1,3 +1,5 @@
+// src/components/layout/Sidebar.jsx
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
@@ -55,12 +57,9 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 				{itemsTop.map(renderItem)}
 			</Stack>
 
-            
-
 			{/* Down part of the sidebar with itemsBottom and the avatar */}
 			<Stack>
 				{itemsBottom.map(renderItem)}
-
 				{avatarText ? (
 					<TooltipWrapper>
 						<Avatar>{avatarText}</Avatar>
@@ -72,34 +71,37 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 	);
 }
 
+
 const Aside = styled.aside`
-    width: 64px;
+    width: var(--spacing-3xl);
     border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 12px 0;
+    padding: var(--spacing) 0;
     align-items: center;
-    background-color: var(--color-background);
+    background-color: var(--color-background-surface);
 `;
+
 const Stack = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--spacing-s);
     align-items: center;
 `;
+
 const StyledLink = styled(Link)`
     text-decoration: none;
 `;
+
 const LogoCircle = styled.div`
     width: 36px;
     height: 36px;
     display: grid;
     place-items: center;
-    font-size: 18px;
-    color: #0284c7;
     font-weight: bold;
     overflow: hidden;
+	margin-bottom: var(--spacing-xs);
 
     img {
         width: 100%;
@@ -107,11 +109,12 @@ const LogoCircle = styled.div`
         object-fit: contain;
     }
 `;
+
 const IconButton = styled.button`
     border: none;
     background: none;
-    padding: 8px;
-    border-radius: 8px;
+    padding: var(--spacing-s);
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: background 0.2s;
     display: flex;
@@ -121,29 +124,29 @@ const IconButton = styled.button`
 
     /* hover */
     &:hover {
-        background-color: var(--gray-300);
+        background-color: var(--color-background-elevated);
     }
 
     /* active state */
     ${(p) =>
-            p.$active &&
-            `
-    background-color: var(--gray-300);
-    border-radius: 8px;
-  `}
+		p.$active &&
+		`
+    	color: var(--color-primary-bg);
+	`}
 `;
+
 const Avatar = styled.div`
     width: 36px;
     height: 36px;
-    border-radius: 8px;
-    background: #f3f4f6;
+    border-radius: var(--border-radius);
+    background-color: var(--color-background-elevated);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: var(--font-size-s);
     font-weight: bold;
-    color: #6b7280;
-    margin-bottom: 4px;
+    color: var(--color-placeholder);
+    margin-bottom: var(--spacing-xs);
 `;
 
 const TooltipWrapper = styled.div`
@@ -160,13 +163,13 @@ const TooltipWrapper = styled.div`
 const Tooltip = styled.div`
 	position: absolute;
 	top: 50%;
-	left: 100%;
+	left: 110%;
 	transform: translateY(-50%) translateX(0);
 	background-color: var(--color-background-elevated);
 	color: var(--color-text);
 	padding: var(--spacing-xs) var(--spacing-s);
-	border-radius: var(--border-radius);
-	font-size: var(--font-size);
+	border-radius: var(--border-radius-s);
+	font-size: var(--font-size-s);
     box-shadow: var(--box-shadow);
 	white-space: nowrap;
 	opacity: 0;

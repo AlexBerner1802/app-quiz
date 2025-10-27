@@ -1,4 +1,4 @@
-// src/pages/users/Users.jsx
+// src/pages/Users/_index.jsx
 import React, { useEffect, useState } from 'react';
 
 export default function Users() {

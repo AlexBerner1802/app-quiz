@@ -2,11 +2,17 @@
 	"app": {
 		"name": "Rafisa Quiz"
 	},
-		"login": {
-			"description": "Un outil web intelligent pour créer, gérer et jouer à des quiz en toute fluidité dans toutes les agences RAFISA.",
-			"copyright": "Rafisa Quiz © 2025. Tous droits réservés.",
-			"sign_in": "Se connecter"
-		},
+	"lang": {
+		"fr": "Français",
+		"de": "Deutsch",
+		"en": "English",
+		"it": "Italiano"
+	},
+	"login": {
+		"description": "Un outil web intelligent pour créer, gérer et jouer à des quiz en toute fluidité dans toutes les agences RAFISA.",
+		"copyright": "Rafisa Quiz © 2025. Tous droits réservés.",
+		"sign_in": "Se connecter"
+	},
 	"nav": {
 		"quiz": "Quiz",
 		"results": "Résultats",
@@ -29,22 +35,32 @@
 	"common": {
 		"active": "Actif",
 		"inactive": "Inactif",
+		"cancel": "Annuler",
 		"yes": "Oui",
 		"no": "Non",
 		"untitled": "Sans titre",
+		"settings": "Paramètres",
 		"placeholders": {
-		"typeHere": "Tapez ici"
+			"typeHere": "Tapez ici"
 		},
 		"state": {
-		"on": "Activé",
-		"off": "Désactivé"
+			"on": "Activé",
+			"off": "Désactivé"
 		},
 		"loading": "Chargement...",
 		"error": "Erreur: "
 	},
 	"quiz": {
-		"title": "Créer et éditer un quiz",
+		"title": "Nouveau quiz",
 		"editTitle": "Éditer un quiz",
+		"general_quiz_information": "Informations du quiz",
+		"question": "Question",
+		"questions": "Questions",
+		"answers": "Réponses",
+		"add_description": "Ajouter une remarque",
+		"remove_description": "Retirer la remarque",
+		"description": "Remarque de la question (facultatif)",
+		"add_language": "Ajouter une langue",
 		"placeholders": {
 			"title": "Titre du quiz",
 			"categoryTitle": "Tapez le titre de la catégorie ici",
@@ -58,25 +74,25 @@
 			"descriptionAdd": "Ajouter une description",
 			"questions": "Questions",
 			"tagAdd": "Nouveau tag",
-			"existingTag": "Tags existants",
+			"existingTag": "Tags",
 			"module": "Modules",
 			"noModule": "Pas de module existant"
 		},
 		"hints": {
-		"dragCenter": "Glissez-déposez au centre",
-		"emptyDrop": "Ajoutez votre première question avec le bouton à gauche ou celui ci-dessous"
+			"dragCenter": "Glissez-déposez au centre",
+			"emptyDrop": "Ajoutez votre première question"
 		},
 		"fields": {
-		"title": "Intitulé",
-		"description": "Description",
-		"coverImage": "Image de fond",
-		"orUpload": "Ou téléverser un fichier"
+			"title": "Intitulé",
+			"description": "Description",
+			"coverImage": "Cliquez ou faites glisser l'image principale ici",
+			"orUpload": "Ou téléverser un fichier"
 		},
 		"category": {
 		"new": "Nouvelle Catégorie"
 		},
 		"options": {
-		"new": "Nouvelle option"
+			"new": "Nouvelle réponse"
 		},
 		"types": {
 		"short": "Réponse courte",
@@ -86,13 +102,13 @@
 		"boolean": "Vrai / Faux"
 		},
 		"defaults": {
-		"option": "Option",
-		"true": "Vrai",
-		"false": "Faux"
+			"option": "Réponse",
+			"true": "Vrai",
+			"false": "Faux"
 		},
 		"labels": {
-			"single": "Simple",
-			"multi": "Multi"
+			"single": "Single answer",
+			"multi": "Multiple answers"
 		},
 		"show": {
 			"cantFind": "Quiz introuvable...",

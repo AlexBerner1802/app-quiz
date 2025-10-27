@@ -1,16 +1,19 @@
+// TagInput.jsx
+
 import React, {useState, useRef, useEffect, useCallback} from "react";
 import styled from "styled-components";
 
 const TagInput = ({
 	label,
 	suggestions = [],
-	value = [],            // array of { id, tag_name }
+	value = [],
 	onChange,
 	placeholder = "Ajouter un tag...",
 	prefixAdd = "Ajouter ",
 	allowNew = true,
 	width = "fit-content",
 	height="fit-content",
+	loadingText="Chargement...",
 	wrapperStyle,
 	labelStyle,
 	inputStyle,
@@ -32,7 +35,7 @@ const TagInput = ({
 	const normalize = (s) => (s || "").trim().toLowerCase();
 
 	const notAlreadySelected = useCallback(
-		(s) => s && s.tag_name && !value.find((t) => t?.id === s.id),
+		(s) => s && s.tag_name && !value.some(t => t?.id === s?.id || t.tag_name === s.tag_name),
 		[value]
 	);
 
@@ -198,37 +201,35 @@ const TagInput = ({
 
 				<StyledInput
 					value={inputValue}
-					onFocus={() => {
-						if (inputValue.length > 0) setIsOpen(true);
-					}}
+					onFocus={() => setIsOpen(true)}
 					onChange={(e) => {
 						const val = e.target.value;  // <-- define val
 						setInputValue(val);
 						setIsOpen(true);
 					}}
 					onKeyDown={(e) => {
-					if (e.key === "Enter" || e.key === "Tab") {
-					e.preventDefault();
-					onValidateInput();
-					}
-					if (e.key === "ArrowDown") setIsOpen(true);
-				}}
-				placeholder={placeholder}
-				style={inputStyle}
-				className={inputClassName}
-				aria-invalid={!!err}
+						if (e.key === "Enter" || e.key === "Tab") {
+						e.preventDefault();
+						onValidateInput();
+						}
+						if (e.key === "ArrowDown") setIsOpen(true);
+					}}
+					placeholder={placeholder}
+					style={inputStyle}
+					className={inputClassName}
+					aria-invalid={!!err}
 				/>
 			</TagContainer>
 
 			{isOpen && (
 				<Dropdown>
-					{loading && <DropdownItem>Chargement…</DropdownItem>}
+					{loading && <DropdownItem>{loadingText}</DropdownItem>}
 					{err && !loading && <DropdownItem>{err}</DropdownItem>}
 					{!loading && filteredSuggestions.map(
 						(s) =>
 							s && (
 								<DropdownItem key={s.id} onClick={() => addTag(s)}>
-								{s.tag_name}
+									{s.tag_name}
 								</DropdownItem>
 							)
 					)}
@@ -268,9 +269,12 @@ const TagContainer = styled.div`
 	flex-wrap: wrap;
 	align-items: flex-start;
 	gap: var(--spacing-xs, 0.25rem);
-	border: 2px solid var(--color-border, #ccc);
 	border-radius: var(--border-radius);
-	padding: var(--spacing-xs, 0.25rem);
+
+    padding: ${({ $size }) =>
+            $size === 's' ? '0.5rem 0.625rem' :
+                    $size === 'l' ? '0.9375rem 1.875rem' : '0.75rem 1rem'};
+	
 	background: var(--color-background-input, #fff);
 	min-height: 50px;
 	height: ${({ height }) => height};
@@ -312,6 +316,10 @@ const StyledInput = styled.input`
 	font-size: 0.875rem;
 	background: transparent;
 	height: 34px;
+
+    &::placeholder {
+        color: var(--color-placeholder, #aaa);
+    }
 `;
 
 const Dropdown = styled.ul`

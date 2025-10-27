@@ -63,24 +63,18 @@ const variants = {
   `,
 
 	secondary: css`
-    background-color: var(--gray-300);
-    color: var(--gray-900);
-    border: 1px solid var(--gray-400);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.05),
-      0 1px 0 rgba(255, 255, 255, 0.1) inset;
+    background-color: var(--color-background-elevated);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
 
     &:hover:not(:disabled) {
-      background-color: var(--gray-400);
-      box-shadow:
-        0 4px 6px rgba(50, 50, 93, 0.11),
-        0 1px 3px rgba(0, 0, 0, 0.08);
-      transform: translateY(-1px);
+        background-color: var(--color-primary-bg-hover);
+		border-color: var(--color-primary-bg);
     }
 
     &:focus-visible {
-      outline: 3px solid var(--gray-500);
-      outline-offset: 2px;
+        outline: 3px solid var(--gray-500);
+        outline-offset: 2px;
     }
   `,
 };
@@ -101,7 +95,6 @@ const StyledButton = styled.button`
 	border: none;
 	cursor: pointer;
 	transition: background-color 0.2s ease, box-shadow 0.15s ease;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 	user-select: none;
 	display: inline-flex;
 	align-items: center;

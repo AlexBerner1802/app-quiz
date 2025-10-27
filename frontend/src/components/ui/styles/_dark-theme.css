@@ -1,44 +1,44 @@
 body.dark-mode {
     /* === Primary / Links / Buttons === */
-    --color-primary-text: var(--blue-200);
-    --color-primary-bg: var(--blue-700);
-    --color-primary-bg-hover: var(--blue-600);
+    --color-primary-text: var(--brand-primary-100);
+    --color-primary-bg: var(--brand-primary-500);
+    --color-primary-bg-hover: var(--brand-primary-600);
     --color-primary-muted: rgba(3, 102, 214, 0.12);
 
     /* === Secondary / UI elements / surfaces === */
     --color-secondary-text: var(--gray-300);
-    --color-secondary-bg: var(--gray-900);  /* main background like GitHub dark */
+    --color-secondary-bg: var(--gray-900);
     --color-secondary-border: var(--gray-700);
 
     /* === Success / Green accent === */
-    --color-success-text: var(--green-200);
-    --color-success-bg: var(--green-700);
-    --color-success-bg-hover: var(--green-600);
+    --color-success-text: var(--brand-success-200);
+    --color-success-bg: var(--brand-success-600);
+    --color-success-bg-hover: var(--brand-success-500);
     --color-success-muted: rgba(34, 134, 58, 0.15);
 
     /* === Error / Red accent === */
-    --color-error-text: var(--red-200);
-    --color-error-bg: var(--red-700);
-    --color-error-bg-hover: var(--red-600);
+    --color-error-text: var(--brand-error-200);
+    --color-error-bg: var(--brand-error-700);
+    --color-error-bg-hover: var(--brand-error-600);
     --color-error-muted: rgba(215, 58, 73, 0.15);
 
     /* === Warning / Yellow accent === */
-    --color-warning-text: var(--yellow-100);
-    --color-warning-bg: var(--yellow-500);
-    --color-warning-bg-hover: var(--yellow-400);
+    --color-warning-text: var(--brand-warning-100);
+    --color-warning-bg: var(--brand-warning-500);
+    --color-warning-bg-hover: var(--brand-warning-400);
     --color-warning-muted: rgba(187, 136, 0, 0.15);
 
     /* === Gradients (soft, subtle) === */
-    --gradient-primary: linear-gradient(135deg, var(--blue-700), var(--blue-800));
-    --gradient-success: linear-gradient(135deg, var(--green-700), var(--green-800));
-    --gradient-error: linear-gradient(135deg, var(--red-700), var(--red-800));
-    --gradient-warning: linear-gradient(135deg, var(--yellow-700), var(--yellow-600));
+    --gradient-primary: linear-gradient(135deg, var(--brand-primary-700), var(--brand-primary-800));
+    --gradient-success: linear-gradient(135deg, var(--brand-success-700), var(--brand-success-800));
+    --gradient-error: linear-gradient(135deg, var(--brand-error-700), var(--brand-error-800));
+    --gradient-warning: linear-gradient(135deg, var(--brand-warning-700), var(--brand-warning-600));
     --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-800) 100%);
 
     /* === Text / UI neutral === */
-    --color-text: var(--gray-200);   /* main text like GitHub dark */
+    --color-text: var(--gray-50);
     --color-btn-text: var(--gray-100);
-    --color-placeholder: var(--gray-500);
+    --color-placeholder: var(--gray-400);
 
     /* === Surfaces / cards / panels === */
     --color-background: var(--gray-900);
@@ -46,8 +46,8 @@ body.dark-mode {
     --color-surface: var(--gray-700);
     --color-background-elevated: var(--gray-700);
     --color-background-overlay: rgba(0,0,0,0.6);
-    --color-background-input: var(--gray-800);
-    --color-background-input-focused: var(--gray-700);
+    --color-background-input: var(--gray-700);
+    --color-background-input-focused: var(--gray-800);
     --color-border: var(--gray-500);
     --color-separator: var(--gray-700);
 

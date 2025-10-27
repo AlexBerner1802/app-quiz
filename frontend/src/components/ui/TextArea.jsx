@@ -1,6 +1,5 @@
 import React, { useId } from "react";
 import styled from "styled-components";
-import { Edit3 } from "lucide-react"; // optional icon
 
 export default function TextArea({
 									 label,
@@ -19,7 +18,8 @@ export default function TextArea({
 									 wrapperClassName,
 									 labelClassName,
 									 inputClassName,
-									 resize="none",
+									 resize = "none",
+									 hideFocus = false,
 									 ...props
 								 }) {
 	const id = useId();
@@ -31,7 +31,11 @@ export default function TextArea({
 					{label}
 				</Label>
 			)}
-			<InputWrapper style={inputWrapperStyle} $size={size}>
+			<InputWrapper
+				style={inputWrapperStyle}
+				$size={size}
+				$hideFocus={hideFocus}
+			>
 				{icon && <IconWrapper $size={size}>{icon}</IconWrapper>}
 				<StyledTextArea
 					id={id}
@@ -44,6 +48,7 @@ export default function TextArea({
 					$size={size}
 					$textAlign={textAlign}
 					$resize={resize}
+					$hideFocus={hideFocus}
 					{...props}
 				/>
 			</InputWrapper>
@@ -58,7 +63,7 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.label`
-    font-size: 0.875rem;
+    font-size: var(--font-size);
     font-weight: 500;
     color: var(--color-text, #333);
     margin-bottom: var(--spacing-xs);
@@ -67,20 +72,26 @@ const Label = styled.label`
 const InputWrapper = styled.div`
     display: flex;
     width: 100%;
-    align-items: center;
-    border: 2px solid transparent;
+    align-items: flex-start;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
     background-color: var(--color-background-input, #fff);
     color: var(--color-text);
-    border-radius: ${({ $size }) =>
-	$size === "s" ? "0.25rem" :
-		$size === "l" ? "0.5rem" : "0.375rem"};
+    border-radius: var(--border-radius);
     padding: 0;
     transition: all 0.2s ease-in-out;
-	resize: ${({ $resize }) => $resize};
 
     &:focus-within {
-        background-color: var(--color-background-input-focused, #fff);
-        border-color: var(--color-primary-bg, #2684FF);
+        ${({ $hideFocus }) =>
+                $hideFocus
+                        ? `
+			border-color: var(--color-border);
+			background-color: var(--color-background-input, #fff);
+		`
+                        : `
+			border-color: var(--color-primary-bg, #2684FF);
+			background-color: var(--color-background-input-focused, #fff);
+		`}
     }
 `;
 
@@ -88,43 +99,36 @@ const IconWrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-left: 0.5rem;
-
-    svg {
-        width: ${({ $size }) =>
-	$size === "s" ? "1rem" :
-		$size === "l" ? "1.5rem" : "1.25rem"};
-        height: ${({ $size }) =>
-	$size === "s" ? "1rem" :
-		$size === "l" ? "1.5rem" : "1.25rem"};
-    }
+    padding-left: var(--spacing);
+    padding-top: var(--spacing);
 `;
 
 const StyledTextArea = styled.textarea`
     border: none;
-    background-color: var(--color-background-input, #fff);
+    background-color: transparent;
     outline: none;
     width: 100%;
     font: inherit;
-    line-height: var(--line-height);
+    line-height: var(--line-height-xl);
     transition: all 0.2s ease-in-out;
 
     font-size: ${({ $size }) =>
-            $size === "s" ? "var(--font-size-s)" :
-                    $size === "l" ? "var(--font-size-l)" : "var(--font-size)"};
+            $size === "s"
+                    ? "var(--font-size-s)"
+                    : $size === "l"
+                            ? "var(--font-size-l)"
+                            : "var(--font-size)"};
 
     padding: ${({ $size }) =>
-            $size === "s" ? "0.5rem 0.625rem" :
-                    $size === "l" ? "0.9375rem 1.875rem" : "0.75rem 1rem"};
+            $size === "s"
+                    ? "0.5rem 0.625rem"
+                    : $size === "l"
+                            ? "0.9375rem 1.875rem"
+                            : "0.75rem 1rem"};
 
     text-align: ${({ $textAlign }) => $textAlign || "left"};
-
-    resize: ${({ $resize }) => $resize || "vertical"};  /* ✅ Apply here */
-
-    &:focus {
-        background-color: var(--color-background-input-focused, #fff);
-    }
-
+    resize: ${({ $resize }) => $resize || "vertical"};
+	
     &::placeholder {
         color: var(--color-placeholder, #aaa);
     }
@@ -132,5 +136,14 @@ const StyledTextArea = styled.textarea`
     &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+    }
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+        -webkit-text-fill-color: var(--color-text, #333) !important;
+        transition: background-color 0.2s ease-in-out 0s;
     }
 `;

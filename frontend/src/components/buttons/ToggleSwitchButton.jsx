@@ -15,7 +15,7 @@ export default function ToggleSwitch({
 
 	return (
 		<Wrap $disabled={disabled}>
-			<Text $checked={checked}>{checked ? onLabel : offLabel}</Text>
+			<Text $checked={checked} $onColor={onColor} $offColor={offColor}>{checked ? onLabel : offLabel}</Text>
 
 			<Label htmlFor={switchId}>
 				<HiddenCheckbox
@@ -44,9 +44,10 @@ const Wrap = styled.div`
 `;
 
 const Text = styled.span`
-    font-size: 14px;
+    font-size: var(--font-size-s);
+	font-weight: 500;
     user-select: none;
-    color: ${(p) => (p.$checked ? "#22c55e" : "#6b7280")};
+    color: ${({ $checked, $onColor, $offColor }) => ($checked ? $onColor : $offColor)};
 `;
 
 const Label = styled.label`

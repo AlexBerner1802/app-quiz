@@ -1,10 +1,10 @@
 // routes.jsx
-import HomePage from "./pages/homepage/HomePage.jsx";
-import LoginPage from "./pages/login/LoginPage.jsx";
-import NewQuiz from "./pages/quiz_editor/NewQuiz.jsx";
-import SettingsPage from "./pages/settings/Settings.jsx";
-import Users from "./pages/users/Users.jsx";
-import ShowQuiz from "./pages/showquiz/ShowQuiz.jsx";
+import HomePage from "./pages/Home/_index";
+import LoginPage from "./pages/Login/_index";
+import NewQuiz from "./pages/QuizEditor/_index";
+import SettingsPage from "./pages/Settings/_index";
+import Users from "./pages/Users/_index";
+import ShowQuiz from "./pages/ShowQuiz/_index.jsx";
 import AppLayout from "./components/layout/AppLayout";
 
 export const routes = [

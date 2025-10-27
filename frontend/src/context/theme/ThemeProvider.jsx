@@ -1,3 +1,5 @@
+// context/theme/ThemeProvider.jsx
+
 import { useEffect, useState } from 'react';
 import { ThemeContext } from './ThemeContext.jsx';
 

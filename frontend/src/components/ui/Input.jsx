@@ -54,7 +54,7 @@ const Wrapper = styled.div`
 `;
 
 const Label = styled.label`
-	font-size: 0.875rem;
+    font-size: var(--font-size);
 	font-weight: 500;
 	color: var(--color-text, #333);
 	margin-bottom: var(--spacing-xs);
@@ -64,12 +64,11 @@ const InputWrapper = styled.div`
 	display: flex;
 	width: 100%;
 	align-items: center;
-	border: 2px solid transparent;
+	overflow: hidden;
+	border: 1px solid var(--color-border);
     background-color: ${({ $bgColor }) => $bgColor || "var(--color-background-input, #fff)"};
 	color: var(--color-text);
-	border-radius: ${({ $size }) =>
-    $size === 's' ? '0.25rem' :
-        $size === 'l' ? '0.5rem' : '0.375rem'};
+    border-radius: var(--border-radius);
 	padding: 0;
 	transition: all .2s ease-in-out;
 
@@ -83,24 +82,16 @@ const IconWrapper = styled.div`
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding-left: 0.5rem;
+	padding-left: var(--spacing);
 
-	svg {
-		width: ${({ $size }) =>
-    $size === 's' ? '1rem' :
-        $size === 'l' ? '1.5rem' : '1.25rem'};
-		height: ${({ $size }) =>
-    $size === 's' ? '1rem' :
-        $size === 'l' ? '1.5rem' : '1.25rem'};
-	}
 `;
 
 const StyledInput = styled.input`
     border: none;
-    background-color: var(--color-background-input, #fff);
+    background-color: transparent!important;
     outline: none;
     width: 100%;
-    line-height: var(--line-height);
+    line-height: var(--line-height-l);
     transition: all 0.2s ease-in-out;
 
     font-size: ${({ $size }) =>
@@ -120,6 +111,16 @@ const StyledInput = styled.input`
     &::placeholder {
         color: var(--color-placeholder, #aaa);
     }
+
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+        -webkit-text-fill-color: var(--color-text, #333) !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
 `;
 
 
