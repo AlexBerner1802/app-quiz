@@ -151,7 +151,6 @@ export default function Content({
 	);
 }
 
-/* Styled Components */
 const CenterInner = styled.div`
 	width: 100%;
 	max-width: var(--spacing-12xl);

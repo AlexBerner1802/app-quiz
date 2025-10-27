@@ -71,4 +71,5 @@ body.page-newquiz {
   --quiz-border: var(--gray-300);
   --quiz-border-strong: var(--gray-400);
   --quiz-placeholder: var(--gray-500);
+  --color-input: var(--gray-900);
 }

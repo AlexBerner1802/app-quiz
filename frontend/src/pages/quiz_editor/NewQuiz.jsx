@@ -229,7 +229,7 @@ export default function NewQuiz() {
 					</InputShell>
 				</QuizHeaderBlock>
 
-				{/* Image */}
+				{/* Images */}
 				<ImageUploader
 					style={{ marginBottom: "var(--spacing" }}
 					value={coverImageFile || (coverImageUrl ? coverImageUrl : null)}
@@ -363,9 +363,9 @@ const TitleInput = styled.input`
 	font-size: var(--font-size-3xl);
 	line-height: var(--line-height-xl);
 	font-weight: 500;
-	color: var(--color-text);
+	color: var(--color-input);
 	padding-left: ${({ $withIcon }) => ($withIcon ? "var(--icon-inset)" : "0")};
-	background: transparent!important;
+	
 	outline: none;
 `;
 
@@ -374,10 +374,10 @@ const DescTextarea = styled.textarea`
 	border: none;
 	font-size: var(--font-size);
 	line-height: var(--line-height-2xl);
-	background: transparent!important;
+	
 	font-weight: 500;
 	padding-left: ${({ $withIcon }) => ($withIcon ? "var(--icon-inset)" : "0")};
-	color: var(--color-placeholder);
+	color: var(--color-input);
 	resize: none;
 	outline: none!important;
 `;
