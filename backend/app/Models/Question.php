@@ -6,20 +6,35 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     protected $table = 'questions';
-    protected $fillable = ['id_type','id_quiz','question_titre','question_description','created_at','updated_at'];
+    protected $primaryKey = 'id_question';
     public $timestamps = true;
 
-    public function quiz()    { return $this->belongsTo(Quiz::class, 'id_quiz'); }
-    public function type()    { return $this->belongsTo(TypeQuestion::class, 'id_type'); }
-    public function answers() { return $this->hasMany(Answer::class, 'id_questions'); }
-}
+    protected $fillable = ['id_type','id_quiz','order'];
+    protected $casts = [
+        'order'  => 'integer',
+        'id_type'=> 'integer',
+        'id_quiz'=> 'integer',
+    ];
 
-// app/Models/Answer.php
-class Answer extends Model
-{
-    protected $table = 'answers';
-    protected $fillable = ['id_questions','answer_text','is_correct','created_at','updated_at'];
-    public $timestamps = true;
+    public function quiz()
+    {
+        return $this->belongsTo(Quiz::class, 'id_quiz', 'id_quiz');
+    }
 
-    public function question() { return $this->belongsTo(Question::class, 'id_questions'); }
+    public function type()
+    {
+        return $this->belongsTo(TypeQuestion::class, 'id_type', 'id');
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class, 'id_question', 'id_question');
+    }
+
+    // i18n
+    public function translations()
+    {
+        return $this->hasMany(Translation::class, 'question_id', 'id_question')
+                    ->where('element_type', 'question');
+    }
 }

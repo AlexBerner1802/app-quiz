@@ -28,6 +28,7 @@ export default function HomePage() {
 		(async () => {
 		try {
 			const data = await getQuizzes();
+			// console.log(data)
 			if (!alive) return;
 			setQuizzes(Array.isArray(data) ? data : []);
 		} catch (e) {

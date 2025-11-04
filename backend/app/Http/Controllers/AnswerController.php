@@ -10,13 +10,13 @@ use Illuminate\Http\Request;
 class AnswerController extends Controller
 {
     // POST /api/answers
-    // body: { id_user, id_quiz, id_questions, id_answers }
+    // body: { id_user, id_quiz, id_question, id_answers }
     public function store(Request $req)
     {
         $data = $req->validate([
             'id_user'     => 'required|integer',
             'id_quiz'     => 'required|integer|exists:quiz,id',
-            'id_questions'=> 'required|integer|exists:questions,id',
+            'id_question'=> 'required|integer|exists:questions,id',
             'id_answers'  => 'required|integer|exists:answers,id',
         ]);
 

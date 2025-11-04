@@ -18,3 +18,4 @@ class Module extends Model
                     ->withTimestamps();
     }
 }
+

@@ -11,7 +11,7 @@ class UserQuizAnswer extends Model
     public $timestamps = true;
 
     public function user()     { return $this->belongsTo(User::class, 'id_user', 'UUID'); }
-    public function quiz()     { return $this->belongsTo(Quiz::class, 'id_quiz'); }
-    public function question() { return $this->belongsTo(Question::class, 'id_questions'); }
-    public function answer()   { return $this->belongsTo(Answer::class, 'id_answers'); }
+    public function quiz()     { return $this->belongsTo(Quiz::class, 'id_quiz', 'id_quiz'); }
+    public function question() { return $this->belongsTo(Question::class, 'id_question', 'id_question'); }
+    public function answer()   { return $this->belongsTo(Answer::class, 'id_answers', 'id_answer'); }
 }

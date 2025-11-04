@@ -7,14 +7,13 @@ import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import UnsavedChangesGuard from "../../components/UnsavedChangesGuard";
 import Header from "../../components/layout/Header";
-import { createQuiz, getQuiz, updateQuiz, getModules, getTags } from "../../services/api";
+import { createQuizMulti, getQuizEditor, updateQuizMulti, getModules, getTags } from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import LeftSidebar from "./LeftSidebar";
 import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 import RightSidebar from "./RightSidebar";
 import CenterPanel from "./CenterPanel";
-
 
 export default function NewQuiz() {
 
@@ -76,7 +75,7 @@ export default function NewQuiz() {
 				setTags(tagsData || []);
 
 				if (isEdit) {
-					const quizData = await getQuiz(quizId);
+					const quizData = await getQuizEditor(quizId);
 					if (!alive) return;
 
 					// Load per-language drafts from quizData.translations
@@ -85,15 +84,18 @@ export default function NewQuiz() {
 						const translation = quizData.translations?.find((t) => t.lang === l.code) || {};
 						const mappedQs = (translation.questions || []).map((qq) => {
 							const answers = Array.isArray(qq.answers) ? qq.answers : [];
-							const options = answers.map((a) => a.answer_text ?? "");
+							const options   = answers.map((a) => a.answer_text ?? "");
+							const answerIds = answers.map((a) => a.id ?? a.id_answer ?? null);
 							const correctIndices = answers
 								.map((a, i) => (a.is_correct ? i : -1))
 								.filter((i) => i >= 0);
 							return {
 								id: `q_${qq.id ?? Math.random()}`,
+								backendId: qq.id ?? qq.id_question ?? null,
 								title: qq.question_titre || "",
 								description: qq.question_description || "",
 								options,
+								answerIds,
 								correctIndices,
 							};
 						});
@@ -173,48 +175,106 @@ export default function NewQuiz() {
 		if (direction === "up" && index > 0)
 			[newQs[index - 1], newQs[index]] = [newQs[index], newQs[index - 1]];
 		else if (direction === "down" && index < newQs.length - 1)
-			[newQs[index], newQs[index + 1]] = [newQs[index + 1], newQs[index]]; // fixed
+			[newQs[index], newQs[index + 1]] = [newQs[index + 1], newQs[index]];
 		updateDraft({ questions: newQs });
 	};
 
-	const onSave = async (saveAll = false) => {
-		try {
-			const langsToSave = saveAll
-				? LANGS.filter((l) => drafts[l.code].isDirty)
-				: [LANGS.find((l) => l.code === currentLang)];
-
-			for (const l of langsToSave) {
+	const buildMultiPayload = () => {
+		const langs = LANGS
+			.filter(l => drafts[l.code])
+			.map(l => {
 				const d = drafts[l.code];
-				const payload = {
-					title: d.title,
-					quiz_description: d.quiz_description,
-					is_active: d.active,
-					cover_image: d.coverImageFile ?? undefined,
-					cover_image_url: d.coverImageUrl || undefined,
-					module_ids: d.selectedModuleIds,
-					tag_ids: d.selectedTagIds,
-					questions: d.questions.map((q) => ({
-						title: q.title,
-						description: q.description,
-						options: q.options,
-						correctIndices: q.correctIndices,
+				return {
+					code: l.code,
+					is_active: !!d.active,
+					title: d.title || "",
+					quiz_description: d.quiz_description || "",
+					module_ids: d.selectedModuleIds || [],
+					tag_ids: d.selectedTagIds || [],
+					questions: (d.questions || []).map((q, index) => ({
+						id_question: q.backendId ?? undefined,
+						tr_set_id: q.trSetId ?? undefined,
+						title: q.title || "",
+						description: q.description || "",
+						order: typeof q.order === 'number' ? q.order : index,
+						correctIndices: Array.isArray(q.correctIndices) ? q.correctIndices : [],
+						options: (q.options || []).map((txt) => txt ?? ""),
+						answerIds: (q.answerIds || undefined),
 					})),
-					lang: l.code,
 				};
+			});
+		return { languages: langs };
+	};
 
-				if (isEdit) await updateQuiz(quizId, payload);
-				else await createQuiz(payload);
+	  const onSave = async ({ navigateAfter = false } = {}) => {
+		try {
+			const payload = buildMultiPayload();
+				console.log('[QUIZ PAYLOAD]', {
+				modulesByLang: payload.languages.map(l => ({ code: l.code, module_ids: l.module_ids })),
+				tagsByLang: payload.languages.map(l => ({ code: l.code, tag_ids: l.tag_ids })),
+			});
+
+		    let res;
+		    if (isEdit) {
+				res = await updateQuizMulti(quizId, payload, drafts);
+			} else {
+				res = await createQuizMulti(payload, drafts);
 			}
 
-			// mark saved languages as clean and hasTranslation
-			setDrafts((prev) => {
-				const updated = { ...prev };
-				langsToSave.forEach((l) => {
-					updated[l.code] = { ...updated[l.code], isDirty: false, hasTranslation: true };
+
+			if (res?.data?.mapping) {
+				const map = res.data.mapping;
+				const newQuizId = map.quiz_id ?? quizId;
+				const qIdByIndex = {};
+				const aIdByIndex = {};
+				(map.questions || []).forEach(qm => {
+					qIdByIndex[qm.index] = { id: qm.id_question, tr: qm.tr_set_id };
+					aIdByIndex[qm.index] = {};
+					(qm.answers || []).forEach(am => {
+						aIdByIndex[qm.index][am.index] = { id: am.id_answer, tr: am.tr_set_id };
+					});
 				});
-				return updated;
-			});
+
+				setDrafts(prev => {
+					const next = { ...prev };
+					LANGS.forEach(l => {
+						if (!next[l.code]) return;
+						next[l.code] = {
+							...next[l.code],
+							isDirty: false,
+							hasTranslation: true,
+							questions: (next[l.code].questions || []).map((q, idxQ) => {
+								const qMap = qIdByIndex[idxQ];
+								const answerIds = (q.options || []).map((_, idxA) => aIdByIndex[idxQ]?.[idxA]?.id ?? (q.answerIds?.[idxA] ?? null));
+								return {
+									...q,
+									backendId: q.backendId ?? qMap?.id ?? null,
+									trSetId: q.trSetId ?? qMap?.tr ?? undefined,
+									answerIds,
+								};
+							}),
+						};
+					});
+					return next;
+				});
+
+				if (!isEdit && newQuizId && !quizId) {
+					navigate(`/editor/${newQuizId}`);
+				}
+			} else {
+				setDrafts(prev => {
+					const next = { ...prev };
+					LANGS.forEach(l => {
+						if (!next[l.code]) return;
+						next[l.code] = { ...next[l.code], isDirty: false, hasTranslation: true };
+					});
+					return next;
+				});
+			}
 			alert("Saved successfully");
+
+			if (!isEdit && navigateAfter) window.location.href = "/";
+
 		} catch (e) {
 			console.error(e);
 			alert(e.message || "Error while saving");
@@ -231,15 +291,12 @@ export default function NewQuiz() {
 
 	const onSaveClick = async () => {
 		const otherDirty = LANGS.some(l => l.code !== currentLang && drafts[l.code].isDirty);
-		let saveAll = false;
-
+		
 		if (otherDirty) {
-			saveAll = window.confirm(
-				"Other languages have unsaved changes. Save all languages?\nPress Cancel to save only current language."
-			);
+			const go = window.confirm("Sauvegarder toutes les langues en une fois ?");
+			if (!go) return;
 		}
-
-		await onSave(saveAll);
+		await onSave({ navigateAfter: !isEdit });
 	};
 
 	const onDeleteLang = (langCode) => {

@@ -50,7 +50,9 @@ export default function QuestionsContent({
 		updateQuestions((prev) =>
 			prev.map((q) => {
 				if (q.id !== id) return q;
-				return { ...q, options: [...(q.options || []), ""] };
+				const nextOpts = [...(q.options || []), ""];
+				const nextIds  = [...(q.answerIds || []), null];
+				return { ...q, options: nextOpts, answerIds: nextIds };
 			})
 		);
 	};
@@ -60,10 +62,11 @@ export default function QuestionsContent({
 			prev.map((x) => {
 				if (x.id !== qId) return x;
 				const newOptions = (x.options ?? []).filter((_, i) => i !== idx);
+				const newAnswerIds = (x.answerIds ?? []).filter((_, i) => i !== idx);
 				const nextCorrect = (x.correctIndices ?? [])
 					.filter((i) => i !== idx)
 					.map((i) => (i > idx ? i - 1 : i));
-				return { ...x, options: newOptions, correctIndices: nextCorrect };
+				return { ...x, options: newOptions, answerIds: newAnswerIds, correctIndices: nextCorrect };
 			})
 		);
 	};
@@ -109,8 +112,11 @@ export default function QuestionsContent({
 				if (q.id !== qId) return q;
 
 				const nextOptions = [...(q.options ?? [])];
-				const [moved] = nextOptions.splice(from, 1);
-				nextOptions.splice(dropIndex, 0, moved);
+				const nextIds     = [...(q.answerIds ?? [])];
+				const [movedOpt]  = nextOptions.splice(from, 1);
+				const [movedId]   = nextIds.splice(from, 1);
+				nextOptions.splice(dropIndex, 0, movedOpt);
+				nextIds.splice(dropIndex, 0, movedId);
 
 				const oldCorrect = q.correctIndices ?? [];
 				const newCorrect = oldCorrect
@@ -122,7 +128,7 @@ export default function QuestionsContent({
 					})
 					.sort((a, b) => a - b);
 
-				return { ...q, options: nextOptions, correctIndices: newCorrect };
+				return { ...q, options: nextOptions, answerIds: nextIds, correctIndices: newCorrect };
 			})
 		);
 	};

@@ -6,19 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 class Quiz extends Model
 {
     protected $table = 'quiz';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_quiz';
     public $timestamps = true;
 
-    protected $fillable = [
-        'title',
-        'quiz_description',
-        'cover_image_url',
-        'is_active',
-    ];
+    protected $fillable = [];
+    protected $guarded  = [];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
+    // Structural relations
+    public function questions()
+    {
+        return $this->hasMany(Question::class, 'id_quiz', 'id_quiz');
+    }
 
     public function modules()
     {
@@ -32,8 +30,21 @@ class Quiz extends Model
                     ->withTimestamps();
     }
 
-    public function questions()
+    /* i18n : translations & activation per language */
+    public function translations()
     {
-        return $this->hasMany(Question::class, 'id_quiz');
+        return $this->hasMany(Translation::class, 'quiz_id', 'id_quiz')
+                    ->where('element_type', 'quiz');
+    }
+
+    public function actives()
+    {
+        return $this->hasMany(ActiveQuiz::class, 'id_quiz', 'id_quiz');
+    }
+
+    // Helpers
+    public function isActiveForLang(int $langId): bool
+    {
+        return (bool) $this->actives()->where('lang', $langId)->value('is_active');
     }
 }
