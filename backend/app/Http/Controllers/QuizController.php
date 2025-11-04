@@ -17,32 +17,68 @@ class QuizController extends Controller
     // GET /api/quizzes
     public function index(Request $request)
     {
+        $lang = $request->input('lang', 'en'); // use string like 'en'
+
         $quizzes = Quiz::query()
-            ->select(['id','title','quiz_description','is_active','cover_image_url','created_at','updated_at'])
-            ->when($request->boolean('only_active'), fn($q) => $q->where('is_active', 1))
             ->with([
                 'tags:id,tag_name',
                 'modules:id,module_name',
+                'translations' => function($query) use ($lang) {
+                    $query->where('element_type', 'quiz')
+                        ->where('lang', $lang);
+                },
             ])
-            ->get();
+            ->get()
+            ->map(function($quiz) use ($lang, $request) {
+                // extract translations for title, description, cover_image_url
+                $translations = $quiz->translations->keyBy('field_name');
 
-        return response()->json($quizzes);
+                $quiz->title = $translations['title']->element_text ?? null;
+                $quiz->quiz_description = $translations['quiz_description']->element_text ?? null;
+                $quiz->cover_image_url = $translations['cover_image_url']->element_text ?? $quiz->cover_image_url;
+
+                // determine active state for this language
+                $quiz->is_active = $quiz->activeQuizzes()
+                    ->where('lang', $lang)
+                    ->where('is_active', 1)
+                    ->exists();
+
+                return $quiz;
+            });
+
+        // filter only active if requested
+        if ($request->boolean('only_active')) {
+            $quizzes = $quizzes->filter(fn($q) => $q->is_active);
+        }
+
+        return response()->json($quizzes->values());
     }
+
 
     // GET /api/quizzes/{id}
     public function show(Request $request, $id)
     {
+        $lang = $request->input('lang', 'en');
+
         $quiz = Quiz::with([
             'tags:id,tag_name',
             'modules:id,module_name',
-            'questions:id,id_quiz,id_type,question_titre,question_description,created_at,updated_at',
-            // 'questions.type:id,type',
-            'questions.answers:id,id_questions,answer_text,is_correct,created_at,updated_at',
-        ])->findOrFail($id, [
-            'id','title','quiz_description','is_active','cover_image_url','created_at','updated_at'
-        ]);
+            'translations' => fn($q) => $q->where('element_type', 'quiz')->where('lang', $lang),
+            'activeQuizzes' => fn($q) => $q->where('lang', $lang),
+            'questions.answers'
+        ])->find($id); // use find() instead of findOrFail for safer debug
 
-        // Forbid show if inactive
+        if (!$quiz) {
+            return response()->json(['message' => "Quiz not found for ID $id"], 404);
+        }
+
+        $translations = $quiz->translations->keyBy('field_name');
+        $quiz->title = $translations['title']->element_text ?? null;
+        $quiz->quiz_description = $translations['quiz_description']->element_text ?? null;
+        $quiz->cover_image_url = $translations['cover_image_url']->element_text ?? $quiz->cover_image_url;
+
+        $quiz->is_active = $quiz->activeQuizzes->where('is_active', 1)->isNotEmpty();
+
         if (!$quiz->is_active) {
             return response()->json(['message' => 'Quiz is inactive'], 403);
         }
@@ -112,7 +148,7 @@ class QuizController extends Controller
                 $correct = $q['correctIndices'] ?? [];
                 foreach ($opts as $idx => $text) {
                     Answer::create([
-                        'id_questions' => $question->id,
+                        'id_question' => $question->id,
                         'answer_text'  => $text ?? '',
                         'is_correct'   => in_array($idx, $correct) ? 1 : 0,
                     ]);

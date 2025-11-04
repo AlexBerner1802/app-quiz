@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class ActiveQuiz extends Model
+{
+    use HasFactory;
+
+    protected $table = 'active_quiz';
+    protected $primaryKey = 'id_active_quiz';
+    public $timestamps = true; // created_at and updated_at exist
+
+    protected $fillable = [
+        'id_quiz',
+        'lang',
+        'is_active',
+    ];
+
+    /**
+     * Get the quiz associated with this active quiz.
+     */
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(Quiz::class, 'id_quiz', 'id_quiz');
+    }
+
+    /**
+     * Scope to filter only active quizzes
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
+    }
+
+    /**
+     * Scope to filter by language
+     */
+    public function scopeOfLanguage($query, $lang)
+    {
+        return $query->where('lang', $lang);
+    }
+}
