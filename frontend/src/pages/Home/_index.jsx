@@ -9,6 +9,7 @@ import Button from "../../components/ui/Button";
 import { getQuizzes, deleteQuiz } from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
+import { getLangCode } from "../../services/i18n_lang";
 
 const NUM_PLACEHOLDERS = 10;
 
@@ -30,7 +31,7 @@ export default function HomePage() {
 				setErr(""); // clear previous errors
 				setLoading(true);
 
-				const data = await getQuizzes({ onlyActive: true, lang: i18n.language });
+				const data = await getQuizzes({ onlyActive: true, lang: getLangCode() })
 
 				console.log(data);
 				if (!alive) return;

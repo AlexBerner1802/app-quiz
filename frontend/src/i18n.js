@@ -17,8 +17,8 @@ i18n
 			de: { common: deCommon},
 			it: { common: itCommon}
 		},
-		fallbackLng: "en",
-		supportedLngs: ["en", "fr", "de", "it"],
+		fallbackLng: "fr",
+		supportedLngs: ["fr", "de", "en", "it"],
 		load: "languageOnly",
 		nonExplicitSupportedLngs: true,
 		ns: ["common"],

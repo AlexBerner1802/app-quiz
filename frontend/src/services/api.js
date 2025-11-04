@@ -1,6 +1,36 @@
 // src/services/api.js
 const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 const DEFAULT_LANG = import.meta.env.VITE_I18N_DEFAULT_LANG || "fr";
+import { getLangCode } from "../services/i18n_lang";
+
+export function normalizeLanguages(langs = []) {
+	const SUPPORTED = ["en", "fr", "de", "it"];
+
+	return (langs || [])
+		.map((l) => {
+		if (!l) return null;
+
+		const raw =
+			l.code ?? l.lang ?? l.language ?? l.locale ?? l.i18n ??
+			(typeof l.language_id === "string" ? l.language_id : null);
+
+		const code = String(raw || "").toLowerCase().split("-")[0];
+
+		return {
+			...l,
+			code: SUPPORTED.includes(code) ? code : getLangCode(),
+			lang: undefined,
+			language: undefined,
+			locale: undefined,
+			i18n: undefined,
+			language_id: undefined,
+			id_lang: undefined,
+			id: l.id && typeof l.id === "number" ? undefined : l.id,
+		};
+		})
+		.filter(Boolean);
+}
+
 
 function stringifyErrors(errs) {
 	if (!errs || typeof errs !== "object") return "";
@@ -67,47 +97,23 @@ function buildQuizFormData(payload = {}) {
 
 // QUIZZES
 
-/**
- * Quiz list (per language)
- * @param {{lang?: string, onlyActive?: boolean}=} opts
- */
-export async function getQuizzes(opts = {}) {
-	const params = new URLSearchParams();
-
-	if (opts.onlyActive) params.append("only_active", "1");
-	if (opts.lang) params.append("lang", opts.lang);
-
-	const qs = params.toString() ? `?${params.toString()}` : "";
-
-	const res = await fetch(`${API_URL}/api/quizzes${qs}`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
-	});
-
-	return toJsonResponse(res);
+export async function getQuizzes({ onlyActive = true, lang } = {}) {
+	const l = lang || getLangCode();
+	const q = new URLSearchParams();
+	if (onlyActive) q.set("only_active", "1");
+	q.set("lang", l);
+	const r = await fetch(`${API_URL}/api/quizzes?${q.toString()}`);
+	return toJsonResponse(r);
 }
 
-export async function getQuiz(id, lang = "en") {
-	const res = await fetch(`${API_URL}/api/quizzes/${id}?lang=${lang}`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
-	});
-	return toJsonResponse(res);
+
+export async function getQuiz(id, lang) {
+	const l = lang || getLangCode();
+	const r = await fetch(`${API_URL}/api/quizzes/${id}?lang=${l}`);
+	return toJsonResponse(r);
 }
 
-/**
- * Quiz details (per language)
- * @param {number|string} id
- * @param {{lang?: string}=} opts
- */
-export async function getQuiz(id, opts = {}) {
-	const lang = opts.lang || DEFAULT_LANG;
-	const res = await fetch(`${API_URL}/api/quizzes/${id}?lang=${encodeURIComponent(lang)}`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
-	});
-	return toJsonResponse(res);
-}
+
 
 // Quiz creation (in a language)
 // Asked payload: { lang, title, quiz_description, is_active, cover_image_url?, cover_image?, questions?, module_ids?, tag_ids?, new_tags? }
@@ -184,46 +190,57 @@ export async function createTag(tag_name) {
 	return data;
 }
 
-export async function createQuizMulti(body, draftsByLang) {
-	const hasFile = draftsByLang && Object.values(draftsByLang).some(d => d?.coverImageFile);
-	if (hasFile) {
-		const fd = new FormData();
-		for (const d of Object.values(draftsByLang)) {
-		if (d?.coverImageFile) { fd.append('cover_image', d.coverImageFile); break; }
-		}
-		fd.append('languages', JSON.stringify(body.languages));
-		const r = await fetch(`${API_URL}/api/quizzes`, { method: 'POST', body: fd });
-		return toJsonResponse(r);
-	}
+export async function createQuizMulti(body) {
+	const code = getLangCode();
+	const normalized = {
+		languages: [
+			{
+			code,
+			title: body.title ?? "",
+			quiz_description: body.quiz_description ?? "",
+			cover_image_url: body.cover_image_url ?? "",
+			is_active: body.is_active ?? true,
+			module_ids: body.module_ids ?? [],
+			tag_ids: body.tag_ids ?? [],
+			new_tags: body.new_tags ?? [],
+			questions: body.questions ?? [],
+			},
+	  	],
+	};
+
 	const r = await fetch(`${API_URL}/api/quizzes`, {
-		method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+		method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(normalized),
 	});
+  	return toJsonResponse(r);
+}
+
+export async function updateQuizMulti(id, body) {
+	const code = getLangCode();
+	const normalized = {
+	 	 languages: [
+	    	{
+			code,
+			title: body.title ?? "",
+			quiz_description: body.quiz_description ?? "",
+			cover_image_url: body.cover_image_url ?? "",
+			is_active: body.is_active ?? true,
+			module_ids: body.module_ids ?? [],
+			tag_ids: body.tag_ids ?? [],
+			new_tags: body.new_tags ?? [],
+			questions: body.questions ?? [],
+	    	},
+	  	],
+	};
+
+  	const r = await fetch(`${API_URL}/api/quizzes/${id}`, {
+		method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(normalized),
+  	});
+  	return toJsonResponse(r);
+}
+
+
+export async function getQuizEditor(id, lang) {
+	const l = lang || getLangCode();
+	const r = await fetch(`${API_URL}/api/quizzes/${id}/editor?lang=${l}`);
 	return toJsonResponse(r);
 }
-
-export async function updateQuizMulti(id, body, draftsByLang) {
-	const hasFile = draftsByLang && Object.values(draftsByLang).some(d => d?.coverImageFile);
-	if (hasFile) {
-		const fd = new FormData();
-		for (const d of Object.values(draftsByLang)) {
-		if (d?.coverImageFile) { fd.append('cover_image', d.coverImageFile); break; }
-		}
-		fd.append('languages', JSON.stringify(body.languages));
-		const r = await fetch(`${API_URL}/api/quizzes/${id}`, { method: 'PUT', body: fd });
-		return toJsonResponse(r);
-	}
-	const r = await fetch(`${API_URL}/api/quizzes/${id}`, {
-		method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
-	});
-	return toJsonResponse(r);
-}
-
-
-export async function getQuizEditor(id) {
-	const res = await fetch(`${API_URL}/api/quizzes/${id}/editor`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
-	});
-	return toJsonResponse(res);
-}
-

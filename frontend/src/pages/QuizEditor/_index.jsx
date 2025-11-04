@@ -259,7 +259,7 @@ export default function NewQuiz() {
 				});
 
 				if (!isEdit && newQuizId && !quizId) {
-					navigate(`/editor/${newQuizId}`);
+					navigate(`/editor/${newQuizId}/edit`);
 				}
 			} else {
 				setDrafts(prev => {
