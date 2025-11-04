@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getQuiz } from "/src/services/api.js";
+import { getQuiz } from "../../services/api";
 import QuizViewer from "./QuizViewer"
 import { useTranslation } from "react-i18next";
 
 
 export default function ShowQuiz() {
 
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { id } = useParams();
     const navigate = useNavigate();
     const [quiz, setQuiz] = useState(null);
@@ -19,7 +19,7 @@ export default function ShowQuiz() {
         let alive = true;
         (async () => {
             try {
-                const data = await getQuiz(id);
+                const data = await getQuiz(id, i18n.language);
                 if (!alive) return;
                 setQuiz(data);
             } catch (e) {
@@ -29,26 +29,26 @@ export default function ShowQuiz() {
             }
             })();
             return () => { alive = false; };
-        }, [id]);
+	}, [i18n.language, id]);
 
-        if (loading) return <Page><p>{t("common.loading")}</p></Page>;
+	if (loading) return <Page><p>{t("common.loading")}</p></Page>;
 
-        if (err) {
-            if (/403/.test(err) || /inactive/i.test(err)) {
-            navigate("/");
-            return null;
-            }
-            return <Page><ErrorBox>{t("common.error")}{err}</ErrorBox></Page>;
-        }
+	if (err) {
+		if (/403/.test(err) || /inactive/i.test(err)) {
+		navigate("/");
+		return null;
+		}
+		return <Page><ErrorBox>{t("common.error")}{err}</ErrorBox></Page>;
+	}
 
-        if (!quiz) return <Page><p>{t("quiz.show.cantFind")}</p></Page>;
+	if (!quiz) return <Page><p>{t("quiz.show.cantFind")}</p></Page>;
 
-        return (
-            <Page>
-            <QuizViewer quiz={quiz} />
-            </Page>
-        );
-        }
+	return (
+		<Page>
+		<QuizViewer quiz={quiz} />
+		</Page>
+	);
+}
 
 const Page = styled.div`
     padding: var(--spacing-xl);

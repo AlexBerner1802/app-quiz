@@ -4,7 +4,6 @@ import { FlaskConical, Plus, SearchX } from "lucide-react";
 import styled from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "../../components/ui/LanguageSelector";
 import Header from "../../components/layout/Header";
 import Button from "../../components/ui/Button";
 import { getQuizzes, deleteQuiz } from "../../services/api";
@@ -16,7 +15,7 @@ const NUM_PLACEHOLDERS = 10;
 export default function HomePage() {
 
 	const navigate = useNavigate();
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const [quizzes, setQuizzes] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -25,27 +24,35 @@ export default function HomePage() {
 
 	useEffect(() => {
 		let alive = true;
+
 		(async () => {
-		try {
-			const data = await getQuizzes();
-			// console.log(data)
-			if (!alive) return;
-			setQuizzes(Array.isArray(data) ? data : []);
-		} catch (e) {
-			setErr(e.message || String(e));
-		} finally {
-			if (alive) {
-				setTimeout(() => {
-					setLoading(false);
-				}, 200)
+			try {
+				setErr(""); // clear previous errors
+				setLoading(true);
+
+				const data = await getQuizzes({ onlyActive: true, lang: i18n.language });
+
+				console.log(data);
+				if (!alive) return;
+
+				setQuizzes(Array.isArray(data) ? data : []);
+			} catch (e) {
+				if (alive) setErr(e.message || String(e));
+			} finally {
+				if (alive) {
+					setTimeout(() => {
+						setLoading(false);
+					}, 200);
+				}
 			}
-		}
 		})();
+
 		return () => { alive = false; };
-	}, []);
+	}, [i18n.language]);
 
 
-  	// Open the editor
+
+	// Open the editor
 	const handleEdit = useCallback(
 		(id) => {
 			navigate(`/quizzes/${id}/edit`);
@@ -79,7 +86,7 @@ export default function HomePage() {
 
 
 		return quizzes.map((q) => ({
-			id: q.id,
+			id: q.id_quiz,
 			title: q.title ?? "Untitled",
 			modules: Array.isArray(q.modules) ? q.modules.map((m) => m.module_name).slice(0, 3) : [],
 			tags: Array.isArray(q.tags) ? q.tags.map((t) => t.tag_name).slice(0, 3) : [],
@@ -88,7 +95,7 @@ export default function HomePage() {
 			date: q.created_at?.slice(0, 10) ?? "",
 			modified: q.updated_at?.slice(0, 10) ?? "",
 			isActive: !!q.is_active,
-			onClick: () => q.is_active && navigate(`/quizzes/${q.id}`),
+			onClick: () => q.is_active && navigate(`/quizzes/${q.id_quiz}`),
 			onEdit: handleEdit,
 			onDelete: handleDelete,
 		}));

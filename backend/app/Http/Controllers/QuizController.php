@@ -187,113 +187,61 @@ class QuizController extends Controller
     /* --- LIST --- */
     public function index(Request $request)
     {
-        $langCode   = $request->query('lang', 'fr');
-        $langId     = $this->langId($langCode);
-        $onlyActive = $request->boolean('only_active');
+        $lang = $request->input('lang', 'en'); // use string like 'en'
 
-        $q = DB::table('quiz as q')
-            ->leftJoin('translations as t_title', function ($j) use ($langId) {
-                $j->on('t_title.quiz_id','=','q.id_quiz')
-                  ->where('t_title.lang','=',$langId)
-                  ->where('t_title.field_name','=','title');
-            })
-            ->leftJoin('translations as t_desc', function ($j) use ($langId) {
-                $j->on('t_desc.quiz_id','=','q.id_quiz')
-                  ->where('t_desc.lang','=',$langId)
-                  ->where('t_desc.field_name','=','quiz_description');
-            })
-            ->leftJoin('active_quiz as aq', function ($j) use ($langId) {
-                $j->on('aq.id_quiz','=','q.id_quiz')
-                  ->where('aq.lang','=',$langId);
-            })
-            ->select([
-                'q.id_quiz as id',
-                DB::raw('COALESCE(t_title.element_text, "") as title'),
-                DB::raw('COALESCE(t_desc.element_text, "") as quiz_description'),
-                'q.cover_image_url', // cover from quiz table
-                DB::raw('COALESCE(aq.is_active, 0) as is_active'),
-                'q.created_at','q.updated_at',
-            ]);
+        $quizzes = Quiz::query()
+            ->with([
+                'tags:id,tag_name',
+                'modules:id,module_name',
+                'translations' => function($query) use ($lang) {
+                    $query->where('element_type', 'quiz')
+                        ->where('lang', $lang);
+                },
+            ])
+            ->get()
+            ->map(function($quiz) use ($lang, $request) {
+                // extract translations for title, description, cover_image_url
+                $translations = $quiz->translations->keyBy('field_name');
 
-        if ($onlyActive) $q->where('aq.is_active','=',1);
+                $quiz->title = $translations['title']->element_text ?? null;
+                $quiz->quiz_description = $translations['quiz_description']->element_text ?? null;
+                $quiz->cover_image_url = $translations['cover_image_url']->element_text ?? $quiz->cover_image_url;
 
-        return response()->json($q->get());
+                // determine active state for this language
+                $quiz->is_active = $quiz->activeQuizzes()
+                    ->where('lang', $lang)
+                    ->where('is_active', 1)
+                    ->exists();
+
+                return $quiz;
+            });
+
+        // filter only active if requested
+        if ($request->boolean('only_active')) {
+            $quizzes = $quizzes->filter(fn($q) => $q->is_active);
+        }
+
+        return response()->json($quizzes->values());
     }
+
 
     /* --- PUBLIC SHOW (rejects inactive) --- */
     public function show(Request $request, $id)
     {
-        $langCode = $request->query('lang', 'fr');
-        $langId   = $this->langId($langCode);
+        $quiz = Quiz::with([
+            'tags:id,tag_name',
+            'modules:id,module_name',
+            'questions:id,id_quiz,id_type,question_titre,question_description,created_at,updated_at',
+            // 'questions.type:id,type',
+            'questions.answers:id,id_questions,answer_text,is_correct,created_at,updated_at',
+        ])->findOrFail($id, [
+            'id','title','quiz_description','is_active','cover_image_url','created_at','updated_at'
+        ]);
 
-        $quiz = DB::table('quiz as q')
-            ->leftJoin('translations as t_title', function ($j) use ($langId) {
-                $j->on('t_title.quiz_id','=','q.id_quiz')
-                  ->where('t_title.lang','=',$langId)
-                  ->where('t_title.field_name','=','title');
-            })
-            ->leftJoin('translations as t_desc', function ($j) use ($langId) {
-                $j->on('t_desc.quiz_id','=','q.id_quiz')
-                  ->where('t_desc.lang','=',$langId)
-                  ->where('t_desc.field_name','=','quiz_description');
-            })
-            ->leftJoin('active_quiz as aq', function ($j) use ($langId) {
-                $j->on('aq.id_quiz','=','q.id_quiz')
-                  ->where('aq.lang','=',$langId);
-            })
-            ->where('q.id_quiz',$id)
-            ->select([
-                'q.id_quiz as id',
-                DB::raw('COALESCE(t_title.element_text, "") as title'),
-                DB::raw('COALESCE(t_desc.element_text, "") as quiz_description'),
-                'q.cover_image_url',
-                DB::raw('COALESCE(aq.is_active, 0) as is_active'),
-                'q.created_at','q.updated_at',
-            ])
-            ->first();
-
-        if (!$quiz) return response()->json(['message'=>'Quiz not found'], 404);
-        if (!$quiz->is_active) return response()->json(['message'=>'Quiz is inactive'], 403);
-
-        $questions = DB::table('questions as qu')
-            ->leftJoin('translations as tq', function ($j) use ($langId) {
-                $j->on('tq.question_id','=','qu.id_question')
-                  ->where('tq.lang','=',$langId)
-                  ->where('tq.field_name','=','question_title');
-            })
-            ->leftJoin('translations as dq', function ($j) use ($langId) {
-                $j->on('dq.question_id','=','qu.id_question')
-                  ->where('dq.lang','=',$langId)
-                  ->where('dq.field_name','=','question_description');
-            })
-            ->where('qu.id_quiz',$id)
-            ->orderBy('qu.order')->orderBy('qu.id_question')
-            ->select([
-                'qu.id_question as id',
-                'qu.id_type',
-                'qu.order',
-                DB::raw('COALESCE(tq.element_text, "") as title'),
-                DB::raw('COALESCE(dq.element_text, "") as description'),
-            ])->get();
-
-        $questions = $questions->map(function ($qrow) use ($langId) {
-            $answers = DB::table('answers as a')
-                ->leftJoin('translations as tr', function ($j) use ($langId) {
-                    $j->on('tr.answer_id','=','a.id_answer')
-                      ->where('tr.lang','=',$langId)
-                      ->where('tr.field_name','=','answer_text');
-                })
-                ->where('a.id_question',$qrow->id)
-                ->orderBy('a.id_answer')
-                ->select([
-                    'a.id_answer as id',
-                    'a.is_correct',
-                    DB::raw('COALESCE(tr.element_text, "") as answer_text'),
-                ])->get();
-
-            $qrow->answers = $answers;
-            return $qrow;
-        });
+        // Forbid show if inactive
+        if (!$quiz->is_active) {
+            return response()->json(['message' => 'Quiz is inactive'], 403);
+        }
 
         return response()->json(['quiz'=>$quiz, 'questions'=>$questions]);
     }
@@ -443,25 +391,35 @@ class QuizController extends Controller
                     'created_at'=>now(),'updated_at'=>now(),
                 ]);
 
-                $this->upsertQuestionTr($langId, $qid, 'question_title',       (string)($q['title'] ?? ''));
-                $this->upsertQuestionTr($langId, $qid, 'question_description', (string)($q['description'] ?? ''));
-
-                foreach (array_values($q['options'] ?? []) as $idx => $text) {
-                    $aid = (int) DB::table('answers')->insertGetId([
-                        'id_question'=>$qid,
-                        'is_correct'=> in_array($idx, $correct, true) ? 1 : 0,
-                        'created_at'=>now(),'updated_at'=>now(),
+                $opts    = $q['options'] ?? [];
+                $correct = $q['correctIndices'] ?? [];
+                foreach ($opts as $idx => $text) {
+                    Answer::create([
+                        'id_questions' => $question->id,
+                        'answer_text'  => $text ?? '',
+                        'is_correct'   => in_array($idx, $correct) ? 1 : 0,
                     ]);
-                    $this->upsertAnswerTr($langId, $aid, (string)($text ?? ''));
                 }
             }
 
-            // Optional mono-lang tags/modules (read from request if present)
-            $m = $request->input('module_ids', null);
-            $t = $request->input('tag_ids', null);
-            $n = $request->input('new_tags', null);
-            $this->syncQuizModules($quizId, is_array($m) ? $m : null);
-            $this->syncQuizTags($quizId, is_array($t) ? $t : [], is_array($n) ? $n : []);
+            $moduleIds = $validated['module_ids'] ?? [];
+            if (!empty($moduleIds)) {
+                $quiz->modules()->sync($moduleIds);
+            }
+
+            $tagIds = $validated['tag_ids'] ?? [];
+            $createdTagIds = [];
+            if (!empty($validated['new_tags'])) {
+                foreach ($validated['new_tags'] as $name) {
+                    $name = trim($name);
+                    if ($name === '') continue;
+                    $tag = Tag::firstOrCreate(['tag_name' => $name]);
+                    $createdTagIds[] = $tag->id;
+                }
+            }
+            if (!empty($tagIds) || !empty($createdTagIds)) {
+                $quiz->tags()->sync(array_merge($tagIds, $createdTagIds));
+            }
 
             DB::commit();
             return response()->json(['id'=>$quizId], 201);

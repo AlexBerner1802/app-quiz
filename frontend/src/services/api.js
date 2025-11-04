@@ -72,11 +72,23 @@ function buildQuizFormData(payload = {}) {
  * @param {{lang?: string, onlyActive?: boolean}=} opts
  */
 export async function getQuizzes(opts = {}) {
-	const lang = opts.lang || DEFAULT_LANG;
-	const params = new URLSearchParams({ lang });
-	if (opts.onlyActive) params.set("only_active", "1");
+	const params = new URLSearchParams();
 
-	const res = await fetch(`${API_URL}/api/quizzes?${params.toString()}`, {
+	if (opts.onlyActive) params.append("only_active", "1");
+	if (opts.lang) params.append("lang", opts.lang);
+
+	const qs = params.toString() ? `?${params.toString()}` : "";
+
+	const res = await fetch(`${API_URL}/api/quizzes${qs}`, {
+		credentials: "omit",
+		headers: { Accept: "application/json" },
+	});
+
+	return toJsonResponse(res);
+}
+
+export async function getQuiz(id, lang = "en") {
+	const res = await fetch(`${API_URL}/api/quizzes/${id}?lang=${lang}`, {
 		credentials: "omit",
 		headers: { Accept: "application/json" },
 	});
