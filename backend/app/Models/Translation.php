@@ -7,14 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Translation extends Model
 {
     protected $table = 'translations';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_translation';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = true;
 
     protected $fillable = [
         'lang',
         'element_type',   // 'quiz' | 'question' | 'answer'
         'field_name',     // 'title' | 'quiz_description' | 'cover_image_url' | 'question_title' | 'question_description' | 'answer_text'
-        'quiz_id', 'question_id', 'answer_id',
+        'quiz_id', 
+        'question_id', 
+        'answer_id',
         'element_text',
     ];
 

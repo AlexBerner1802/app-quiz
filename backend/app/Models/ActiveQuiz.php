@@ -12,12 +12,18 @@ class ActiveQuiz extends Model
 
     protected $table = 'active_quiz';
     protected $primaryKey = 'id_active_quiz';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = true; // created_at and updated_at exist
 
     protected $fillable = [
         'id_quiz',
         'lang',
         'is_active',
+    ];
+
+    protected $casts = [
+            'is_active' => 'boolean',
     ];
 
     /**
@@ -27,7 +33,7 @@ class ActiveQuiz extends Model
     {
         return $this->belongsTo(Quiz::class, 'id_quiz', 'id_quiz');
     }
-
+    
     /**
      * Scope to filter only active quizzes
      */

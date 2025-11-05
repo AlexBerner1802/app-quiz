@@ -2,19 +2,47 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Question extends Model
 {
     protected $table = 'questions';
     protected $primaryKey = 'id_question';
+    public $incrementing = true;
+    protected $keyType = 'int';
     public $timestamps = true;
 
-    public function quiz()    { return $this->belongsTo(Quiz::class, 'id_quiz'); }
+    protected $fillable = [
+        'id_quiz',
+        'id_type',
+        'order',
+    ];
+
+    // Parent quiz
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(Quiz::class, 'id_quiz', 'id_quiz');
+    }
+
     public function type()    { return $this->belongsTo(TypeQuestion::class, 'id_type'); }
-    public function answers() { return $this->hasMany(Answer::class, 'id_question'); }
+
+    // Answers to the question
+    public function answers(): HasMany
+    {
+        return $this->hasMany(Answer::class, 'id_question', 'id_question');
+    }
+
+    // Translations
+    public function translations(): HasMany
+    {
+        return $this->hasMany(Translation::class, 'question_id', 'id_question')
+                    ->where('element_type', 'question');
+    }
 }
 
 // app/Models/Answer.php
+/*
 class Answer extends Model
 {
     protected $table = 'answers';
@@ -23,3 +51,4 @@ class Answer extends Model
 
     public function question() { return $this->belongsTo(Question::class, 'id_question'); }
 }
+*/

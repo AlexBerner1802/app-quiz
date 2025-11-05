@@ -16,7 +16,6 @@ Route::get('/ping', function () {
 // Quizzes
 Route::get('/quizzes', [QuizController::class, 'index']);
 Route::get('/quizzes/{id}', [QuizController::class, 'show']);
-Route::get('quizzes/{id}/editor', [QuizController::class, 'editor']);
 Route::post('/quizzes', [QuizController::class, 'store']);
 
 // EDIT / DELETE
