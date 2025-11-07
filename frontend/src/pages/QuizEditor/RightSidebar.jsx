@@ -38,17 +38,16 @@ export default function RightSidebar({
 					<LangGrid>
 						<Title>Langue</Title>
 						{langsStatus
-							.filter(
-								(lang) =>
-									lang.code === currentLang || // always show current
-									lang.isActive ||             // active languages
-									lang.hasTranslation ||       // existing saved translations
-									lang.isDirty                 // newly added but unsaved languages
+							.filter((lang) =>
+								lang.code === currentLang ||	// always show current
+								lang.isActive ||            	// active languages
+								lang.hasTranslation ||			// existing saved translations
+								lang.isDirty					// newly added but unsaved languages
 							)
 							.map((lang) => {
 								const { hasTranslation, isActive, isDirty } = lang;
 								const isCurrent = lang.code === currentLang;
-
+								
 								return (
 									<LangCard
 										key={lang.code}
@@ -118,12 +117,9 @@ export default function RightSidebar({
 						variant="primary"
 						onClick={() =>
 							openModal("selectLanguage", {
-								currentLangs: [
-									currentLang,
-									...langsStatus
-										.filter(l => l.isActive || l.hasTranslation)
-										.map(l => l.code),
-								],
+								currentLangs: langsStatus
+								.filter(l => l.code === currentLang || l.hasTranslation || l.isDirty)
+								.map(l => l.code),
 								onAdd: (newLangCode) => onCreateTranslation(newLangCode),
 							})
 						}

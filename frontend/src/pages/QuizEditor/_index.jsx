@@ -78,42 +78,70 @@ export default function NewQuiz() {
 					const quizData = await getQuizEditor(quizId);
 					if (!alive) return;
 
-					// Load per-language drafts from quizData.translations
-					const newDrafts = { ...drafts };
-					LANGS.forEach((l) => {
-						const translation = quizData.translations?.find((t) => t.lang === l.code) || {};
-						const mappedQs = (translation.questions || []).map((qq) => {
-							const answers = Array.isArray(qq.answers) ? qq.answers : [];
-							const options   = answers.map((a) => a.answer_text ?? "");
-							const answerIds = answers.map((a) => a.id ?? a.id_answer ?? null);
-							const correctIndices = answers
-								.map((a, i) => (a.is_correct ? i : -1))
-								.filter((i) => i >= 0);
-							return {
-								id: `q_${qq.id ?? Math.random()}`,
-								backendId: qq.id ?? qq.id_question ?? null,
-								title: qq.question_titre || "",
-								description: qq.question_description || "",
-								options,
-								answerIds,
-								correctIndices,
-							};
-						});
-						newDrafts[l.code] = {
-							title: translation.title || "",
-							quiz_description: translation.quiz_description || "",
-							questions: mappedQs,
-							active: translation.is_active ?? true,
-							coverImageFile: null,
-							coverImageUrl: translation.cover_image_url || "",
-							selectedModuleIds: quizData.modules?.map((m) => m.id) || [],
-							selectedTags: quizData.tags || [],
-							selectedTagIds: quizData.tags?.map((t) => t.id) || [],
-							isDirty: false,
-							hasTranslation: !!translation.id,
+				const newDrafts = {};
+
+				const existingLangs = quizData.translations?.map(t => t.lang) ?? [];
+
+				existingLangs.forEach(langCode => {
+					const translation = quizData.translations.find(t => t.lang === langCode) || {};
+					const mappedQs = (translation.questions || []).map((qq) => {
+						const answers = Array.isArray(qq.answers) ? qq.answers : [];
+						const options = answers.map((a) => a.answer_text ?? "");
+						const answerIds = answers.map((a) => a.id ?? a.id_answer ?? null);
+						const correctIndices = answers
+							.map((a, i) => (a.is_correct ? i : -1))
+							.filter((i) => i >= 0);
+						return {
+							id: `q_${qq.id ?? Math.random()}`,
+							backendId: qq.id ?? qq.id_question ?? null,
+							title: qq.question_titre || "",
+							description: qq.question_description || "",
+							options,
+							answerIds,
+							correctIndices,
 						};
 					});
-					setDrafts(newDrafts);
+
+					newDrafts[langCode] = {
+						title: translation.title || "",
+						quiz_description: translation.quiz_description || "",
+						questions: mappedQs,
+						active: translation.is_active ?? true,
+						coverImageFile: null,
+						coverImageUrl: translation.cover_image_url || "",
+						selectedModuleIds: quizData.modules?.map((m) => m.id) || [],
+						selectedTags: quizData.tags || [],
+						selectedTagIds: quizData.tags?.map((t) => t.id) || [],
+						isDirty: false,
+						hasTranslation: true,
+					};
+				});
+
+				const tempDrafts = { ...newDrafts };
+
+				LANGS.forEach(l => {
+					if (!tempDrafts[l.code]) {
+						tempDrafts[l.code] = {
+							isNew: true,
+							isDirty: false,
+							hasTranslation: false,
+							title: "",
+							quiz_description: "",
+							questions: [],
+							active: false,
+							selectedModuleIds: quizData.modules?.map(m => m.id) || [],
+							selectedTagIds: quizData.tags?.map(t => t.id) || [],
+							selectedTags: quizData.tags || [],
+							coverImageFile: null,
+							coverImageUrl: "",
+						};
+					}
+				});
+
+				setDrafts(tempDrafts);
+
+				setDrafts(newDrafts);
+
 				}
 			} catch (e) {
 				console.error(e);
@@ -134,7 +162,18 @@ export default function NewQuiz() {
 	}, [isEdit, quizId]);
 
 	// Get current language draft
-	const draft = drafts[currentLang] || { isDirty: false, questions: [] };
+	const draft = drafts[currentLang] ?? { isDirty: false, questions: [] };
+
+	const visibleLangs = LANGS.filter(l => !drafts[l.code]?.isNew);
+
+	useEffect(() => {
+		if (drafts[currentLang]?.isNew) {
+			const fallback = visibleLangs[0]?.code;
+			if (fallback && fallback !== currentLang) {
+				setCurrentLang(fallback);
+			}
+		}
+	}, [currentLang, drafts, visibleLangs]);
 
 	const updateDraft = (updater) => {
 		setDrafts(prev => {
@@ -180,8 +219,18 @@ export default function NewQuiz() {
 	};
 
 	const buildMultiPayload = () => {
+		const isMeaningful = (d) => {
+			if (!d) return false;
+			const hasText = (d.title?.trim() || "").length > 0;
+			const hasQs = Array.isArray(d.questions) && d.questions.length > 0;
+			const hasCover = !!(d.coverImageFile) || (d.coverImageUrl && d.coverImageUrl.trim() !== "");
+			const hasMods = Array.isArray(d.selectedModuleIds) && d.selectedModuleIds.length > 0;
+			const hasTags = Array.isArray(d.selectedTagIds) && d.selectedTagIds.length > 0;
+			return d.hasTranslation || hasText || hasQs || hasCover || hasMods || hasTags || !!d.active;
+		};
+
 		const langs = LANGS
-			.filter(l => drafts[l.code])
+			.filter(l => isMeaningful(drafts[l.code]))
 			.map(l => {
 				const d = drafts[l.code];
 				return {
@@ -286,11 +335,13 @@ export default function NewQuiz() {
 			if (!window.confirm("You have unsaved changes in this language. Switch anyway?")) return;
 			setWarnedLanguages((prev) => new Set(prev).add(currentLang));
 		}
-		setCurrentLang(langCode);
+		if (!drafts[langCode]?.isNew) {
+			setCurrentLang(langCode);
+		}
 	};
 
 	const onSaveClick = async () => {
-		const otherDirty = LANGS.some(l => l.code !== currentLang && drafts[l.code].isDirty);
+		const otherDirty = LANGS.some(l => l.code !== currentLang && drafts[l.code]?.isDirty);
 		
 		if (otherDirty) {
 			const go = window.confirm("Sauvegarder toutes les langues en une fois ?");
@@ -343,6 +394,7 @@ export default function NewQuiz() {
 		setDrafts((prev) => ({
 			...prev,
 			[langCode]: {
+				isNew: false,
 				...prev[langCode],
 				title: "",
 				quiz_description: "",
@@ -436,7 +488,7 @@ export default function NewQuiz() {
 							visible={rightSidebarVisible}
 							onHide={() => setRightSidebarVisible(false)}
 							langsStatus={LANGS.map(l => {
-								const draft = drafts[l.code];
+								const draft = drafts[l.code] ?? {};
 								const hasTranslation =
 									draft?.hasTranslation || !!draft?.title || (draft?.questions?.length ?? 0) > 0;
 								return {

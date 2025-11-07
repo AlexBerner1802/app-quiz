@@ -747,4 +747,104 @@ class QuizController extends Controller
             }
         }
     }
+
+    public function editor(Request $request, $id)
+    {
+        $allowed = ['fr','en','de','it'];
+        $lang = strtolower($request->query('lang', 'en'));
+        if (!in_array($lang, $allowed, true)) $lang = 'en';
+
+        $quiz = Quiz::with(['modules:id,module_name', 'tags:id,tag_name'])->find($id);
+        if (!$quiz) {
+            return response()->json(['message' => "Quiz not found for ID $id"], 404);
+        }
+
+        $qid = $quiz->{$this->quizPk()};
+
+        $langsPresent = DB::table('translations')
+            ->where('element_type','quiz')
+            ->where('quiz_id', $qid)
+            ->distinct()
+            ->pluck('lang')
+            ->filter(fn($l) => in_array($l, $allowed, true))
+            ->values()
+            ->all();
+
+        if (empty($langsPresent)) {
+            return response()->json([
+                'id_quiz' => $qid,
+                'modules' => $quiz->modules,
+                'tags'    => $quiz->tags,
+                'translations' => [],
+            ]);
+        }
+
+        $actives = DB::table('active_quiz')
+            ->where('id_quiz', $qid)
+            ->whereIn('lang', $langsPresent)
+            ->pluck('is_active', 'lang');
+
+        $questions = Question::where('id_quiz', $qid)->orderBy('order')->get();
+        $qIds = $questions->pluck('id_question')->all();
+        $answersByQ = Answer::whereIn('id_question', $qIds ?: [-1])->get()->groupBy('id_question');
+
+        $translations = [];
+        foreach ($langsPresent as $lg) {
+            $tQuiz = DB::table('translations')
+                ->where('element_type','quiz')->where('lang',$lg)
+                ->where('quiz_id',$qid)
+                ->whereIn('field_name',['title','quiz_description','cover_image_url'])
+                ->get()->keyBy('field_name');
+
+            $tQ = DB::table('translations')
+                ->where('element_type','question')->where('lang',$lg)
+                ->whereIn('question_id',$qIds ?: [-1])
+                ->whereIn('field_name',['question_title','question_description'])
+                ->get()->groupBy('question_id');
+
+            $aIds = $answersByQ->flatten()->pluck('id_answer')->all();
+            $tA = DB::table('translations')
+                ->where('element_type','answer')->where('lang',$lg)
+                ->whereIn('answer_id',$aIds ?: [-1])
+                ->where('field_name','answer_text')
+                ->get()->groupBy('answer_id');
+
+            $translations[] = [
+                'lang' => $lg,
+                'title' => optional($tQuiz->get('title'))->element_text ?? '',
+                'quiz_description' => optional($tQuiz->get('quiz_description'))->element_text ?? '',
+                'cover_image_url' => optional($tQuiz->get('cover_image_url'))->element_text ?? ($quiz->cover_image_url ?? ''),
+                'is_active' => (bool) ($actives[$lg] ?? 0),
+
+                'questions' => $questions->map(function($q) use ($answersByQ, $tQ, $tA) {
+                    $qt = collect($tQ->get($q->id_question, []))->keyBy('field_name');
+                    $answers = ($answersByQ->get($q->id_question, collect()))->map(function($a) use ($tA) {
+                        $txt = optional(collect($tA->get($a->id_answer, []))->first())->element_text ?? '';
+                        return [
+                            'id'          => $a->id_answer,
+                            'id_answer'   => $a->id_answer,
+                            'answer_text' => $txt,
+                            'is_correct'  => (bool)$a->is_correct,
+                        ];
+                    })->values();
+
+                    return [
+                        'id' => $q->id_question,
+                        'id_question' => $q->id_question,
+                        'question_titre' => optional($qt->get('question_title'))->element_text ?? '',
+                        'question_description' => optional($qt->get('question_description'))->element_text ?? '',
+                        'answers' => $answers,
+                    ];
+                })->values(),
+            ];
+        }
+
+        return response()->json([
+            'id_quiz' => $qid,
+            'modules' => $quiz->modules,
+            'tags'    => $quiz->tags,
+            'translations' => $translations,
+        ]);
+    }
+
 }

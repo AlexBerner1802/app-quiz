@@ -12,6 +12,19 @@ function pickPrimaryLang(languages = []) {
 }
 
 function toBackendPayloadFromLanguages(languages = [], drafts = {}) {
+
+	const filtered = (languages || []).filter(l => {
+		const code = String(l.code || l.lang || "fr").toLowerCase();
+		const d = drafts?.[code] || {};
+		const hasText = (l.title?.trim?.() || d.title?.trim?.() || "").length > 0;
+		const hasQs = Array.isArray(l.questions) ? l.questions.length > 0 : Array.isArray(d.questions) && d.questions.length > 0;
+		const hasCover = !!(l.cover_image_url || d.coverImageUrl || d.coverImageFile);
+		const hasMods = (l.module_ids?.length || d.selectedModuleIds?.length) > 0;
+		const hasTags = (l.tag_ids?.length || d.selectedTagIds?.length) > 0;
+		const active = !!(l.is_active ?? d.active);
+		return hasText || hasQs || hasCover || hasMods || hasTags || active || d.hasTranslation;
+  	});
+
 	const translations = {};
 	const is_active_by_lang = {};
 	const questions_translations = {};
@@ -20,7 +33,7 @@ function toBackendPayloadFromLanguages(languages = [], drafts = {}) {
 	let tag_ids_union = [];
 	let new_tags_union = [];
 
-	for (const l of languages) {
+	for (const l of filtered) {
 		const code = String(l.code || l.lang || "fr").toLowerCase();
 		const d = drafts?.[code] || {};
 		translations[code] = {

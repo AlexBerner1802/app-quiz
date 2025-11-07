@@ -11,17 +11,10 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'API is working!']);
 });
 
-// Users
 
 // Quizzes
-Route::get('/quizzes', [QuizController::class, 'index']);
-Route::get('/quizzes/{id}', [QuizController::class, 'show']);
-Route::post('/quizzes', [QuizController::class, 'store']);
-
-// EDIT / DELETE
-Route::put('/quizzes/{id}', [QuizController::class, 'update']);
-Route::patch('/quizzes/{id}', [QuizController::class, 'update']);
-Route::delete('/quizzes/{id}', [QuizController::class, 'destroy']);
+Route::apiResource('quizzes', QuizController::class)->only(['index','show','store','update','destroy']);
+Route::get('/quizzes/{id}/editor', [QuizController::class, 'editor']);
 
 // Modules
 Route::get('/modules', [ModuleController::class, 'index']);
@@ -31,6 +24,7 @@ Route::post('/modules', [ModuleController::class, 'store']);
 Route::get('/tags', [TagController::class, 'index']);
 Route::post('/tags', [TagController::class, 'store']);
 
+// Users
 Route::post('/user', [UserController::class, 'createUser']);
 
 // Preflight
