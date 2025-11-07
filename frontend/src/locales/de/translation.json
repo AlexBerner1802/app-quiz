@@ -1,122 +1,144 @@
 {
-  "app": {
-    "name": "Rafisa Quiz"
+  	"app": {
+    	"name": "Rafisa Quiz"
   },
+  "lang": {
+		"fr": "Français",
+		"de": "Deutsch",
+		"en": "English",
+		"it": "Italiano"
+	},
 	"login": {
 		"description": "Ein intelligentes Webtool zum nahtlosen Erstellen, Verwalten und Spielen von Quizzen in allen RAFISA-Filialen.",
 		"copyright": "Rafisa Quiz © 2025. Alle Rechte vorbehalten.",
 		"sign_in": "Anmelden"
 	},
-  "nav": {
-    "quiz": "Quiz",
-    "results": "Ergebnisse",
-    "search": "Suche",
-    "settings": "Einstellungen",
-    "logout": "Abmelden"
-  },
-  "actions": {
-    "newQuiz": "Neues Quiz",
-    "save": "Speichern",
-    "saveChanges": "Änderungen speichern",
-    "cancel": "Abbrechen",
-    "confirm": "Bestätigen",
-    "delete": "Löschen",
-    "addQuestion": "Fügen Sie eine Frage hinzu",
-    "reorder": "Reorganisieren",
-    "back": "Zurück",
-		"edit": "Zu ändern"
-  },
-  "common": {
-    "active": "Aktiv",
-    "inactive": "Inaktiv",
-    "yes": "Ja",
-    "no": "Nein",
-    "untitled": "Ohne Titel",
-    "placeholders": {
-      "typeHere": "Hier eingeben"
-    },
-    "state": {
-      "on": "Ein",
-      "off": "Aus"
-    },
-		"loading": "Laden...",
-		"error": "Fehler: "
-  },
-  "quiz": {
-    "title": "Ein Quiz erstellen und bearbeiten",
-    "editTitle": "Ein Quiz bearbeiten",
-    "placeholders": {
-      "title": "Titel des Quiz",
-      "categoryTitle": "Kategorie-Titel hier eingeben",
-      "untitled": "Ohne Titel",
-      "tags": "Geben Sie ein Tag ein und dann +",
-			"module": "Entrez un nom ou numéro de module"
-    },
+	"nav": {
+		"quiz": "Quiz",
+		"results": "Ergebnisse",
+		"search": "Suche",
+		"settings": "Einstellungen",
+		"logout": "Abmelden"
+	},
+	"actions": {
+		"newQuiz": "Neues Quiz",
+		"save": "Speichern",
+		"saveChanges": "Änderungen speichern",
+		"cancel": "Abbrechen",
+		"confirm": "Bestätigen",
+		"delete": "Löschen",
+		"addQuestion": "Fügen Sie eine Frage hinzu",
+		"reorder": "Reorganisieren",
+		"back": "Zurück",
+		"edit": "Zu ändern",
+		"saveAllLangs": "Alle Sprachen gleichzeitig speichern ?",
+		"switchAnyway": "Sie haben ungespeicherte Änderungen in dieser Sprache. Trotzdem wechseln ?",
+		"deleteLastLang": "Dies ist die einzige Sprache. Wenn Sie sie löschen, wird das Quiz vollständig gelöscht und Sie gelangen zurück zur Startseite. Fortfahren?",
+		"delete_language": "Sprache löschen",
+		"confirm_delete_lang_title": "Sprache entfernen?",
+		"confirm_delete_lang_message": "Möchten Sie die Sprache {{lang}} wirklich löschen?"
+	},
+	"common": {
+		"active": "Aktiv",
+		"inactive": "Inaktiv",
+		"cancel": "Abbrechen",
+		"yes": "Ja",
+		"no": "Nein",
+		"untitled": "Ohne Titel",
+		"settings": "Einstellungen",
+		"lang": "Sprache",
+		"placeholders": {
+			"typeHere": "Hier eingeben"
+		},
+		"state": {
+			"on": "Ein",
+			"off": "Aus"
+		},
+			"loading": "Laden...",
+			"error": "Fehler: "
+	},
+	"quiz": {
+		"title": "Ein Quiz erstellen und bearbeiten",
+		"editTitle": "Ein Quiz bearbeiten",
+		"general_quiz_information": "Quizinformationen",
+		"question": "Frage",
+		"questions": "Fragen",
+		"answers": "Antworten",
+		"add_description": "Fügen Sie eine Notiz hinzu",
+		"remove_description": "Notiz entfernen",
+		"description": "Fragenotiz (optional)",
+		"add_language": "Fügen Sie eine Sprache hinzu",
+		"placeholders": {
+			"title": "Titel des Quiz",
+			"categoryTitle": "Kategorie-Titel hier eingeben",
+			"untitled": "Ohne Titel",
+			"tags": "Geben Sie ein Tag ein und dann +"
+		},
     "sections": {
-      "categories": "Kategorien",
-      "options": "Optionen",
-      "descriptionAdd": "Beschreibung hinzufügen",
-      "questions": "Fragen",
-		  "tagAdd": "Neues Tag",
-		  "existingTag": "Vorhandene Tags",
-			"module": "Module",
-			"noModule": "Kein vorhandenes Modul"
+		"categories": "Kategorien",
+		"options": "Optionen",
+		"descriptionAdd": "Beschreibung hinzufügen",
+		"questions": "Fragen",
+		"tagAdd": "Neues Tag",
+		"existingTag": "Vorhandene Tags",
+		"module": "Module",
+		"noModule": "Kein vorhandenes Modul"
     },
     "hints": {
-      "dragCenter": "Ziehen und in der Mitte ablegen",
-      "emptyDrop": "Fügen Sie Ihre erste Frage mit der Schaltfläche links oder unten hinzu"
+      	"dragCenter": "Ziehen und in der Mitte ablegen",
+      	"emptyDrop": "Fügen Sie Ihre erste Frage mit der Schaltfläche links oder unten hinzu"
     },
     "fields": {
-      "title": "Titel",
-      "description": "Beschreibung",
-      "coverImage": "Hintergrundbild",
-      "orUpload": "Oder laden Sie eine Datei hoch"
+      	"title": "Titel",
+      	"description": "Beschreibung",
+      	"coverImage": "Hintergrundbild",
+      	"orUpload": "Oder laden Sie eine Datei hoch"
     },
     "category": {
-      "new": "Neue Kategorie"
+      	"new": "Neue Kategorie"
     },
     "options": {
-      "new": "Neue Option"
+      	"new": "Neue Option"
     },
     "types": {
-      "short": "Kurze Antwort",
-      "long": "Lange Antwort",
-      "single": "Einfachauswahl",
-      "multi": "Mehrfachauswahl",
-      "boolean": "Wahr / Falsch"
+		"short": "Kurze Antwort",
+		"long": "Lange Antwort",
+		"single": "Einfachauswahl",
+		"multi": "Mehrfachauswahl",
+		"boolean": "Wahr / Falsch"
     },
     "defaults": {
-      "option": "Option",
-      "true": "Wahr",
-      "false": "Falsch"
+		"option": "Option",
+		"true": "Wahr",
+		"false": "Falsch"
     },
     "labels": {
-			"single": "Einzel",
-			"multi": "Multi"
+		"single": "Einzel",
+		"multi": "Multi"
 		},
     "show": {
-		  "cantFind": "Quiz nicht gefunden...",
-			"noQuestion": "Noch keine Fragen",
-			"createdAt": "Erstellt am ",
-			"modifiedAt": "Geändert am ",
-			"finished": "Bestätigen Sie das Quiz",
-			"validation": "Validierung abgeschlossen"
+		"cantFind": "Quiz nicht gefunden...",
+		"noQuestion": "Noch keine Fragen",
+		"createdAt": "Erstellt am ",
+		"modifiedAt": "Geändert am ",
+		"finished": "Bestätigen Sie das Quiz",
+		"validation": "Validierung abgeschlossen"
+	},
+	"empty": "Noch keine Quiz.",
+	"confirmDelete": "Möchten Sie dieses Quiz wirklich löschen?"
+	},
+	"pages": {
+		"home": {
+		"title": "Quiz"
 		},
-		"empty": "Noch keine Quiz.",
-		"confirmDelete": "Möchten Sie dieses Quiz wirklich löschen?"
-  },
-  "pages": {
-    "home": {
-      "title": "Quiz"
-    },
     "settings": {
-      "title": "Einstellungen"
+     	"title": "Einstellungen"
     },
     "login": {
-      "title": "Anmeldung",
-      "microsoftSignIn": "Mit Microsoft anmelden",
-      "microsoftAlt": "Microsoft-Anmeldung",
-      "error": "Anmeldung fehlgeschlagen"
+		"title": "Anmeldung",
+		"microsoftSignIn": "Mit Microsoft anmelden",
+		"microsoftAlt": "Microsoft-Anmeldung",
+		"error": "Anmeldung fehlgeschlagen"
     },
     "homePage": "Startseite - Rafisa Quiz",
 		"createPage": "Quiz erstellen - Rafisa Quiz",
@@ -127,20 +149,20 @@
 		"loginPage": "Verbindung - Rafisa Quiz",
 		"accountPage": "Konto - Rafisa Quiz"
   },
-  "modals": {
-    "logout": {
-      "title": "Abmelden",
-      "text": "Möchten Sie sich wirklich abmelden?",
-      "cancel": "Abbrechen",
-      "confirm": "Ja"
-    }
-  },
-  "dialogs": {
-    "unsaved": {
-      "title": "Ohne Speichern verlassen?",
-      "text": "Sie haben ungespeicherte Änderungen.",
-      "stay": "Bleiben",
-      "leave": "Verlassen"
-    }
-  }
+  	"modals": {
+    	"logout": {
+			"title": "Abmelden",
+			"text": "Möchten Sie sich wirklich abmelden?",
+			"cancel": "Abbrechen",
+			"confirm": "Ja"
+		}
+  	},
+  	"dialogs": {
+    	"unsaved": {
+			"title": "Ohne Speichern verlassen?",
+			"text": "Sie haben ungespeicherte Änderungen.",
+			"stay": "Bleiben",
+			"leave": "Verlassen"
+		}
+	}
 }

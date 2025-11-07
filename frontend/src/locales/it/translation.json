@@ -2,145 +2,166 @@
   "app": {
     "name": "Rafisa Quiz"
   },
+  "lang": {
+		"fr": "Français",
+		"de": "Deutsch",
+		"en": "English",
+		"it": "Italiano"
+	},
 	"login": {
 		"description": "Uno strumento web intelligente per creare, gestire e giocare ai quiz in modo semplice in tutte le filiali RAFISA.",
 		"copyright": "Rafisa Quiz © 2025. Tutti i diritti riservati.",
 		"sign_in": "Accedi"
 	},
-  "nav": {
-    "quiz": "Quiz",
-    "results": "Risultati",
-    "search": "Cerca",
-    "settings": "Impostazioni",
-    "logout": "Disconnettersi"
-  },
-  "actions": {
-    "newQuiz": "Nuovo Quiz",
-    "save": "Salva",
-    "saveChanges": "Salva modifiche",
-    "cancel": "Annulla",
-    "confirm": "Conferma",
-    "delete": "Elimina",
-    "addQuestion": "Aggiungi una domanda",
-    "reorder": "Riorganizzare",
-    "back": "Indietro",
-		"edit": "Per modificare"
-  },
-  "common": {
-    "active": "Attivo",
-    "inactive": "Inattivo",
-    "yes": "Sì",
-    "no": "No",
-    "untitled": "Senza titolo",
-    "placeholders": {
-      "typeHere": "Scrivi qui"
-    },
-    "state": {
-      "on": "Attivo",
-      "off": "Disattivo"
-    },
+	"nav": {
+		"quiz": "Quiz",
+		"results": "Risultati",
+		"search": "Cerca",
+		"settings": "Impostazioni",
+		"logout": "Disconnettersi"
+	},
+	"actions": {
+		"newQuiz": "Nuovo Quiz",
+		"save": "Salva",
+		"saveChanges": "Salva modifiche",
+		"cancel": "Annulla",
+		"confirm": "Conferma",
+		"delete": "Elimina",
+		"addQuestion": "Aggiungi una domanda",
+		"reorder": "Riorganizzare",
+		"back": "Indietro",
+		"edit": "Per modificare",
+		"saveAllLangs": "Salvare tutte le lingue contemporaneamente ?",
+		"switchAnyway": "Hai modifiche non salvate in questa lingua. Cambiare comunque ?",
+		"deleteLastLang": "Questa è l'unica lingua. Eliminandola, il quiz verrà eliminato completamente e tornerai alla pagina iniziale. Continuare ?",
+		"delete_language": "Elimina lingua",
+		"confirm_delete_lang_title": "Rimuovere la lingua?",
+		"confirm_delete_lang_message": "Sei sicuro di voler eliminare la lingua {{lang}}?"
+	},
+	"common": {
+		"active": "Attivo",
+		"inactive": "Inattivo",
+		"cancel": "Annulla",
+		"yes": "Sì",
+		"no": "No",
+		"untitled": "Senza titolo",
+		"settings": "Impostazioni",
+		"lang": "Lingua",
+		"placeholders": {
+			"typeHere": "Scrivi qui"
+		},
+		"state": {
+			"on": "Attivo",
+			"off": "Disattivo"
+		},
 		"loading": "Caricamento...",
 		"error": "Errore: "
-  },
-  "quiz": {
-    "title": "Crea e modifica un quiz",
-    "editTitle": "Modifica un quiz",
-    "placeholders": {
-      "title": "Titolo del quiz",
-      "categoryTitle": "Scrivi qui il titolo della categoria",
-      "untitled": "Senza titolo",
-      "tags": "Digita un tag, quindi INVIO o +",
-	  "module": "Entrez un nom ou numéro de module"
-    },
-    "sections": {
-     	"categories": "Categorie",
-      	"options": "Opzioni",
-      	"descriptionAdd": "Aggiungi una descrizione",
-      	"questions": "Domande",
-		"tagAdd": "Nuovo tag",
-		"existingTag": "Tag esistenti",
-		"module": "Modulo",
-		"noModule": "Nessun modulo esistente"
-    },
-    "hints": {
-      "dragCenter": "Trascina e rilascia al centro",
-      "emptyDrop": "Aggiungi la tua prima domanda con il pulsante a sinistra o quello qui sotto"
-    },
-    "fields": {
-      "title": "Titolo",
-      "description": "Descrizione",
-	  "coverImage": "Immagine di sfondo",
-	  "orUpload": "Oppure carica un file"
-    },
-    "category": {
-      "new": "Nuova Categoria"
-    },
-    "options": {
-      "new": "Nuova Opzione"
-    },
-    "types": {
-      "short": "Risposta breve",
-      "long": "Risposta lunga",
-      "single": "Scelta singola",
-      "multi": "Scelte multiple",
-      "boolean": "Vero / Falso"
-    },
-    "defaults": {
-      "option": "Opzione",
-      "true": "Vero",
-      "false": "Falso"
-    },
-		"labels": {
-			"single": "Singola",
-			"multi": "Multiplo"
+	},
+	"quiz": {
+		"title": "Crea e modifica un quiz",
+		"editTitle": "Modifica un quiz",
+		"general_quiz_information": "Informazioni sul quiz",
+		"question": "Domanda",
+		"questions": "Domande",
+		"answers": "Risposte",
+		"add_description": "Aggiungi una nota",
+		"remove_description": "Rimuovi nota",
+		"description": "Nota sulla domanda (facoltativa)",
+		"add_language": "Aggiungi una lingua",
+			"placeholders": {
+			"title": "Titolo del quiz",
+			"categoryTitle": "Scrivi qui il titolo della categoria",
+			"untitled": "Senza titolo",
+			"tags": "Digita un tag, quindi INVIO o +"		},
+		"sections": {
+			"categories": "Categorie",
+			"options": "Opzioni",
+			"descriptionAdd": "Aggiungi una descrizione",
+			"questions": "Domande",
+			"tagAdd": "Nuovo tag",
+			"existingTag": "Tag esistenti",
+			"module": "Modulo",
+			"noModule": "Nessun modulo esistente"
 		},
-		"show": {
-			"cantFind": "Quiz non trovato...",
-			"noQuestion": "Nessuna domanda ancora",
-			"createdAt": "Creato il ",
-			"modifiedAt": "Modificato il ",
-			"finished": "Convalida il quiz",
-			"validation": "Convalida completata"
+		"hints": {
+			"dragCenter": "Trascina e rilascia al centro",
+			"emptyDrop": "Aggiungi la tua prima domanda con il pulsante a sinistra o quello qui sotto"
 		},
-		"empty": "Ancora nessun quiz.",
-		"confirmDelete": "Vuoi davvero eliminare questo quiz?"
-  },
-  "pages": {
-    "home": {
-      "title": "Quiz"
-    },
-    "settings": {
-      "title": "Impostazioni"
-    },
-    "login": {
-      "title": "Accesso",
-      "microsoftSignIn": "Accedi con Microsoft",
-      "microsoftAlt": "Accesso Microsoft",
-      "error": "Accesso non riuscito"
-    },
-    "homePage": "Pagina iniziale- Rafisa Quiz",
-		"createPage": "Creazione di quiz - Rafisa Quiz",
-		"editPage": "Edizione quiz - Rafisa Quiz",
-		"settingsPage": "Impostazioni - Rafisa Quiz",
-		"resultsPage": "Risultati - Rafisa Quiz",
-		"searchPage": "Ricerca - Rafisa Quiz",
-		"loginPage": "Connessione - Rafisa Quiz",
-		"accountPage": "Account - Rafisa Quiz"
-  },
-  "modals": {
-    "logout": {
-      "title": "Disconnessione",
-      "text": "Vuoi davvero disconnetterti?",
-      "cancel": "Annulla",
-      "confirm": "Sì"
-    }
-  },
-  "dialogs": {
-    "unsaved": {
-      "title": "Uscire senza salvare?",
-      "text": "Hai modifiche non salvate.",
-      "stay": "Rimani",
-      "leave": "Esci"
-    }
-  }
-}
+		"fields": {
+			"title": "Titolo",
+			"description": "Descrizione",
+			"coverImage": "Immagine di sfondo",
+			"orUpload": "Oppure carica un file"
+		},
+		"category": {
+			"new": "Nuova Categoria"
+		},
+		"options": {
+			"new": "Nuova Opzione"
+		},
+		"types": {
+			"short": "Risposta breve",
+			"long": "Risposta lunga",
+			"single": "Scelta singola",
+			"multi": "Scelte multiple",
+			"boolean": "Vero / Falso"
+		},
+		"defaults": {
+			"option": "Opzione",
+			"true": "Vero",
+			"false": "Falso"
+		},
+			"labels": {
+				"single": "Singola",
+				"multi": "Multiplo"
+			},
+			"show": {
+				"cantFind": "Quiz non trovato...",
+				"noQuestion": "Nessuna domanda ancora",
+				"createdAt": "Creato il ",
+				"modifiedAt": "Modificato il ",
+				"finished": "Convalida il quiz",
+				"validation": "Convalida completata"
+			},
+			"empty": "Ancora nessun quiz.",
+			"confirmDelete": "Vuoi davvero eliminare questo quiz?"
+	},
+	"pages": {
+		"home": {
+			"title": "Quiz"
+		},
+		"settings": {
+			"title": "Impostazioni"
+		},
+		"login": {
+			"title": "Accesso",
+			"microsoftSignIn": "Accedi con Microsoft",
+			"microsoftAlt": "Accesso Microsoft",
+			"error": "Accesso non riuscito"
+		},
+		"homePage": "Pagina iniziale- Rafisa Quiz",
+			"createPage": "Creazione di quiz - Rafisa Quiz",
+			"editPage": "Edizione quiz - Rafisa Quiz",
+			"settingsPage": "Impostazioni - Rafisa Quiz",
+			"resultsPage": "Risultati - Rafisa Quiz",
+			"searchPage": "Ricerca - Rafisa Quiz",
+			"loginPage": "Connessione - Rafisa Quiz",
+			"accountPage": "Account - Rafisa Quiz"
+	},
+	"modals": {
+		"logout": {
+			"title": "Disconnessione",
+			"text": "Vuoi davvero disconnetterti?",
+			"cancel": "Annulla",
+			"confirm": "Sì"
+		}
+	},
+	"dialogs": {
+		"unsaved": {
+		"title": "Uscire senza salvare?",
+		"text": "Hai modifiche non salvate.",
+		"stay": "Rimani",
+		"leave": "Esci"
+		}
+	}
+	}

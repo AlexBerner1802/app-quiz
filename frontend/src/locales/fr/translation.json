@@ -30,7 +30,13 @@
 		"addQuestion": "Ajouter une question",
 		"reorder": "Réorganiser",
 		"back": "Retour",
-		"edit": "Modifier"
+		"edit": "Modifier",
+		"saveAllLangs": "Sauvegarder toutes les langues en une fois ?",
+		"switchAnyway": "Vous avez des changements non sauvegardés dans cette langue. Changer quand même ?",
+		"deleteLastLang": "C'est la seule langue disponible. La supprimer effacera complètement le quiz et vous ramènera à la page d'accueil. Continuer ?",
+		"delete_language": "Supprimer la langue",
+		"confirm_delete_lang_title": "Supprimer la langue?",
+		"confirm_delete_lang_message": "Êtes-vous sûr de vouloir supprimer la langue {{lang}} ?"
 	},
 	"common": {
 		"active": "Actif",
@@ -40,6 +46,7 @@
 		"no": "Non",
 		"untitled": "Sans titre",
 		"settings": "Paramètres",
+		"lang": "Langue",
 		"placeholders": {
 			"typeHere": "Tapez ici"
 		},
@@ -89,17 +96,17 @@
 			"orUpload": "Ou téléverser un fichier"
 		},
 		"category": {
-		"new": "Nouvelle Catégorie"
+			"new": "Nouvelle Catégorie"
 		},
 		"options": {
 			"new": "Nouvelle réponse"
 		},
 		"types": {
-		"short": "Réponse courte",
-		"long": "Réponse longue",
-		"single": "Choix unique",
-		"multi": "Choix multiples",
-		"boolean": "Vrai / Faux"
+			"short": "Réponse courte",
+			"long": "Réponse longue",
+			"single": "Choix unique",
+			"multi": "Choix multiples",
+			"boolean": "Vrai / Faux"
 		},
 		"defaults": {
 			"option": "Réponse",
@@ -123,16 +130,16 @@
 	},
 	"pages": {
 		"home": {
-		"title": "Quiz"
+			"title": "Quiz"
 		},
 		"settings": {
-		"title": "Paramètres"
+			"title": "Paramètres"
 		},
 		"login": {
-		"title": "Connexion",
-		"microsoftSignIn": "Se connecter avec Microsoft",
-		"microsoftAlt": "Connexion Microsoft",
-		"error": "Échec du login"
+			"title": "Connexion",
+			"microsoftSignIn": "Se connecter avec Microsoft",
+			"microsoftAlt": "Connexion Microsoft",
+			"error": "Échec du login"
 		},
 		"homePage": "Accueil - Rafisa Quiz",
 		"createPage": "Création de quiz - Rafisa Quiz",
@@ -145,18 +152,18 @@
 	},
 	"modals": {
 		"logout": {
-		"title": "Déconnexion",
-		"text": "Voulez-vous vraiment vous déconnecter ?",
-		"cancel": "Annuler",
-		"confirm": "Oui"
+			"title": "Déconnexion",
+			"text": "Voulez-vous vraiment vous déconnecter ?",
+			"cancel": "Annuler",
+			"confirm": "Oui"
 		}
 	},
 	"dialogs": {
 		"unsaved": {
-		"title": "Quitter sans enregistrer ?",
-		"text": "Vous avez des modifications non sauvegardées.",
-		"stay": "Rester",
-		"leave": "Quitter"
+			"title": "Quitter sans enregistrer ?",
+			"text": "Vous avez des modifications non sauvegardées.",
+			"stay": "Rester",
+			"leave": "Quitter"
 		}
 	}
 }

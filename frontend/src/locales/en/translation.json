@@ -1,100 +1,122 @@
 {
-  "app": {
-    "name": "Rafisa Quiz"
-  },
+	"app": {
+		"name": "Rafisa Quiz"
+	},
+	"lang": {
+		"fr": "Français",
+		"de": "Deutsch",
+		"en": "English",
+		"it": "Italiano"
+	},
 	"login": {
 		"description": "A smart web tool to seamlessly create, manage and play quizzes across all RAFISA branches.",
 		"copyright": "Rafisa Quiz © 2025. All rights reserved.",
 		"sign_in": "Sign in"
 	},
-  "nav": {
-    "quiz": "Quiz",
-    "results": "Results",
-    "search": "Search",
-    "settings": "Settings",
-    "logout": "Logout"
-  },
-  "actions": {
-    "newQuiz": "New Quiz",
-    "save": "Save",
-    "saveChanges": "Save changes",
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "delete": "Delete",
-    "addQuestion": "Add a question",
-    "reorder": "Reorder",
-    "back": "Back",
-		"edit": "Edit"
-  },
-  "common": {
-    "active": "Active",
-    "inactive": "Inactive",
-    "yes": "Yes",
-    "no": "No",
-    "untitled": "Untitled",
-    "placeholders": {
-      "typeHere": "Type here"
-    },
-    "state": {
-      "on": "On",
-      "off": "Off"
-    },
+	"nav": {
+		"quiz": "Quiz",
+		"results": "Results",
+		"search": "Search",
+		"settings": "Settings",
+		"logout": "Logout"
+	},
+	"actions": {
+		"newQuiz": "New Quiz",
+		"save": "Save",
+		"saveChanges": "Save changes",
+		"cancel": "Cancel",
+		"confirm": "Confirm",
+		"delete": "Delete",
+		"addQuestion": "Add a question",
+		"reorder": "Reorder",
+		"back": "Back",
+		"edit": "Edit",
+		"saveAllLangs": "Save all languages at once ?",
+		"switchAnyway": "You have unsaved changes in this language. Switch anyway ?",
+		"deleteLastLang": "This is the only language. Deleting it will erase the quiz completely and return you to home. Continue ?",
+		"delete_language": "Remove language",
+		"confirm_delete_lang_title": "Delete this language?",
+		"confirm_delete_lang_message": "Are you sure you want to remove {{lang}} ? "
+	},
+	"common": {
+		"active": "Active",
+		"inactive": "Inactive",
+		"cancel": "Cancel",
+		"yes": "Yes",
+		"no": "No",
+		"untitled": "Untitled",
+		"settings": "Settings",
+		"lang": "Lang",
+		"placeholders": {
+			"typeHere": "Type here"
+		},
+		"state": {
+			"on": "On",
+			"off": "Off"
+		},
 		"loading": "Loading...",
 		"error": "Error: "
-  },
-  "quiz": {
-    "title": "Create and edit a quiz",
-    "editTitle": "Edit a quiz",
-    "placeholders": {
-      "title": "Quiz title",
-      "categoryTitle": "Type the category title here",
-      "untitled": "Untitled",
-      "tags": "Type a tag then Enter or +",
-			"module": "Enter a module's name or number"
-    },
-    "sections": {
-      "categories": "Categories",
-      "options": "Options",
-      "descriptionAdd": "Add a description",
-      "questions": "Questions",
-		  "tagAdd": "New tag",
-		  "existingTag": "Existing tags",
+	},
+	"quiz": {
+		"title": "Create and edit a quiz",
+		"editTitle": "Edit a quiz",
+		"general_quiz_information": "Quiz informations",
+		"question": "Question",
+		"questions": "Questions",
+		"answers": "Answers",
+		"add_description": "Add a description",
+		"remove_description": "Delete the description",
+		"description": "Question's description (optionnal)",
+		"add_language": "Add a language",
+		"placeholders": {
+			"title": "Quiz title",
+			"categoryTitle": "Type the category title here",
+			"untitled": "Untitled",
+			"tags": "Type a tag then Enter or +"
+		},
+		"sections": {
+			"categories": "Categories",
+			"options": "Options",
+			"descriptionAdd": "Add a description",
+			"questions": "Questions",
+			"tagAdd": "New tag",
+			"existingTag": "Existing tags",
 			"module": "Modules",
 			"noModule": "No existing module"
-    },
-    "hints": {
-      "dragCenter": "Drag and drop in the center",
-      "emptyDrop": "Add your first question with the button on the left or the one below"
-    },
-    "fields": {
-      "title": "Title",
-      "description": "Description",
-      "coverImage": "Background image",
-      "orUpload": "Or upload a file"
-    },
-    "category": {
-      "new": "New Category"
-    },
-    "options": {
-      "new": "New Option"
-    },
-    "types": {
-      "short": "Short answer",
-      "long": "Long answer",
-      "single": "Single choice",
-      "multi": "Multiple choice",
-      "boolean": "True / False"
-    },
-    "defaults": {
-      "option": "Option",
-      "true": "True",
-      "false": "False"
-    },
-		"labels": {
-			"single": "Single",
-			"multi": "Multi"
 		},
-    "show": {
+		"hints": {
+			"dragCenter": "Drag and drop in the center",
+			"emptyDrop": "Add your first question with the button on the left or the one below"
+		},
+		"fields": {
+			"title": "Title",
+			"description": "Description",
+			"coverImage": "Background image",
+			"orUpload": "Or upload a file"
+		},
+		"category": {
+			"new": "New Category"
+		},
+		"options": {
+			"new": "New Option"
+		},
+		"types": {
+			"short": "Short answer",
+			"long": "Long answer",
+			"single": "Single choice",
+			"multi": "Multiple choice",
+			"boolean": "True / False"
+		},
+		"defaults": {
+			"option": "Option",
+			"true": "True",
+			"false": "False"
+		},
+			"labels": {
+				"single": "Single",
+				"multi": "Multi"
+			},
+		"show": {
 			"cantFind": "Can't find quiz...",
 			"noQuestion": "No question right now",
 			"createdAt": "Created at ",
@@ -104,43 +126,43 @@
 		},
 		"empty": "No quizzes yet.",
 		"confirmDelete": "Do you really want to delete this quiz?"
-  },
-  "pages": {
-    "home": {
-      "title": "Quiz"
-    },
-    "settings": {
-      "title": "Settings"
-    },
-    "login": {
-      "title": "Login",
-      "microsoftSignIn": "Sign in with Microsoft",
-      "microsoftAlt": "Microsoft login",
-      "error": "Login failed"
-    },
-      "homePage": "Home - Rafisa Quiz",
-      "createPage": "Quiz Creation - Rafisa Quiz",
-      "editPage": "Quiz edition - Rafisa Quiz",
-      "settingsPage": "Settings - Rafisa Quiz",
-      "resultsPage": "Results - Rafisa Quiz",
-      "searchPage": "Search - Rafisa Quiz",
-      "loginPage": "Login - Rafisa Quiz",
-      "accountPage": "Account - Rafisa Quiz"
-  },
-  "modals": {
-    "logout": {
-      "title": "Logout",
-      "text": "Do you really want to log out?",
-      "cancel": "Cancel",
-      "confirm": "Yes"
-    }
-  },
-  "dialogs": {
-    "unsaved": {
-      "title": "Leave without saving?",
-      "text": "You have unsaved changes.",
-      "stay": "Stay",
-      "leave": "Leave"
-    }
-  }
+	},
+	"pages": {
+		"home": {
+			"title": "Quiz"
+		},
+		"settings": {
+			"title": "Settings"
+		},
+		"login": {
+			"title": "Login",
+			"microsoftSignIn": "Sign in with Microsoft",
+			"microsoftAlt": "Microsoft login",
+			"error": "Login failed"
+		},
+		"homePage": "Home - Rafisa Quiz",
+		"createPage": "Quiz Creation - Rafisa Quiz",
+		"editPage": "Quiz edition - Rafisa Quiz",
+		"settingsPage": "Settings - Rafisa Quiz",
+		"resultsPage": "Results - Rafisa Quiz",
+		"searchPage": "Search - Rafisa Quiz",
+		"loginPage": "Login - Rafisa Quiz",
+		"accountPage": "Account - Rafisa Quiz"
+	},
+	"modals": {
+		"logout": {
+			"title": "Logout",
+			"text": "Do you really want to log out?",
+			"cancel": "Cancel",
+			"confirm": "Yes"
+		}
+	},
+	"dialogs": {
+		"unsaved": {
+			"title": "Leave without saving?",
+			"text": "You have unsaved changes.",
+			"stay": "Stay",
+			"leave": "Leave"
+		}
+	}
 }

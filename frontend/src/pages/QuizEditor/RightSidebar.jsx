@@ -36,7 +36,7 @@ export default function RightSidebar({
 
 				<Content>
 					<LangGrid>
-						<Title>Langue</Title>
+						<Title>{t("common.lang")}</Title>
 						{langsStatus
 							.filter((lang) =>
 								lang.code === currentLang ||	// always show current
@@ -87,10 +87,10 @@ export default function RightSidebar({
 													onClick={(e) => {
 														e.stopPropagation();
 														openModal("confirm", {
-															title: t("quiz.confirm_delete_lang_title") || "Delete this language?",
+															title: t("actions.confirm_delete_lang_title") || "Delete this language?",
 															message:
-																t("quiz.confirm_delete_lang_message", { lang: lang.label }) ||
-																`Are you sure you want to remove ${lang.label}?`,
+																t("actions.confirm_delete_lang_message", { lang: lang.code }) ||
+																`Are you sure you want to remove ${lang.code}?`,
 															onConfirm: () => onDeleteLang(lang.code),
 														});
 													}}
