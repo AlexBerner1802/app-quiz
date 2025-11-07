@@ -268,7 +268,7 @@ export async function deleteQuiz(id) {
 		credentials: "include",
 		headers: { Accept: "application/json" },
 	});
-	return toJsonResponse(res);
+  return toJsonResponse(res);
 }
 
 

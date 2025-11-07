@@ -62,12 +62,12 @@ export default function HomePage() {
 	);
 
 	const handleDelete = useCallback(
-		async (id) => {
+		async (id_quiz) => {
 			const confirmText = t("quiz.confirmDelete");
 			if (!window.confirm(confirmText)) return;
 			try {
-				await deleteQuiz(id);
-				setQuizzes((prev) => prev.filter((q) => q.id !== id));
+				await deleteQuiz(id_quiz);
+				setQuizzes((prev) => prev.filter((q) => q.id_quiz !== id_quiz));
 			} catch (e) {
 				alert(e.message || "Erreur lors de la suppression");
 			}
