@@ -1,74 +1,149 @@
 body.dark-mode {
-    /* === Primary / Links / Buttons === */
-    --color-primary-text: var(--brand-primary-100);
+
+    /* ---------------- Semantic / Brand Colors ---------------- */
+
+    /* Primary  */
+    --color-primary-text: var(--brand-primary-50);
     --color-primary-bg: var(--brand-primary-500);
     --color-primary-bg-hover: var(--brand-primary-600);
-    --color-primary-muted: rgba(3, 102, 214, 0.12);
+    --color-primary-bg-active: var(--brand-primary-700);
+    --color-primary-muted: var(--brand-primary-950);
+    --color-primary-muted-text: var(--brand-primary-700);
 
-    /* === Secondary / UI elements / surfaces === */
-    --color-secondary-text: var(--gray-300);
-    --color-secondary-bg: var(--gray-900);
-    --color-secondary-border: var(--gray-700);
+    /* Secondary */
+    --color-secondary-text: var(--indigo-50);
+    --color-secondary-bg: var(--indigo-500);
+    --color-secondary-bg-hover: var(--indigo-600);
+    --color-secondary-bg-active: var(--indigo-700);
+    --color-secondary-muted: var(--indigo-950);
+    --color-secondary-muted-text: var(--indigo-700);
 
-    /* === Success / Green accent === */
-    --color-success-text: var(--brand-success-200);
-    --color-success-bg: var(--brand-success-600);
-    --color-success-bg-hover: var(--brand-success-500);
-    --color-success-muted: rgba(34, 134, 58, 0.15);
+    /* Success */
+    --color-success-text: var(--brand-success-50);
+    --color-success-bg: var(--brand-success-500);
+    --color-success-bg-hover: var(--brand-success-600);
+    --color-success-bg-active: var(--brand-success-700);
+    --color-success-muted: var(--brand-success-950);
+    --color-success-muted-text: var(--brand-success-700);
 
-    /* === Error / Red accent === */
-    --color-error-text: var(--brand-error-200);
-    --color-error-bg: var(--brand-error-700);
+    /* Error */
+    --color-error-text: var(--brand-error-50);
+    --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
-    --color-error-muted: rgba(215, 58, 73, 0.15);
+    --color-error-bg-active: var(--brand-error-700);
+    --color-error-muted: var(--brand-error-950);
+    --color-error-muted-text: var(--brand-error-700);
 
-    /* === Warning / Yellow accent === */
-    --color-warning-text: var(--brand-warning-100);
+    /* Warning */
+    --color-warning-text: var(--brand-warning-50);
     --color-warning-bg: var(--brand-warning-500);
-    --color-warning-bg-hover: var(--brand-warning-400);
-    --color-warning-muted: rgba(187, 136, 0, 0.15);
+    --color-warning-bg-hover: var(--brand-warning-600);
+    --color-warning-bg-active: var(--brand-warning-700);
+    --color-warning-muted: var(--brand-warning-950);
+    --color-warning-muted-text: var(--brand-warning-700);
 
-    /* === Gradients (soft, subtle) === */
+    /* Notification */
+    --color-notification-text: var(--brand-notification-50);
+    --color-notification-bg: var(--brand-notification-500);
+    --color-notification-bg-hover: var(--brand-notification-600);
+    --color-notification-bg-active: var(--brand-notification-700);
+    --color-notification-muted: var(--brand-notification-950);
+    --color-notification-muted-text: var(--brand-notification-700);
+
+    /* Gradients  */
     --gradient-primary: linear-gradient(135deg, var(--brand-primary-700), var(--brand-primary-800));
     --gradient-success: linear-gradient(135deg, var(--brand-success-700), var(--brand-success-800));
     --gradient-error: linear-gradient(135deg, var(--brand-error-700), var(--brand-error-800));
     --gradient-warning: linear-gradient(135deg, var(--brand-warning-700), var(--brand-warning-600));
-    --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-800) 100%);
+    --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-700) 100%);
 
-    /* === Text / UI neutral === */
-    --color-text: var(--gray-50);
-    --color-btn-text: var(--gray-100);
-    --color-placeholder: var(--gray-400);
+    /* Additional Utility Colors */
+    --color-highlight: var(--amber-400);             /* Highlighted text or UI elements */
+    --color-link: var(--brand-primary-500);          /* Links */
+    --color-link-hover: var(--brand-primary-600);    /* Links hover */
 
-    /* === Surfaces / cards / panels === */
-    --color-background: var(--gray-900);
-    --color-background-surface: var(--gray-800);
-    --color-surface: var(--gray-700);
-    --color-background-elevated: var(--gray-700);
-    --color-background-overlay: rgba(0,0,0,0.6);
-    --color-background-input: var(--gray-700);
-    --color-background-input-focused: var(--gray-800);
-    --color-border: var(--gray-500);
-    --color-separator: var(--gray-700);
 
-    /* === Skeletons === */
+    /* ------------------ Base / Backgrounds ------------------ */
+
+    --color-background: var(--gray-900);               /* Main page background */
+    --color-background-muted: var(--gray-800);         /* Secondary / subtle background */
+    --color-background-alt: var(--gray-700);           /* Alternate section backgrounds */
+    --color-text: var(--gray-50);                      /* Primary text color */
+    --color-text-muted: var(--gray-400);               /* Secondary / muted text */
+    --color-text-alt: var(--gray-100);                 /* Alternate text for emphasis */
+
+
+    /* ---------------- Surfaces / Elevation ---------------- */
+
+    --color-background-surface-1: var(--gray-900);     /* Cards, sheets, modals base surface */
+    --color-background-surface-2: var(--gray-800);     /* Slightly elevated surfaces */
+    --color-background-surface-3: var(--gray-700);     /* Medium elevation */
+    --color-background-surface-4: var(--gray-600);     /* High elevation (popovers, menus) */
+    --color-background-surface-5: var(--gray-500);     /* Highest elevation if needed */
+
+    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.7);   /* expand of --gray-900 */
+
+
+    /* ---------------- Inputs / Form Controls ---------------- */
+
+    --color-input-background: var(--gray-800);                 /* Default input background */
+    --color-input-border: var(--gray-600);                     /* Input border */
+    --color-input-text: var(--gray-50);                        /* Text inside input */
+    --color-input-focus-border: var(--brand-primary-500);      /* Focus state border */
+    --color-input-placeholder: var(--gray-400);                /* Placeholder text */
+    --color-input-disabled-background: var(--gray-700);        /* Disabled input background */
+    --color-input-disabled-text: var(--gray-300);              /* Disabled input text */
+
+
+    /* ---------------- Borders / Dividers ---------------- */
+
+    --color-border: var(--gray-600);       /* Standard borders */
+    --color-border-strong: var(--gray-400);/* Stronger borders */
+    --color-divider: var(--gray-700);      /* Divider lines */
+
+
+    /* ---------------- Feedback / States ---------------- */
+    /* These colors are used to indicate interactivity or UI state changes.
+       They can be background, border, or text depending on context. */
+
+    /* Hover state: apply when an interactive element is hovered */
+    --color-hover: var(--gray-700);
+    /* Example usage: button:hover, list item hover, card hover background */
+
+    /* Active state: apply when an element is being clicked or active */
+    --color-active: var(--gray-600);
+    /* Example usage: button:active, selected tab pressed, active menu item */
+
+    /* Selected state: apply for items that are currently selected or highlighted.
+       You can choose to link this to the primary color if you want emphasis. */
+    --color-selected: var(--brand-primary-500);
+    /* Example usage: selected menu item, highlighted table row, active tab
+       Linking to primary color gives consistent branding for selected items */
+
+    /* Disabled state: apply to elements that are non-interactive */
+    --color-disabled: var(--gray-300);
+    /* Example usage: disabled buttons, inputs, cards, or menu items
+       Typically lighter or muted to indicate inactivity */
+
+
+    /* Skeleton Loading */
     --color-skeleton-base: var(--gray-700);
     --color-skeleton-highlight: var(--gray-600);
 
-    /* === Shadows === */
-    --box-shadow-xs: 0 0 0 1px rgba(0,0,0,0.15);
-    --box-shadow-s: 0 1px 2px rgba(0,0,0,0.2);
-    --box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-    --box-shadow-l: 0 6px 12px rgba(0,0,0,0.3);
-    --box-shadow-xl: 0 12px 24px rgba(0,0,0,0.35);
+    /* Box Shadows (expands of --gray-50 ) */
+    --box-shadow-xs: 0 0 0 1px oklch(0.21 0.034 264.665 / 0.05);
+    --box-shadow-s: 0 1px 2px 0 oklch(0.21 0.034 264.665 / 0.05);
+    --box-shadow: 0 1px 3px 0 oklch(0.21 0.034 264.665 / 0.1), 0 1px 2px 0 oklch(0.21 0.034 264.665 / 0.06);
+    --box-shadow-l: 0 10px 15px -3px oklch(0.21 0.034 264.665 / 0.1), 0 4px 6px -2px oklch(0.21 0.034 264.665 / 0.05);
+    --box-shadow-xl: 0 20px 25px -5px oklch(0.21 0.034 264.665 / 0.1), 0 10px 10px -5px oklch(0.21 0.034 264.665 / 0.04);
 
-    /* === Glass / frosted effect === */
-    --liquidglass-bg: rgba(32, 34, 37, 0.6);
+    /* Liquid Glass / Frosted Background */
+    --liquidglass-bg: oklch(0.21 0.034 264.665 / 0.5);   /* expand of --gray-900 */
+    --liquidglass-shadow: 0 8px 32px 0 oklch(0.21 0.034 264.665 / 0.2); /* expand of --gray-900 */
     --liquidglass-blur: blur(12px);
-    --liquidglass-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 
-/* === Page-specific overrides === */
+/* Page-specific overrides */
 body.dark-mode.page-newquiz {
     --quiz-surface: var(--gray-800);
     --quiz-surface-muted: var(--gray-700);

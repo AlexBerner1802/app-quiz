@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import CheckBox from "../../components/ui/CheckBox";
 
@@ -64,9 +64,9 @@ const Card = styled.article`
     display: grid;
     gap: var(--spacing-2xs);
     color: var(--color-text);
-    background-color: var(--color-background-elevated);
+    background-color: var(--color-background-surface-2);
 
-    h3 { margin: 0; font-size: var(--font-size-m); }
+    h3 { margin: 0; font-size: var(--font-size); }
     p  { margin: 0; }
 `;
 

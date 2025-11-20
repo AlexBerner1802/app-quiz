@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import styled from "styled-components";
-import { GripVertical, Plus, SquareChevronLeft } from "lucide-react";
+import {BadgeQuestionMark, Move, SquareChevronLeft} from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useTranslation } from "react-i18next";
 
@@ -78,15 +78,18 @@ export default function LeftSidebar({
 		<SidebarWrapper $visible={visible}>
 			<LeftPanel>
 				<Header>
-					<LeftTitle>{t("quiz.sections.questions")}</LeftTitle>
+					<LeftTitle>
+						<BadgeQuestionMark size={22} />
+						{t("quiz.sections.questions")}
+					</LeftTitle>
 					<HideButton onClick={onHide}>
 						<SquareChevronLeft size={24} color={"var(--color-text)"} />
 					</HideButton>
 				</Header>
 
-				<AddQuestionButton onClick={addSingleQuestion}>
-					<Plus size={16} /> {t("actions.addQuestion")}
-				</AddQuestionButton>
+				<Button variant={"outline"} onClick={addSingleQuestion}>
+					<BadgeQuestionMark size={18} /> {t("actions.addQuestion")}
+				</Button>
 
 				<LeftList>
 					{questions.map((q, idx) => {
@@ -108,11 +111,11 @@ export default function LeftSidebar({
 								onClick={() => scrollToQuestion(q.id)}
 							>
 								<DragDock title={t("quiz.hints.dragToReorder")}>
-									<GripVertical size={16} />
+									<Move size={16} />
 								</DragDock>
 								<LeftCard>
 									<LeftCardHeader>
-										<LeftCardIndex>{idx + 1}</LeftCardIndex>
+										<LeftCardIndex>{ t("quiz.question") + " " + (idx + 1)}</LeftCardIndex>
 									</LeftCardHeader>
 									<LeftCardMain>
 										<LeftCardTitle>{q.title?.trim() ? q.title : untitled}</LeftCardTitle>
@@ -147,20 +150,20 @@ const LeftPanel = styled.aside`
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--color-background);
+    background-color: var(--color-background-muted);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-primary-bg) var(--color-surface);
+    scrollbar-color: var(--color-primary-bg) var(--color-background-muted);
     &::-webkit-scrollbar {
         width: 8px;
     }
     &::-webkit-scrollbar-track {
-        background: var(--color-surface);
+        background: var(--color-background-muted);
         border-radius: 8px;
     }
     &::-webkit-scrollbar-thumb {
         background-color: var(--color-primary-bg);
         border-radius: 8px;
-        border: 2px solid var(--color-surface);
+        border: 2px solid var(--color-background-muted);
     }
     &::-webkit-scrollbar-thumb:hover {
         background-color: var(--color-primary-bg-hover);
@@ -176,7 +179,11 @@ const Header = styled.div`
 `;
 
 const LeftTitle = styled.h2`
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
     font-size: var(--font-size);
+    color: var(--color-text-muted);
     font-weight: 600;
     margin: 0;
 `;
@@ -203,26 +210,34 @@ const LeftList = styled.div`
     flex-direction: column;
     gap: var(--spacing-xs);
     user-select: none;
-    flex: 1;
-    min-height: 0;
 `;
 
 const LeftRow = styled.div`
     display: flex;
     width: 100%;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing);
     transition: all .2s ease;
+    border-radius: var(--border-radius);
+	background-color: var(--color-background-alt);
+	border: 1px solid var(--color-background-alt);
+    padding: var(--spacing);
     cursor: grab;
     &[data-dragging="1"] {
         opacity: 1;
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
     &[data-over="1"] {
         outline: 1px dashed var(--color-primary-bg);
         border-radius: 8px;
         transform: scale(0.98);
         opacity: 0.4;
+    }
+
+    &:hover {
+        border: 1px solid var(--color-primary-bg);
+        background-color: var(--color-primary-muted);
+        color: var(--color-primary-bg);
     }
 `;
 
@@ -232,16 +247,16 @@ const DragDock = styled.div`
     justify-content: center;
     width: var(--spacing-l);
     height: var(--spacing-l);
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 `;
 
-const LeftCard = styled(Button)`
+const LeftCard = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    border: none;
-    background-color: var(--color-background-surface);
+    background-color: transparent;
+	border: none;
     color: var(--color-text);
     cursor: pointer;
     text-align: left;
@@ -267,16 +282,17 @@ const LeftCardMain = styled.div`
 
 const LeftCardIndex = styled.p`
     font-size: var(--font-size-s);
-    position: relative;
-    top: 1px;
+	font-weight: 500;
 `;
 
 const LeftCardTitle = styled.span`
     flex: 1;
     font-size: var(--font-size-s);
+    color: var(--color-text-muted);
     font-weight: 400;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     width: 100%;
+	min-height: var(--spacing);
 `;

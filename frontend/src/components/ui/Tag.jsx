@@ -9,7 +9,7 @@ const variants = {
         border: 1px solid transparent;
   `,
 	secondary: css`
-        background: var(--color-background-elevated);
+        background: var(--color-background-surface-2);
         color: var(--color-secondary-text);
         border: 1px solid transparent;
   `,

@@ -94,7 +94,7 @@ const Container = styled.div`
     width: 100vw;
     height: 100vh;
     background: var(--gradient-background);
-        //background: url(${props => props.$bg}) no-repeat center;
+    //background: url(${props => props.$bg}) no-repeat center;
     background-size: cover;
 `;
 

@@ -103,7 +103,7 @@ const Placeholder = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: var(--color-placeholder, #888);
+    color: var(--color-input-placeholder);
     text-align: center;
     font-size: 14px;
 	gap: var(--spacing);
@@ -113,7 +113,7 @@ const Placeholder = styled.div`
 const DropZone = styled.div`
     border: 1px dashed var(--color-border, #ccc);
     border-radius: var(--border-radius);
-    background-color: var(--color-background-input, #f9f9f9);
+    background-color: var(--color-input-background, #f9f9f9);
     cursor: pointer;
     outline: none;
     display: flex;

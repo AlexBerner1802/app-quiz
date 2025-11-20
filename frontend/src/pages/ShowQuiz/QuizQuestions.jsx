@@ -120,7 +120,7 @@ const TopBar = styled.div`
     align-items: center;
     justify-content: space-between;
     h2 { margin: 0; }
-    div { color: var(--color-placeholder); }
+    div { color: var(--color-text-muted); }
 `;
 
 const Section = styled.section`
@@ -145,10 +145,10 @@ const ValidateButton = styled.button`
 `;
 
 const ValidatedNote = styled.span`
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 `;
 
 const Empty = styled.p`
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
     margin: 0;
 `;

@@ -268,7 +268,7 @@ const TagsRow = styled.div`
 
 const Timestamp = styled.div`
 	font-size: var(--font-size-xs);
-	color: var(--color-placeholder);
+	color: var(--color-text-muted);
 	margin-top: auto;
 	width: 100%;
 `;

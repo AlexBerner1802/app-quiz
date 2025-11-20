@@ -45,7 +45,7 @@ export default function CenterPanel({
 							{
 								draft.active ?
 									<ActiveBadge>Quiz active <MonitorCheck size={18} color={"var(--color-success-bg"}/></ActiveBadge> :
-									<InactiveBadge>Quiz inactive <MonitorCheck size={18} color={"var(--color-placeholder"}/></InactiveBadge>
+									<InactiveBadge>Quiz inactive <MonitorCheck size={18} color={"var(--color-text-muted"}/></InactiveBadge>
 							}
 							{quizExpanded ? (
 								<ChevronDown size={24} strokeWidth={2} />
@@ -69,18 +69,18 @@ export default function CenterPanel({
 									aria-hidden="true"
 									className="icon"
 									size={20}
-									color={"var(--color-placeholder"}
+									color={"var(--color-text-muted"}
 								/>
 							}
 							value={draft.title}
 							onChange={(e) => updateDraft({ title: e.target.value })}
-							size="l"
+							size="m"
 							width="100%"
 							placeholder={t("quiz.fields.title") || "Sans titre"}
 						/>
 
 						<TextArea
-							size="l"
+							size="m"
 							width="100%"
 							value={draft.quiz_description}
 							onChange={(e) =>
@@ -91,7 +91,7 @@ export default function CenterPanel({
 									aria-hidden="true"
 									className="icon"
 									size={20}
-									color={"var(--color-placeholder"}
+									color={"var(--color-text-muted"}
 								/>
 							}
 							placeholder={t("quiz.fields.description") || "Sans titre"}
@@ -219,7 +219,7 @@ const QuizBlock = styled.div`
 	display: flex;
 	flex-direction: column;
 	padding-bottom: ${({ $isOpen }) => $isOpen ? "var(--spacing-l)" : "var(--spacing-xs)"};
-	border-bottom: 1px solid var(--color-separator);
+	border-bottom: 1px solid var(--color-divider);
 	transition: all 0.2s ease;
 	margin-bottom: var(--spacing);
 `;
@@ -228,7 +228,7 @@ const QuestionsBlock = styled.div`
 	display: flex;
 	flex-direction: column;
 	padding-bottom: ${({ $isOpen }) => $isOpen ? "var(--spacing-l)" : "var(--spacing-xs)"};
-    border-bottom: ${({ $isOpen }) => $isOpen ? "" : "1px solid var(--color-separator)"};
+    border-bottom: ${({ $isOpen }) => $isOpen ? "" : "1px solid var(--color-divider)"};
 	transition: all 0.2s ease;
 	margin-bottom: var(--spacing);
 `;
@@ -239,7 +239,7 @@ const TitleRow = styled.div`
 	justify-content: space-between;
 	cursor: pointer;
 	user-select: none;
-	padding: 0 0 var(--spacing) 0;
+	padding: 0 0 var(--spacing-l) 0;
 	transition: all 0.2s ease;
 
 	&:hover {
@@ -271,7 +271,7 @@ const TitleRowRight = styled.div`
 const Subtitle = styled.p`
     font-size: var(--font-size);
     font-weight: 500;
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 `;
 
 const ActiveBadge = styled.p`
@@ -291,7 +291,7 @@ const InactiveBadge = styled.p`
     gap: var(--spacing-xs);
     font-size: var(--font-size);
     font-weight: 500;
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 `;
 
 const Footer = styled.div`
@@ -302,7 +302,7 @@ const Footer = styled.div`
 
 const FooterNote = styled.div`
 	font-size: var(--font-size-xs);
-	color: var(--color-placeholder);
+	color: var(--color-text-muted);
 	text-align: center;
     padding: var(--spacing);
 `;

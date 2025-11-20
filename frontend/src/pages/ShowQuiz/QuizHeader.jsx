@@ -44,7 +44,7 @@ const HeaderTop = styled.div`
 `;
 
 const Meta = styled.div`
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
     display: flex;
     gap: 8px;
     font-size: var(--font-size-s);

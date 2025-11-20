@@ -74,8 +74,10 @@ const DropdownContainer = styled.div`
 
 const DropdownHeader = styled.div`
     border-radius: var(--border-radius);
-    background-color: var(--color-background-input);
+    background-color: var(--color-input-background);
+    border: 1px solid var(--color-input-border);
     padding: var(--spacing-xs) var(--spacing);
+	color: var(--color-text);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -95,7 +97,7 @@ const ChevronIcon = styled(FiChevronDown)`
 const DropdownList = styled.ul`
     width: ${({ $containerWidth }) => $containerWidth || 'var(--spacing-6xl)'};
     border-radius: var(--border-radius);
-    background-color: var(--color-background-surface);
+    background-color: var(--color-background-surface-1);
     position: absolute;
     top: calc(100% + var(--spacing-2xs));
     ${({ $align }) => $align === 'right' ? 'right: 0; left: auto;' : 'left: 0; right: auto;'}
@@ -115,15 +117,17 @@ const DropdownList = styled.ul`
 const DropdownItem = styled.li`
     padding: var(--spacing-xs) var(--spacing);
     cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
-    color: ${({ disabled }) => (disabled ? 'var(--color-placeholder)' : 'var(--color-text)')};
+    color: ${({ disabled }) => (disabled ? 'var(--color-text-muted)' : 'var(--color-text)')};
     pointer-events: ${({ disabled }) => (disabled ? 'none' : 'auto')};
     background-color: ${({ disabled }) => (disabled ? 'var(--primary-color-bg)' : 'transparent')};
     display: flex;
     align-items: center;
     gap: var(--spacing-xs);
     font-size: var(--font-size);
+	transition: all .2s ease;
 
     &:hover {
+		color: var(--color-primary-text);
         background-color: ${({ disabled }) => (disabled ? 'inherit' : 'var(--color-primary-bg-hover)')};
     }
 `;

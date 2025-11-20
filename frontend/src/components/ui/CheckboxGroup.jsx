@@ -43,7 +43,7 @@ const CheckboxGroup = ({
 							onClick={() => handleToggle(opt.id)}
 						>
 							<CheckIconWrapper checked={isChecked}>
-								 <Check size={16} strokeWidth={2.7} color={isChecked ? "var(--color-btn-text)" : "var(--color-placeholder)"}/>
+								 <Check size={16} strokeWidth={2.7} color={isChecked ? "var(--color-text)" : "var(--color-text-muted)"}/>
 							</CheckIconWrapper>
 							<OptionLabel checked={isChecked}>{opt.label}</OptionLabel>
 						</OptionBox>
@@ -78,9 +78,9 @@ const Options = styled.div`
 
 const OptionLabel = styled.p`
     line-height: var(--line-height-l);
-    font-size: var(--font-size);
-	font-weight: 400;
-	color: ${({ checked }) => (checked ? "var(--color-text, #333)" : "var(--color-placeholder, #333)")};
+    font-size: var(--font-size-s);
+	font-weight: 500;
+	color: ${({ checked }) => (checked ? "var(--color-text, #333)" : "var(--color-text-muted, #333)")};
 `;
 
 const CheckIconWrapper = styled.div`
@@ -95,21 +95,21 @@ const OptionBox = styled.div`
     align-items: center;
     gap: var(--spacing-xs, 0.5rem);
     padding: 0 var(--spacing-s, 0.75rem);
-    border: 1px solid ${({ checked }) => (checked ? "var(--color-primary-bg-hover, #2684ff)" : "var(--color-border)")};
+    border: 1px solid ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-border)")};
     border-radius: var(--border-radius, 4px); 
-    background-color: ${({ checked }) => (checked ? "var(--color-primary-muted, #2684ff)" : "var(--color-background-input)")};
-    color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+    background-color: ${({ checked }) => (checked ? "var(--color-primary-muted, #2684ff)" : "var(--color-input-background)")};
+    color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-input-placeholder, #333)")};
     cursor: pointer;
     transition: all 0.2s;
 	min-height: 34px;
 
     ${OptionLabel} {
-        color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+        color: ${({ checked }) => (checked ? "var(--color-primary-bg)" : "var(--color-input-placeholder, #333)")};
     }
 	
     ${CheckIconWrapper} {
         svg {
-            stroke: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-text, #333)")};
+            stroke: ${({ checked }) => (checked ? "var(--color-primary-bg)" : "var(--color-input-placeholder, #333)")};
         }
     }
 	
@@ -119,15 +119,15 @@ const OptionBox = styled.div`
 
     &:hover {
         border-color: var(--color-primary-bg, #2684ff);
-        background-color: var(--color-primary-bg-hover, #2684ff);
+        background-color: var(--color-input-background, #2684ff);
 
         ${OptionLabel} {
-            color: var(--color-primary-text, #000);
+            color: var(--color-primary-bg, #000);
         }
 
         ${CheckIconWrapper} {
 			svg {
-                stroke: var(--color-primary-text, #000);
+                stroke: var(--color-primary-bg, #000);
             }
         }
     }

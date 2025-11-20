@@ -16,17 +16,22 @@ export default function SelectLanguageModal({ currentLangs = [], onAdd, onClose 
 			<Dialog onClick={(e) => e.stopPropagation()}>
 				<h3>{t("quiz.add_language") || "Select Language"}</h3>
 				<LangList>
-					{allLangs.map(([code, res]) => {
+					{allLangs.map(([code]) => {
 						const isUsed = currentLangs.includes(code);
 						return (
 							<LangItem
 								key={code}
-								onClick={() => !isUsed && (onAdd(code), onClose())}
+								onClick={() => {
+									if (!isUsed) {
+										onAdd(code);
+										onClose();
+									}
+								}}
 								disabled={isUsed}
 								$used={isUsed}
 							>
 								{t("lang."+code)}
-								{isUsed && " (Added)"}
+								{isUsed && " (" + t("common.already_added") +  ")"}
 							</LangItem>
 						);
 					})}
@@ -48,27 +53,30 @@ const LangList = styled.div`
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xs);
-    margin: var(--spacing-s) 0;
+    margin: var(--spacing-s) 0 0;
     overflow-y: auto;
-    flex: 1;           /* take remaining vertical space */
-    min-height: 100px; /* optional */
+    flex: 1;
+    min-height: 100px;
 `;
 
-const LangItem = styled.button`
+const LangItem = styled.div`
 	display: flex;
 	justify-content: space-between;
 	padding: var(--spacing);
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius);
-	background-color: var(--color-surface);
+	background-color: var(--color-background-muted);
 	transition: all .2s ease;
 	cursor: pointer;
 	text-align: left;
 	font-size: var(--font-size);
-	
-	&:hover {
+    color: ${({ disabled }) => (disabled ? 'var(--color-text-muted)' : 'var(--color-text)')};
+    pointer-events: ${({ disabled }) => (disabled ? 'none' : 'auto')};
+
+    &:hover {
 		background-color: var(--color-primary-bg-hover);
         border: 1px solid var(--color-primary-bg);
+		color: var(--color-primary-text);
 	}
 	
 	&:disabled {

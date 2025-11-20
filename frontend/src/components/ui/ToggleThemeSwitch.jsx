@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import {FiMoon, FiSun } from "react-icons/fi";
-import {useTheme} from "../../context/theme/index.js";
+import {useTheme} from "../../context/theme";
 
 const ToggleThemeSwitch = () => {
 
@@ -41,8 +41,8 @@ const HiddenCheckbox = styled.input.attrs({ type: 'checkbox' })`
 const StyledLabel = styled.label`
 	cursor: pointer;
 	width: var(--spacing-3xl);
-	height: var(--spacing-xl);
-	background: var(--color-background-surface);
+	height: calc(var(--spacing-xl) + 2px);
+	background: var(--color-input-background);
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -51,15 +51,15 @@ const StyledLabel = styled.label`
 	position: relative;
 	transition: background 0.3s;
 	box-sizing: border-box;
-    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--color-input-border);
+    /*box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2); */
 `;
 
 const IconWrapper = styled.span`
 	display: flex;
 	align-items: center;
-
 	justify-content: center;
-	color: var(--color-placeholder);
+	color: var(--color-text-muted);
 	font-size: var(--font-size-s);
 	z-index: 0;
 `;

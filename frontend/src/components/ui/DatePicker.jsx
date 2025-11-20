@@ -70,7 +70,7 @@ const InputWrapper = styled.div`
 	width: 100%;
 	align-items: center;
 	border: 1px solid transparent;
-	background-color: var(--color-background-input, #fff);
+	background-color: var(--color-input-background, #fff);
 	color: var(--color-text);
 	border-radius: ${({ $size }) =>
 			$size === 's' ? '0.25rem' :
@@ -79,7 +79,6 @@ const InputWrapper = styled.div`
 	transition: all .2s ease-in-out;
 
 	&:focus-within {
-		background-color: var(--color-background-input-focused, #fff);
 		border-color: var(--color-primary-bg, #2684FF);
 	}
 	
@@ -111,7 +110,7 @@ const IconWrapper = styled.div`
 
 const StyledDatePicker = styled(ReactDatePicker)`
 	border: none;
-	background-color: var(--color-background-input, #fff);
+	background-color: var(--color-input-background, #fff);
 	outline: none;
 	width: 100%;
 	line-height: var(--line-height);
@@ -125,13 +124,8 @@ const StyledDatePicker = styled(ReactDatePicker)`
 	padding: ${({ $size }) =>
 			$size === 's' ? '0.5rem 0.625rem' :
 					$size === 'l' ? '0.9375rem 1.875rem' : '0.75rem 1rem'};
-
-
-	&:focus {
-		background-color: var(--color-background-input-focused, #fff);
-	}
 	
 	&::placeholder {
-		color: var(--color-placeholder, #aaa);
+		color: var(--color-text-muted, #aaa);
 	}
 `;

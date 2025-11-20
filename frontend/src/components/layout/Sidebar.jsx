@@ -80,7 +80,7 @@ const Aside = styled.aside`
     justify-content: space-between;
     padding: var(--spacing) 0;
     align-items: center;
-    background-color: var(--color-background-surface);
+    background-color: var(--color-background-muted);
 `;
 
 const Stack = styled.div`
@@ -124,14 +124,18 @@ const IconButton = styled.button`
 
     /* hover */
     &:hover {
-        background-color: var(--color-background-elevated);
+        background-color: var(--color-background-surface-3);
+		
+		& svg {
+			stroke: var(--color-primary-bg);
+		}
     }
 
     /* active state */
     ${(p) =>
 		p.$active &&
-		`
-    	color: var(--color-primary-bg);
+			`
+				color: var(--color-primary-bg);
 	`}
 `;
 
@@ -139,13 +143,13 @@ const Avatar = styled.div`
     width: 36px;
     height: 36px;
     border-radius: var(--border-radius);
-    background-color: var(--color-background-elevated);
+    background-color: var(--color-background-surface-3);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: var(--font-size-s);
     font-weight: bold;
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
     margin-bottom: var(--spacing-xs);
 `;
 
@@ -165,7 +169,7 @@ const Tooltip = styled.div`
 	top: 50%;
 	left: 110%;
 	transform: translateY(-50%) translateX(0);
-	background-color: var(--color-background-elevated);
+	background-color: var(--color-background-surface-2);
 	color: var(--color-text);
 	padding: var(--spacing-xs) var(--spacing-s);
 	border-radius: var(--border-radius-s);

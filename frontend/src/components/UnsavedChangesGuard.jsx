@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useLocation } from "react-router-dom";
 
 export default function UnsavedChangesGuard({ when = false }) {
 	const { t } = useTranslation();

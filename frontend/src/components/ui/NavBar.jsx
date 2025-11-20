@@ -20,7 +20,7 @@ const StyledAppBar = styled.header`
 	height: 64px;
 	padding: 0.75rem 1.5rem;
 	box-sizing: border-box;
-	background-color: var(--color-surface);
+	background-color: var(--color-background-muted);
 	color: var(--color-text);
 	border-bottom: 1px solid var(--color-border);
 	position: sticky;
