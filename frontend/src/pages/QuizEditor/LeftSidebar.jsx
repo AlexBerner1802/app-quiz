@@ -218,7 +218,7 @@ const LeftRow = styled.div`
     align-items: center;
     gap: var(--spacing);
     transition: all .2s ease;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
 	background-color: var(--color-background-alt);
 	border: 1px solid var(--color-background-alt);
     padding: var(--spacing);

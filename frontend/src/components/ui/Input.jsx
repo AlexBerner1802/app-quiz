@@ -92,9 +92,9 @@ const InputWrapper = styled.div`
     width: 100%;
     border: 1px solid var(--color-input-border);
     border-radius: ${({ $size }) =>
-		$size === 's' ? 'var(--border-radius-s)' :
-			$size === 'l' ? 'var(--border-radius)' :
-				'var(--border-radius)'};
+            $size === 's' ? 'var(--border-radius-xs)' :
+                    $size === 'l' ? 'var(--border-radius-s)' :
+                            'var(--border-radius-xs)'};
     background-color: var(--color-input-background);
     transition: color 0.2s, box-shadow 0.2s;
     overflow: hidden;
@@ -117,13 +117,13 @@ const IconWrapper = styled.div`
 
     svg {
         width: ${({ $size }) =>
-	$size === 's' ? 'var(--font-size)' :
-		$size === 'l' ? 'var(--font-size-xl)' :
-			'var(--font-size-l)'};
+			$size === 's' ? 'var(--font-size)' :
+				$size === 'l' ? 'var(--font-size-xl)' :
+					'var(--font-size-l)'};
         height: ${({ $size }) =>
-	$size === 's' ? 'var(--font-size)' :
-		$size === 'l' ? 'var(--font-size-xl)' :
-			'var(--font-size-l)'};
+			$size === 's' ? 'var(--font-size)' :
+				$size === 'l' ? 'var(--font-size-xl)' :
+					'var(--font-size-l)'};
     }
 `;
 

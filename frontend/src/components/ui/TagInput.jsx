@@ -265,7 +265,7 @@ const Wrapper = styled.div`
 const Label = styled.label`
 	font-size: var(--font-size);
 	font-weight: 500;
-	margin-bottom: var(--spacing-xs, 0.25rem);
+	margin-bottom: var(--spacing, 0.25rem);
 	color: var(--color-text, #333);
 `;
 
@@ -273,8 +273,8 @@ const TagContainer = styled.div`
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: var(--spacing-2xs, 0.25rem);
-	border-radius: var(--border-radius);
+	gap: var(--spacing-xs, 0.25rem);
+	border-radius: var(--border-radius-xs);
 
     padding: ${({ $size }) =>
             $size === 's' ? '0.5rem' :
@@ -283,7 +283,7 @@ const TagContainer = styled.div`
 	background: var(--color-input-background, #fff);
     border: 1px solid var(--color-input-border, #ccc);
 	height: ${({ height }) => height};
-	min-height: 54px;
+	min-height: 46px;
 	
 	&:focus-within { 
 		border-color: var(--color-primary-bg, #2684ff); 
@@ -296,10 +296,10 @@ const Tag = styled.div`
 	background: var(--color-primary-muted, #2684ff);
 	border: 1px solid var(--color-primary-bg, #2684ff);
 	color: var(--color-primary-bg, #333);
-	border-radius: var(--border-radius);
-	padding: var(--spacing-xs) var(--spacing-s);
+	border-radius: var(--border-radius-xs);
+	padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-s);
 	font-size: var(--font-size-s);
-	gap: var(--spacing-2xs);
+	gap: var(--spacing-xs);
 `;
 
 const RemoveButton = styled.div`
@@ -308,12 +308,12 @@ const RemoveButton = styled.div`
 	color: var(--color-primary-bg, #333);
 	font-size: var(--font-size);
 	cursor: pointer;
-	width: 22px;
-	height: 22px;
+	width: 20px;
+	height: 20px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--border-radius-s);
+	border-radius: var(--border-radius-2xs);
 	transition: all 0.2s ease;
 	
 	&:hover { 
@@ -330,7 +330,6 @@ const StyledInput = styled.input`
 	padding: 0.25rem;
 	font-size: 0.875rem;
 	background: transparent;
-	height: 34px;
 
     &::placeholder {
         color: var(--color-text-muted, #aaa);
@@ -346,7 +345,7 @@ const Dropdown = styled.ul`
 	list-style: none;
 	background: var(--color-input-background, #fff);
 	border: 1px solid var(--color-border, #ccc);
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-xs);
 	max-height: 150px;
 	overflow-y: auto;
 	box-shadow: var(--box-shadow);

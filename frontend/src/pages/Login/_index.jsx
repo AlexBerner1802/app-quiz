@@ -74,7 +74,7 @@ function LoginPage() {
                                 <Title>{t("app.name")}</Title>
                                 <Subtitle>{t("login.description")}</Subtitle>
                                 <Button onClick={handleLogin} style={{marginLeft: "auto"}}>
-                                    <LogIn size={24} />
+                                    <LogIn size={20} />
                                     {t("login.sign_in")}
                                 </Button>
                             </RightContentContent>
@@ -103,7 +103,7 @@ const Content = styled.div`
     align-items: stretch;
     justify-content: space-between;
     padding: var(--spacing-s);
-    border-radius: var(--border-radius-xl);
+    border-radius: var(--border-radius-l);
     width: var(--spacing-12xl);
     min-width: 320px;
     min-height: 600px;
@@ -130,7 +130,7 @@ const LeftContent = styled.div`
     flex: 1;
     width: 50%;
     background: url(${props => props.$background}) center center / cover no-repeat;
-    border-radius: var(--border-radius-l);
+    border-radius: var(--border-radius);
     padding: var(--spacing);
     position: relative;
     overflow: hidden;

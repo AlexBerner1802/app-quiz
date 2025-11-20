@@ -20,30 +20,26 @@ export default Button;
 
 /* ---------------------- Sizes ---------------------- */
 const sizes = {
-	xs: css`
-        font-size: 0.75rem;
-        padding: 0.375rem 0.5rem;
-        border-radius: 0.25rem;
-	`,
 	s: css`
-        font-size: 0.875rem;
-        padding: 0.5rem 0.625rem;
-        border-radius: 0.375rem;
+        font-size: var(--font-size-s);
+        padding: var(--spacing-xs) var(--spacing-s);
+        border-radius: var(--border-radius-2xs);
+        min-width: calc(var(--spacing-xs) + var(--spacing-l) + 2px);
+        min-height: calc(var(--spacing-xs) + var(--spacing-l) + 2px);
 	`,
 	m: css`
-        font-size: 1rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
+        font-size: var(--font-size);
+        padding: var(--spacing-s) var(--spacing);
+        border-radius: var(--border-radius-xs);
+        min-width: calc(var(--spacing-xs) + var(--spacing-xl) + 2px);
+        min-height: calc(var(--spacing-xs) + var(--spacing-xl) + 2px);
 	`,
 	l: css`
-        font-size: 1.25rem;
-        padding: 0.9375rem 1.875rem;
-        border-radius: 0.675rem;
-	`,
-	xl: css`
-        font-size: 1.5rem;
-        padding: 1.125rem 2.5rem;
-        border-radius: 0.75rem;
+        font-size: var(--font-size-l);
+        padding: var(--spacing) var(--spacing-l);
+        border-radius: var(--border-radius-s);
+        min-width: calc(var(--spacing) + var(--spacing-2xl) + 2px);
+        min-height: calc(var(--spacing) + var(--spacing-2xl) + 2px);
 	`,
 };
 
@@ -56,11 +52,13 @@ const variants = {
 		border: 1px solid transparent;
 	
 		&:hover:not(:disabled) {
-		  background-color: var(--color-primary-bg-hover);
+		  	background-color: var(--color-primary-bg-hover);
+            border: 1px solid transparent;
 		}
 	
 		&:focus-visible {
-		  outline: 3px solid var(--color-primary-bg);
+		  	outline: 3px solid var(--color-primary-bg);
+            outline-offset: 2px;
 		}
   `,
 
@@ -71,12 +69,14 @@ const variants = {
 		border: 1px solid transparent;
 	
 		&:hover:not(:disabled) {
-		  background-color: var(--color-primary-bg-hover);
+		  	background-color: var(--color-primary-bg-hover);
+            border-color: var(--color-primary-bg-hover);
             color: var(--color-primary-text);
 		}
 	
 		&:focus-visible {
-		  outline: 3px solid var(--color-primary-bg);
+		  	outline: 3px solid var(--color-primary-bg);
+            outline-offset: 2px;
 		}
   `,
 
@@ -94,21 +94,31 @@ const variants = {
 	
 		&:focus-visible {
 		  outline: 3px solid var(--color-primary-bg);
+            outline-offset: 2px;
 		}
   `,
 
 	/* Ghost button — no border, subtle */
 	ghost: css`
 		background-color: transparent;
-		color: var(--slate-50);
+        color: var(--color-text);
 		border: 1px solid transparent;
-	
-		&:hover:not(:disabled) {
-		  background-color: var(--slate-800);
-		}
+        box-shadow: none;
+        padding: 0;
+
+        &:hover:not(:disabled) {
+            background-color: transparent;
+            color: var(--color-primary-bg);
+
+            & svg {
+                transition: all 0.2s ease;
+                stroke: var(--color-primary-bg);
+            }
+        }
 	
 		&:focus-visible {
 		  outline: 3px solid var(--slate-700);
+            outline-offset: 2px;
 		}
   `,
 
@@ -120,10 +130,12 @@ const variants = {
 	
 		&:hover:not(:disabled) {
 		  background-color: var(--color-error-bg-hover);
+		  border-color: var(--color-error-bg-hover);
 		}
 	
 		&:focus-visible {
 		  outline: 3px solid var(--color-error-bg);
+            outline-offset: 2px;
 		}
   `,
 
@@ -135,10 +147,12 @@ const variants = {
 	
 		&:hover:not(:disabled) {
 		  background-color: var(--color-success-bg-hover);
+            border-color: var(--color-success-bg-hover);
 		}
 	
 		&:focus-visible {
 		  outline: 3px solid var(--color-success-bg);
+            outline-offset: 2px;
 		}
   `,
 
@@ -157,6 +171,7 @@ const variants = {
 	
 		&:focus-visible {
 		  outline: 3px solid var(--color-primary-bg);
+            outline-offset: 2px;
 		}
   `,
 };
@@ -234,8 +249,7 @@ const StyledButton = styled.button`
     justify-content: center;
     text-align: center;
     text-decoration: none;
-    line-height: var(--line-height, 1.2);
-    gap: var(--spacing-xs, 0.25rem);
+    gap: var(--spacing-s, 0.25rem);
 
     /* Size */
     ${({ size }) => sizes[size] || sizes.m}

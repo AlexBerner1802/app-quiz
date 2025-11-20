@@ -64,7 +64,7 @@ const LangItem = styled.div`
 	justify-content: space-between;
 	padding: var(--spacing);
 	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-xs);
 	background-color: var(--color-background-muted);
 	transition: all .2s ease;
 	cursor: pointer;

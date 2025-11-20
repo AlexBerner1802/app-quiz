@@ -235,14 +235,14 @@ const LangGrid = styled.div`
 const Title = styled.div`
     font-size: var(--font-size);
     font-weight: 500;
-    margin-bottom: var(--spacing-xs, 0.25rem);
+    margin-bottom: var(--spacing-s, 0.25rem);
     color: var(--color-text, #333);
 `;
 
 const LangCard = styled.div`
     width: 100%;
     border: 1px solid ${({ $current }) => ($current ? "var(--color-primary-bg-hover)" : "var(--color-border)")};
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     padding: var(--spacing);
     min-width: 180px;
     display: flex;
@@ -318,8 +318,8 @@ const EraseButton = styled.div`
     background: transparent;
     color: var(--color-text-muted);
     cursor: pointer;
-    padding: var(--spacing-xs);
-    border-radius: var(--border-radius-s);
+    padding: var(--spacing-s);
+    border-radius: var(--border-radius-xs);
     line-height: 0;
     transition: color .2s ease;
 

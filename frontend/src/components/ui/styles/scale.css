@@ -1,57 +1,75 @@
 :root {
-	/* Spacing */
-	--spacing-2xs: 0.25rem;
-	--spacing-xs: 0.5rem;
-	--spacing-s: 0.75rem;
-	--spacing: 1rem;
-	--spacing-l: 1.5rem;
-	--spacing-xl: 2rem;
-	--spacing-2xl: 3rem;
-	--spacing-3xl: 4rem;
-	--spacing-4xl: 6rem;
-	--spacing-5xl: 8rem;
-	--spacing-6xl: 12rem;
-	--spacing-7xl: 16rem;
-	--spacing-8xl: 24rem;
-	--spacing-9xl: 32rem;
-	--spacing-10xl: 40rem;
-	--spacing-11xl: 48rem;
-	--spacing-12xl: 64.0625rem;
-	--spacing-13xl: 80rem;
-	--spacing-14xl: 93.75rem;
+    /* Base sizes */
+    --base-size: 16px;       /* used for spacing, border-radius, etc. */
+    --font-base-size: 14px;  /* used for font sizes */
 
-	/* Font Sizes */
-	--font-size-3xs: 0.5rem;
-	--font-size-2xs: 0.625rem;
-	--font-size-xs: 0.75rem;
-	--font-size-s: 0.875rem;
-	--font-size: 1rem;
-	--font-size-l: 1.125rem;
-	--font-size-xl: 1.25rem;
-	--font-size-2xl: 1.5rem;
-	--font-size-3xl: 1.875rem;
-	--font-size-4xl: 2.25rem;
-	--font-size-5xl: 3rem;
-	--font-size-6xl: 3.75rem;
-	--font-size-7xl: 4.5rem;
-	--font-size-8xl: 5.25rem;
-	--font-size-9xl: 6rem;
-	--font-size-10xl: 7rem;
+    /* Spacing scale (multiples of base-size) */
+    --spacing-2xs: calc(var(--spacing) * 0.125);    /* 2px */
+    --spacing-xs:  calc(var(--spacing) * 0.25);     /* 4px */
+    --spacing-s:   calc(var(--spacing) * 0.5);      /* 8px */
+    --spacing:     calc(var(--base-size) * 1);      /* 16px */
+    --spacing-l:   calc(var(--spacing) * 1.5);      /* 24px */
+    --spacing-xl:  calc(var(--spacing) * 2);        /* 32px */
+    --spacing-2xl: calc(var(--spacing) * 2.5);      /* 40px */
+    --spacing-3xl: calc(var(--spacing) * 4);        /* 64px */
+    --spacing-4xl: calc(var(--spacing) * 6);        /* 96px */
+    --spacing-5xl: calc(var(--spacing) * 8);        /* 128px */
+    --spacing-6xl: calc(var(--spacing) * 12);       /* 192px */
+    --spacing-7xl: calc(var(--spacing) * 16);       /* 256px */
+    --spacing-8xl: calc(var(--spacing) * 24);       /* 384px */
+    --spacing-9xl: calc(var(--spacing) * 32);       /* 512px */
+    --spacing-10xl: calc(var(--spacing) * 40);      /* 640px */
+    --spacing-11xl: calc(var(--spacing) * 48);      /* 768px */
+    --spacing-12xl: calc(var(--spacing) * 64);      /* 1024px */
+    --spacing-13xl: calc(var(--spacing) * 80);      /* 1280px */
+    --spacing-14xl: calc(var(--spacing) * 93.75);   /* 1500px approx */
 
-	/* Line Heights */
-	--line-height-2xs: 0.8;
-	--line-height-s: 0.9;
-	--line-height: 1.1;
-	--line-height-l: 1.3;
-	--line-height-xl: 1.5;
-	--line-height-2xl: 1.75;
+    /* Font Sizes (multiples of font-base-size) */
+    --font-size-3xs: calc(var(--font-base-size) * 0.5);    /* 7px */
+    --font-size-2xs: calc(var(--font-base-size) * 0.625);  /* 8.75px */
+    --font-size-xs:  calc(var(--font-base-size) * 0.75);   /* 10.5px */
+    --font-size-s:   calc(var(--font-base-size) * 0.875);  /* 12.25px */
+    --font-size:     calc(var(--font-base-size) * 1);      /* 14px */
+    --font-size-l:   calc(var(--font-base-size) * 1.125);  /* 15.75px */
+    --font-size-xl:  calc(var(--font-base-size) * 1.25);   /* 17.5px */
+    --font-size-2xl: calc(var(--font-base-size) * 1.5);    /* 21px */
+    --font-size-3xl: calc(var(--font-base-size) * 1.875);  /* 26.25px */
+    --font-size-4xl: calc(var(--font-base-size) * 2.25);   /* 31.5px */
+    --font-size-5xl: calc(var(--font-base-size) * 3);      /* 42px */
+    --font-size-6xl: calc(var(--font-base-size) * 3.75);   /* 52.5px */
+    --font-size-7xl: calc(var(--font-base-size) * 4.5);    /* 63px */
+    --font-size-8xl: calc(var(--font-base-size) * 5.25);   /* 73.5px */
+    --font-size-9xl: calc(var(--font-base-size) * 6);      /* 84px */
+    --font-size-10xl: calc(var(--font-base-size) * 7);     /* 98px */
 
-	/* Border Radius */
-	--border-radius-xs: 2px;
-	--border-radius-s: 4px;
-	--border-radius: 8px;
-	--border-radius-l: 12px;
-	--border-radius-xl: 16px;
-	--border-radius-2xl: 20px;
-	--border-radius-full: 9999px;
+    /* Line Heights */
+    --line-height-2xs: 0.8rem;   /* 12.8px */
+    --line-height-s: 0.9rem;     /* 14.4px */
+    --line-height: 1.1rem;       /* 17.6px */
+    --line-height-l: 1.3rem;     /* 20.8px */
+    --line-height-xl: 1.5rem;    /* 24px */
+    --line-height-2xl: 1.75rem;  /* 28px */
+
+    /* Border Radius (scaled from base-size) */
+    --border-radius-3xs: calc(var(--base-size) * 0.125);  /* 2px */
+    --border-radius-2xs: calc(var(--base-size) * 0.25);   /* 4px */
+    --border-radius-xs:  calc(var(--base-size) * 0.5);    /* 8px */
+    --border-radius-s:   calc(var(--base-size) * 0.75);   /* 12px */
+    --border-radius:     calc(var(--base-size) * 1);      /* 16px */
+    --border-radius-l:   calc(var(--base-size) * 1.25);   /* 20px */
+    --border-radius-xl:  calc(var(--base-size) * 1.5);    /* 24px */
+    --border-radius-2xl: calc(var(--base-size) * 2.125);  /* 34px */
+    --border-radius-3xl: calc(var(--base-size) * 3);      /* 48px */
+    --border-radius-full: 9999px;
+
+    /* Breakpoints */
+    --bp-mobile: 480px;
+    --bp-tablet: 768px;
+    --bp-laptop: 1024px;
+    --bp-desktop: 1280px;
+    --bp-wide: 1536px;
+
+    /* Header/Footer */
+    --header-height: 60px; /* 64px */
+    --footer-height: 60px; /* 64px */
 }
