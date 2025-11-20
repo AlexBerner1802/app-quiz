@@ -78,7 +78,7 @@ export const Overlay = styled.div`
 `;
 
 export const Dialog = styled.div`
-  background: var(--color-background-elevated);
+  background: var(--color-background-surface-2);
   border-radius: var(--border-radius-l);
   padding: var(--spacing-l);
   max-width: 400px;

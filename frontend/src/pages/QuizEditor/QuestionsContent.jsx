@@ -9,9 +9,10 @@ import {
 	Plus,
 	ArrowUp,
 	ArrowDown,
-	GripVertical,
+	Move,
 	BadgeQuestionMark,
 	Minus,
+	ScrollText
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AddQuestionButton as SidebarAddQuestionButton } from "./LeftSidebar";
@@ -24,8 +25,6 @@ export default function QuestionsContent({
 											 addSingleQuestion,
 										 }) {
 	const { t } = useTranslation();
-	const [draggingOptionIndex, setDraggingOptionIndex] = React.useState(null);
-	const [overOptionIndex, setOverOptionIndex] = React.useState(null);
 
 	const updateQuestions = (updater) => {
 		updateDraft((prevDraft) => ({
@@ -143,7 +142,7 @@ export default function QuestionsContent({
 		return (
 			<DropPlaceholder>
 				<SidebarAddQuestionButton type="button" onClick={addSingleQuestion}>
-					<Plus size={16} /> {t("actions.addQuestion")}
+					<BadgeQuestionMark size={18} /> {t("actions.addQuestion")}
 				</SidebarAddQuestionButton>
 			</DropPlaceholder>
 		);
@@ -158,7 +157,7 @@ export default function QuestionsContent({
 					<QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
 						<CardHeader>
 							<QuestionLabel>
-								<BadgeQuestionMark size={20} color={"var(--color-placeholder)"} />{" "}
+								<BadgeQuestionMark size={20} color={"var(--color-text-muted)"} />{" "}
 								{t("quiz.question")} {index + 1}
 							</QuestionLabel>
 							<HeaderActions>
@@ -182,6 +181,9 @@ export default function QuestionsContent({
 								>
 									<ArrowDown size={18} />
 								</IconButton>
+
+								<HeaderDivider />
+
 								<IconDelButton type="button" onClick={() => deleteQuestion(q.id)}>
 									<Trash2 size={18} />
 								</IconDelButton>
@@ -203,13 +205,15 @@ export default function QuestionsContent({
 							{(!q.showDescription && !q.description) ? (
 								<AddDescriptionLink
 									type="button"
+									variant={"link"}
+									size={"s"}
 									onClick={() =>
 										updateQuestions((prev) =>
 											prev.map((x) => (x.id === q.id ? { ...x, showDescription: true } : x))
 										)
 									}
 								>
-									<Plus size={16} /> {t("quiz.add_description") || "Ajouter une description"}
+									<ScrollText size={16} /> {t("quiz.add_description") || "Ajouter une description"}
 								</AddDescriptionLink>
 							) : (
 								<DescriptionWrapper>
@@ -259,7 +263,7 @@ export default function QuestionsContent({
 										}
 									>
 										<DragHandle title="Drag to reorder">
-											<GripVertical size={16} />
+											<Move size={16} />
 										</DragHandle>
 										<OptionContent>
 											<CheckBox
@@ -296,7 +300,7 @@ export default function QuestionsContent({
 									</OptionRow>
 								))}
 
-								<AddOptionBtn type="button" onClick={() => addOption(q.id)}>
+								<AddOptionBtn type="button" size={"s"} onClick={() => addOption(q.id)}>
 									<Plus size={16} /> {t("quiz.options.new") || "Ajouter une option"}
 								</AddOptionBtn>
 							</AnswersContent>
@@ -306,7 +310,7 @@ export default function QuestionsContent({
 			})}
 
 			<Button onClick={addSingleQuestion} style={{ width: "fit-content" }}>
-				<Plus size={16} /> {t("actions.addQuestion")}
+				<BadgeQuestionMark size={18} /> {t("actions.addQuestion")}
 			</Button>
 		</Container>
 	);
@@ -317,7 +321,7 @@ export default function QuestionsContent({
 const Container = styled.div`
     display: flex;
 	flex-direction: column;
-	gap: var(--spacing-s);
+	gap: var(--spacing-l);
 `;
 
 const DropPlaceholder = styled.div`
@@ -329,8 +333,7 @@ const DropPlaceholder = styled.div`
     align-items: center;
     justify-content: center;
     gap: var(--spacing-s);
-    color: var(--quiz-placeholder);
-    background-color:var(--quiz-surface-muted);
+    background-color: var(--color-input-background, #f9f9f9);
     width:100%;
 
     @media (max-width: 768px){
@@ -354,13 +357,13 @@ const CardHeader = styled.div`
     gap: var(--spacing);
     padding: var(--spacing);
     border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-background-surface);
+    background-color: var(--color-background-surface-2);
     height: 58px;
 `;
 
 const QuestionLabel = styled.p`
     font-size: var(--font-size);
-	font-weight: 500;
+	font-weight: 600;
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-xs);
@@ -370,8 +373,14 @@ const QuestionLabel = styled.p`
 const HeaderActions = styled.div`
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xs);
     margin-left: auto;
+`;
+
+const HeaderDivider = styled.div`
+    width: 1px;
+    height: 24px;
+    background: var(--color-divider);
+    margin: 0 var(--spacing-xs);
 `;
 
 const CardBody = styled.div`
@@ -395,7 +404,7 @@ const RemoveDescriptionLink = styled.button`
     align-items: center;
 	background: none;
 	border: none;
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 	cursor: pointer;
 	margin-left: auto;
 	padding-right: 0;
@@ -410,24 +419,9 @@ const RemoveDescriptionLink = styled.button`
 	}
 `;
 
-const AddDescriptionLink = styled.button`
-	display: flex;
-	align-items: center;
-	background: none;
-	border: none;
-	color: var(--color-placeholder);
-	cursor: pointer;
-	margin-top: calc(-1 * var(--spacing-xs));
-    padding-left: 0;
-	font-size: var(--font-size-s);
-	transition: color 0.2s ease;
-	align-self: flex-start;
-    gap: var(--spacing-xs);
-
-	&:hover {
-		background: none;
-		color: var(--color-primary-bg-hover);
-	}
+const AddDescriptionLink = styled(Button)`
+	margin-bottom: var(--spacing-xs);
+	color: var(--color-text-muted);
 `;
 
 
@@ -450,27 +444,35 @@ const ModeBadge = styled.span`
     padding: var(--spacing-xs) var(--spacing-s);
     border: 1px solid var(--color-border);
     font-size: var(--font-size-xs);
-    font-weight: 600;
-    border-radius: var(--border-radius-full);
+    font-weight: 500;
+    border-radius: var(--border-radius);
     background: var(--color-primary-muted);
-    color: var(--color-primary-text);
+    color: var(--color-text-muted);
+	margin-right: var(--spacing-s);
 `;
 
 const IconButton = styled(Button)`
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
     color: var(--color-text);
     cursor: pointer;
-    padding: var(--spacing-2xs);
-    border-radius: 8px;
+    padding: var(--spacing-xs);
     line-height: 0;
-    transition: color .15s ease;
+    transition: color .2s ease;
+	border-radius: var(--border-radius-s);
+	
     &:hover {
         background: transparent !important;
-        color: var(--color-primary-bg-hover);
+        color: var(--color-primary-bg);
+		border: 1px solid var(--color-primary-bg);
+    }
+
+    &:active {
+        transform: scale(0.92);
     }
 
     &:disabled {
+        color: var(--color-disabled);
         cursor: default;
         pointer-events: none;
 		opacity: 0.3;
@@ -478,17 +480,23 @@ const IconButton = styled(Button)`
 `;
 
 const IconDelButton = styled(Button)`
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
-    color: var(--color-text);
+    color: var(--color-text-muted);
     cursor: pointer;
-    padding: var(--spacing-2xs);
-    border-radius: 8px;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-s);
     line-height: 0;
-    transition: color .15s ease;
+    transition: color .2s ease;
+	
     &:hover {
         background: transparent !important;
         color: var(--color-error-bg);
+        border: 1px solid var(--color-error-bg);
+    }
+
+    &:active {
+        transform: scale(0.92);
     }
 
     &:disabled {
@@ -503,7 +511,7 @@ const OptionRow = styled.div`
     flex-direction: row;
     align-items: center;
     width: 100%;
-    gap: var(--spacing-2xs);
+    gap: var(--spacing-xs);
     cursor: grab;
     user-select: none;
     transition: all .2s ease;
@@ -526,22 +534,32 @@ const OptionContent = styled.div`
     flex-direction: row;
     align-items: center;
     width: 100%;
-    gap: var(--spacing-xs);
-    background-color: var(--color-surface);
+    gap: var(--spacing-2xs);
+    background-color: var(--color-background-muted);
     border-radius: var(--border-radius);
     padding: var(--spacing-2xs) var(--spacing);
 `;
 
 const RemoveOpt = styled(Button)`
-    border: none;
+    border: 1px solid transparent;
     background: transparent;
-    color: var(--color-text) !important;
+    color: var(--color-text-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-s);
+    line-height: 0;
+    transition: color .2s ease;
+
     &:hover {
         background: transparent !important;
-        color: var(--color-error-bg) !important;
+        color: var(--color-error-bg);
+        border: 1px solid var(--color-error-bg);
     }
+
+    &:active {
+        transform: scale(0.92);
+    }
+	
 `;
 
 const AddOptionBtn = styled(Button)`
@@ -554,5 +572,5 @@ const DragHandle = styled.div`
     justify-content: center;
     cursor: grab;
     padding: 0 4px;
-    color: var(--color-placeholder);
+    color: var(--color-text-muted);
 `;

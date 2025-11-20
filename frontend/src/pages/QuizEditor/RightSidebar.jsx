@@ -2,7 +2,7 @@
 
 import React from "react";
 import styled from "styled-components";
-import {SquareChevronRight, Save, Type, MonitorCheck, Save as DiskIcon, Trash2} from "lucide-react";
+import {SquareChevronRight, Save, Type, MonitorCheck, Save as DiskIcon, Trash2, Plus, Settings} from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../components/buttons/ToggleSwitchButton";
@@ -16,7 +16,6 @@ export default function RightSidebar({
 										 onCreateTranslation,
 										 onToggleActive,
 										 onChangeLang,
-										 onSaveCurrent,
 										 onSaveClick,
 										 onDeleteLang
 									 }) {
@@ -31,12 +30,32 @@ export default function RightSidebar({
 					<HideButton onClick={onHide}>
 						<SquareChevronRight size={24} color={"var(--color-text)"} />
 					</HideButton>
-					<RightTitle>{t("common.settings")}</RightTitle>
+					<RightTitle>
+						{t("common.settings")}
+						<Settings size={22} />
+					</RightTitle>
 				</Header>
 
 				<Content>
+
 					<LangGrid>
-						<Title>{t("common.lang")}</Title>
+						<Title>{t("common.languages")}</Title>
+
+						<Button
+							variant="outline"
+							onClick={() =>
+								openModal("selectLanguage", {
+									currentLangs: langsStatus
+										.filter(l => l.code === currentLang || l.hasTranslation || l.isDirty)
+										.map(l => l.code),
+									onAdd: (newLangCode) => onCreateTranslation(newLangCode),
+								})
+							}
+							style={{ width: "100%" }}
+						>
+							<Plus size={16} /> {t("quiz.add_language")}
+						</Button>
+
 						{langsStatus
 							.filter((lang) =>
 								lang.code === currentLang ||	// always show current
@@ -59,21 +78,21 @@ export default function RightSidebar({
 											<LangIcons>
 												<IconWrapper
 													data-tooltip={hasTranslation ? "Translation exists" : "No translation"}
-													color={hasTranslation ? "var(--color-primary)" : "gray"}
+													color={hasTranslation ? "var(--color-primary-bg)" : "var(--color-text-muted)"}
 												>
 													<Type size={16} />
 												</IconWrapper>
 
 												<IconWrapper
 													data-tooltip={isActive ? "Active" : "Inactive"}
-													color={isActive ? "var(--color-success-bg)" : "gray"}
+													color={isActive ? "var(--color-success-bg)" : "var(--color-text-muted)"}
 												>
 													<MonitorCheck size={16} />
 												</IconWrapper>
 
 												<IconWrapper
 													data-tooltip="Unsaved changes"
-													color={isDirty ? "var(--color-warning-bg)" : "gray"}
+													color={isDirty ? "var(--color-warning-bg)" : "var(--color-success-bg)"}
 												>
 													<DiskIcon size={16} />
 												</IconWrapper>
@@ -83,6 +102,7 @@ export default function RightSidebar({
 										{isCurrent && (
 											<ControlGroup>
 												<EraseButton
+													variant={"ghost"}
 													title={t("actions.delete_language") || "Remove language"}
 													onClick={(e) => {
 														e.stopPropagation();
@@ -104,7 +124,7 @@ export default function RightSidebar({
 													onLabel="Active"
 													offLabel="Inactive"
 													onColor="var(--color-success-bg)"
-													offColor="var(--color-placeholder)"
+													offColor="var(--color-text-muted)"
 												/>
 											</ControlGroup>
 										)}
@@ -113,31 +133,17 @@ export default function RightSidebar({
 							})}
 					</LangGrid>
 
-					<AddLanguageBtn
-						variant="primary"
-						onClick={() =>
-							openModal("selectLanguage", {
-								currentLangs: langsStatus
-								.filter(l => l.code === currentLang || l.hasTranslation || l.isDirty)
-								.map(l => l.code),
-								onAdd: (newLangCode) => onCreateTranslation(newLangCode),
-							})
-						}
-						style={{ width: "100%" }}
-					>
-						Add Language
-					</AddLanguageBtn>
 				</Content>
 
 				<Footer>
-					<SaveButton
-						variant="primary"
+					<Button
+						variant="success"
 						onClick={onSaveClick}
 						style={{ width: "100%" }}
 					>
 						<Save size={16} />
 						{t("actions.save")}
-					</SaveButton>
+					</Button>
 				</Footer>
 			</RightPanel>
 		</SidebarWrapper>
@@ -159,7 +165,7 @@ const RightPanel = styled.aside`
     flex-direction: column;
     border-left: 1px solid var(--color-border);
     height: 100%;
-    background-color: var(--color-background);
+    background-color: var(--color-background-muted);
     position: relative;
 `;
 
@@ -173,7 +179,11 @@ const Header = styled.div`
 `;
 
 const RightTitle = styled.h2`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
     font-size: var(--font-size);
+	color: var(--color-text-muted);
     font-weight: 600;
     margin: 0;
 `;
@@ -197,19 +207,19 @@ const Content = styled.div`
     gap: var(--spacing);
 
 	scrollbar-width: thin;
-	scrollbar-color: var(--color-primary-bg) var(--color-surface);
+	scrollbar-color: var(--color-primary-bg) var(--color-background-muted);
 
 	&::-webkit-scrollbar {
 		width: 8px;
 	}
 	&::-webkit-scrollbar-track {
-		background: var(--color-surface);
+		background: var(--color-background-muted);
 		border-radius: 8px;
 	}
 	&::-webkit-scrollbar-thumb {
 		background-color: var(--color-primary-bg);
 		border-radius: 8px;
-		border: 2px solid var(--color-surface);
+		border: 2px solid var(--color-background-muted);
 	}
 	&::-webkit-scrollbar-thumb:hover {
 		background-color: var(--color-primary-bg-hover);
@@ -253,7 +263,7 @@ const LangHeaderRow = styled.div`
     justify-content: space-between;
 `;
 
-const LangFlag = styled.span`
+const LangFlag = styled.p`
     font-size: var(--font-size);
 `;
 
@@ -304,35 +314,30 @@ const ControlGroup = styled.div`
 `;
 
 const EraseButton = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 6px;
-	background: transparent;
-	color: var(--color-error-text, #e74c3c);
-	cursor: pointer;
-	transition: all 0.2s ease;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius-s);
+    line-height: 0;
+    transition: color .2s ease;
 
-	&:hover {
-        color: var(--color-error-bg-hover, #e74c3c);
-	}
-`;
+    &:hover {
+        background: transparent !important;
+        color: var(--color-error-bg);
+        border: 1px solid var(--color-error-bg);
+    }
 
-const AddLanguageBtn = styled(Button)`
-    border: 1px dashed var(--color-border, #ccc);
-    border-radius: var(--border-radius);
-    background-color: transparent;
-	color: var(--color-text);
-	
-	&:hover {
-        border: 1px solid var(--color-primary-bg);
-	}
+    &:active {
+        transform: scale(0.92);
+    }
 `;
 
 const Footer = styled.div`
 	position: sticky;
 	bottom: 0;
-	background: var(--color-background);
+    background-color: var(--color-background);
 	border-top: 1px solid var(--color-border);
 	display: flex;
 	flex-direction: column;
@@ -340,12 +345,3 @@ const Footer = styled.div`
 	gap: var(--spacing-xs);
     padding: var(--spacing);
 `;
-
-const SaveButton = styled(Button)`
-	background: var(--color-success-bg);
-	
-	&:hover {
-		background: var(--color-success-bg-hover)!important;
-	}
-`;
-

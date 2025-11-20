@@ -47,6 +47,7 @@
 		"untitled": "Sans titre",
 		"settings": "Paramètres",
 		"lang": "Langue",
+		"languages": "Langues",
 		"placeholders": {
 			"typeHere": "Tapez ici"
 		},
@@ -55,7 +56,8 @@
 			"off": "Désactivé"
 		},
 		"loading": "Chargement...",
-		"error": "Erreur: "
+		"error": "Erreur: ",
+		"already_added": "Ajouté"
 	},
 	"quiz": {
 		"title": "Nouveau quiz",
@@ -114,8 +116,8 @@
 			"false": "Faux"
 		},
 		"labels": {
-			"single": "Single answer",
-			"multi": "Multiple answers"
+			"single": "Réponse unique",
+			"multi": "Réponse multiple"
 		},
 		"show": {
 			"cantFind": "Quiz introuvable...",

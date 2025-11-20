@@ -1,8 +1,8 @@
 // QuizEditor/_index.jsx
 
 import React, { useRef, useState, useEffect } from "react";
-import { FilePenLine, Settings, Logs, Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { FilePenLine, Settings, BadgeQuestionMark, Loader2 } from "lucide-react";
+import {useNavigate, useParams} from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 
@@ -30,6 +30,7 @@ import faviconUrl from "../../assets/images/favicon.ico?url";
 export default function NewQuiz() {
 	const { t, i18n } = useTranslation();
 	const { id: quizId } = useParams();
+	const navigate = useNavigate();
 	const isEdit = !!quizId;
 
 	// UI state
@@ -325,8 +326,8 @@ export default function NewQuiz() {
 		});
 
 			if (!isEdit && newQuizId && !quizId) {
-			// NOTE: navigate is intentionally left as-is to preserve original behavior/context
-			navigate(`/editor/${newQuizId}/edit`);
+				// NOTE: navigate is intentionally left as-is to preserve original behavior/context
+				navigate(`/editor/${newQuizId}/edit`);
 			}
 		} else {
 			setDrafts((prev) => {
@@ -434,7 +435,7 @@ export default function NewQuiz() {
 
         <Header
           title={isEdit ? t("quiz.editTitle") : t("quiz.title")}
-          icon={<FilePenLine size={20} />}
+          icon={<FilePenLine size={19} />}
           goBack
           withBorder
           actions={[
@@ -465,7 +466,7 @@ export default function NewQuiz() {
 
             {!leftSidebarVisible && (
               <ShowLeftSidebarButton onClick={() => setLeftSidebarVisible(true)}>
-                <Logs size={24} color={"var(--color-text)"} />
+                <BadgeQuestionMark size={24} color={"var(--color-text)"} />
               </ShowLeftSidebarButton>
             )}
           </>

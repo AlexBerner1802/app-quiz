@@ -42,7 +42,7 @@ const HiddenInput = styled.input`
 const CustomBox = styled.div`
     width: 20px;
     height: 20px;
-    border: 2px solid var(--color-border, #ccc);
+    border: ${({ checked }) => (checked ? "2px solid var(--color-primary-bg, #ccc)" : "2px solid var(--color-border, #ccc)")};
     border-radius: ${({ $type }) => ($type === "radio" ? "50%" : "4px")};
     background-color: ${({ checked }) => (checked ? "var(--color-primary-bg, #3b82f6)" : "transparent")};
     display: flex;
@@ -53,6 +53,10 @@ const CustomBox = styled.div`
 
     ${Wrapper}:hover & {
         border-color: ${({ disabled }) => (disabled ? "#ccc" : "var(--color-primary-bg, #3b82f6)")};
+    }
+
+    &:active {
+        transform: scale(0.92);
     }
 `;
 

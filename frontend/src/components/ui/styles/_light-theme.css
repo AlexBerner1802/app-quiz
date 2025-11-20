@@ -1,32 +1,54 @@
 :root {
+
+    /* ---------------- Semantic / Brand Colors ---------------- */
+
     /* Primary */
-    --color-primary-text: var(--brand-primary-100);
+    --color-primary-text: var(--brand-primary-50);
     --color-primary-bg: var(--brand-primary-500);
     --color-primary-bg-hover: var(--brand-primary-600);
-    --color-primary-muted: rgba(var(--brand-primary-rgb), 0.12);
+    --color-primary-bg-active: var(--brand-primary-700);
+    --color-primary-muted: var(--brand-primary-100);
+    --color-primary-muted-text: var(--brand-primary-400);
 
-    /* Secondary */
-    --color-secondary-text: var(--gray-900);
-    --color-secondary-bg: var(--gray-200);
-    --color-secondary-border: var(--gray-300);
+    /* === Secondary  === */
+    --color-secondary-text: var(--indigo-950);
+    --color-secondary-bg: var(--indigo-500);
+    --color-secondary-bg-hover: var(--indigo-600);
+    --color-secondary-bg-active: var(--indigo-700);
+    --color-secondary-muted: var(--indigo-100);
+    --color-secondary-muted-text: var(--indigo-400);
 
     /* Success */
-    --color-success-text: var(--brand-success-800);
+    --color-success-text: var(--brand-success-50);
     --color-success-bg: var(--brand-success-500);
     --color-success-bg-hover: var(--brand-success-600);
+    --color-success-bg-active: var(--brand-success-700);
     --color-success-muted: var(--brand-success-100);
+    --color-success-muted-text: var(--brand-success-400);
 
     /* Error */
-    --color-error-text: var(--brand-error-200);
+    --color-error-text: var(--brand-error-50);
     --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
+    --color-error-bg-active: var(--brand-error-700);
     --color-error-muted: var(--brand-error-100);
+    --color-error-muted-text: var(--brand-error-400);
 
     /* Warning */
-    --color-warning-text: var(--brand-warning-800);
+    --color-warning-text: var(--brand-warning-50);
     --color-warning-bg: var(--brand-warning-500);
     --color-warning-bg-hover: var(--brand-warning-600);
+    --color-warning-bg-active: var(--brand-warning-700);
     --color-warning-muted: var(--brand-warning-100);
+    --color-warning-muted-text: var(--brand-warning-400);
+
+    /* Notification  */
+    --color-notification-text: var(--brand-notification-50);
+    --color-notification-bg: var(--brand-notification-500);
+    --color-notification-bg-hover: var(--brand-notification-600);
+    --color-notification-bg-active: var(--brand-notification-700);
+    --color-notification-muted: var(--brand-notification-100);
+    --color-notification-muted-text: var(--brand-notification-400);
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, var(--brand-primary-400), var(--brand-primary-700));
@@ -35,34 +57,90 @@
     --gradient-warning: linear-gradient(135deg, var(--brand-warning-400), var(--brand-warning-700));
     --gradient-background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 50%, var(--slate-400) 100%);
 
-    /* Neutral / UI */
-    --color-text: var(--gray-900);                      /* Primary text color (headings, paragraphs, main content) */
-    --color-btn-text: var(--gray-100);                  /* Text color on dark or colored buttons */
-    --color-placeholder: var(--gray-500);               /* Placeholder text color in input fields */
-    --color-disabled: var(--gray-400);                  /* Disabled text color in input fields */
+    /* Additional Utility Colors */
+    --color-highlight: var(--amber-400);             /* Highlighted text or UI elements */
+    --color-link: var(--brand-primary-500);          /* Links */
+    --color-link-hover: var(--brand-primary-600);    /* Links hover */
 
-    --color-background: var(--gray-50);                /* General app background color (main page or container background) */
-    --color-background-surface: var(--gray-200);        /* Background for secondary surfaces, like section backgrounds or less prominent areas */
-    --color-surface: var(--gray-50);                           /* Background for primary surfaces (cards, modals, main containers that are white) */
-    --color-background-elevated: var(--gray-300);       /* Background for elevated elements relative to the base background, e.g. dropdowns, tooltips, floating menus */
-    --color-background-overlay: rgba(0, 0, 0, 0.7);    /* Semi-transparent overlay background (modals, menus that block the background) */
-    --color-background-input: var(--gray-200);          /* Background for input fields and form elements */
-    --color-background-input-focused: var(--gray-50);          /* Background for input fields and form elements when focused */
-    --color-border: var(--gray-300);                    /* Color for borders, dividers, and separators */
-    --color-separator: var(--gray-300);
 
+    /* ------------------ Base / Backgrounds ------------------ */
+
+    --color-background: var(--slate-50);                /* Main page background */
+    --color-background-muted: var(--slate-100);         /* Secondary / subtle background */
+    --color-background-alt: var(--slate-200);           /* Alternate section backgrounds */
+    --color-text: var(--slate-900);                     /* Primary text color */
+    --color-text-muted: var(--slate-500);               /* Secondary / muted text */
+    --color-text-alt: var(--slate-800);                 /* Alternate text for emphasis */
+
+
+    /* ---------------- Surfaces / Elevation ---------------- */
+
+    --color-background-surface-1: var(--slate-50);      /* Cards, sheets, modals base surface */
+    --color-background-surface-2: var(--slate-100);     /* Slightly elevated surfaces */
+    --color-background-surface-3: var(--slate-200);     /* Medium elevation */
+    --color-background-surface-4: var(--slate-300);     /* High elevation (popovers, menus) */
+    --color-background-surface-5: var(--slate-400);     /* Highest elevation if needed */
+
+    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.7);   /* expand of --gray-900 */
+
+
+    /* ---------------- Inputs / Form Controls ---------------- */
+
+    --color-input-background: var(--slate-100);                  /* Default input background */
+    --color-input-border: var(--slate-300);                     /* Input border */
+    --color-input-text: var(--slate-900);                       /* Text inside input */
+    --color-input-focus-border: var(--brand-primary-500);       /* Focus state border */
+    --color-input-placeholder: var(--slate-500);                /* Placeholder text */
+    --color-input-disabled-background: var(--slate-100);        /* Disabled input background */
+    --color-input-disabled-text: var(--slate-400);              /* Disabled input text */
+
+
+    /* ---------------- Borders / Dividers ---------------- */
+
+    --color-border: var(--slate-300);       /* Standard borders */
+    --color-border-strong: var(--slate-500);/* Stronger borders */
+    --color-divider: var(--slate-200);      /* Divider lines */
+
+
+    /* ---------------- Feedback / States ---------------- */
+    /* These colors are used to indicate interactivity or UI state changes.
+       They can be background, border, or text depending on context. */
+
+    /* Hover state: apply when an interactive element is hovered */
+    --color-hover: var(--slate-100);
+    /* Example usage: button:hover, list item hover, card hover background */
+
+    /* Active state: apply when an element is being clicked or active */
+    --color-active: var(--slate-200);
+    /* Example usage: button:active, selected tab pressed, active menu item */
+
+    /* Selected state: apply for items that are currently selected or highlighted.
+       You can choose to link this to the primary color if you want emphasis. */
+    --color-selected: var(--brand-primary-500);
+    /* Example usage: selected menu item, highlighted table row, active tab
+       Linking to primary color gives consistent branding for selected items */
+
+    /* Disabled state: apply to elements that are non-interactive */
+    --color-disabled: var(--slate-400);
+    /* Example usage: disabled buttons, inputs, cards, or menu items
+       Typically lighter or muted to indicate inactivity */
+
+
+    /* Skeleton Loading */
     --color-skeleton-base: var(--gray-300);
     --color-skeleton-highlight: var(--gray-200);
 
-    --box-shadow-xs: 0 0 0 1px rgba(0, 0, 0, 0.05);
-    --box-shadow-s: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --box-shadow-l: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --box-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    /* Box Shadows expands of --var-900 */
+    --box-shadow-xs: 0 0 0 1px oklch(0.208 0.042 265.755 / 0.05);
+    --box-shadow-s: 0 1px 2px 0 oklch(0.208 0.042 265.755 / 0.05);
+    --box-shadow: 0 1px 3px 0 oklch(0.208 0.042 265.755 / 0.1), 0 1px 2px 0 oklch(0.208 0.042 265.755 / 0.06);
+    --box-shadow-l: 0 10px 15px -3px oklch(0.208 0.042 265.755 / 0.1), 0 4px 6px -2px oklch(0.208 0.042 265.755 / 0.05);
+    --box-shadow-xl: 0 20px 25px -5px oklch(0.208 0.042 265.755 / 0.1), 0 10px 10px -5px oklch(0.208 0.042 265.755 / 0.04);
 
-    --liquidglass-bg: rgba(255, 255, 255, 0.5);                /* translucent white */
-    --liquidglass-blur: blur(12px);                             /* slightly stronger blur */
-    --liquidglass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);  /* soft subtle shadow */
+    /* Liquid Glass / Frosted Background */
+    --liquidglass-bg: oklch(0.984 0.003 247.858 / 0.5);   /* expand of --slate-50 */
+    --liquidglass-shadow: 0 8px 32px 0 oklch(0.984 0.003 247.858 / 0.2); /* expand of --slate-50 */
+    --liquidglass-blur: blur(12px);
 
 }
 

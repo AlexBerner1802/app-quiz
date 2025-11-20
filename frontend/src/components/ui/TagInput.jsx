@@ -1,6 +1,7 @@
 // TagInput.jsx
 
-import React, {useState, useRef, useEffect, useCallback} from "react";
+import React, {useCallback, useEffect, useId, useRef, useState} from "react";
+import {X} from "lucide-react";
 import styled from "styled-components";
 
 const TagInput = ({
@@ -31,6 +32,8 @@ const TagInput = ({
 	const [err, setErr] = useState(null);
 	const containerRef = useRef(null);
 	const debounceRef = useRef(0);
+
+	const id = useId();
 
 	const normalize = (s) => (s || "").trim().toLowerCase();
 
@@ -64,7 +67,7 @@ const TagInput = ({
 				credentials: "omit",
 			});
 			const data = await res.json().catch(() => ([]));
-			if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
+			if (!res.ok) console.log(data?.message || `HTTP ${res.status}`);
 			// Assure an objects table {id, tag_name}
 			const safe = Array.isArray(data) ? data : [];
 			localFilter(val, safe);
@@ -79,7 +82,7 @@ const TagInput = ({
 		}, 200);
 	}, [apiUrl, fetchFromApi, localFilter, suggestions]);
 
-	// Update the list at each character writed
+	// Update the list at each character wrote
 	useEffect(() => {
 		remoteFetch(inputValue);
 		return () => window.clearTimeout(debounceRef.current);
@@ -140,15 +143,14 @@ const TagInput = ({
 			});
 			const arr = await searchRes.json().catch(() => ([]));
 			if (Array.isArray(arr) && arr.length) {
-			// Find the exact match (case insensitive)
-			const exact = arr.find(t => normalize(t.tag_name) === normalize(name)) || arr[0];
-			return exact;
+			// Find the exact match (case-insensitive)
+				return arr.find(t => normalize(t.tag_name) === normalize(name)) || arr[0];
 			}
-			throw new Error("Tag déjà existant.");
+			console.log("Tag déjà existant.");
 		}
-		if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-		// Data shall looks like { id, tag_name }
-		if (!data?.id || !data?.tag_name) throw new Error("Réponse inattendue de l'API tags.");
+		if (!res.ok) console.log(data?.message || `HTTP ${res.status}`);
+		// Data shall look like { id, tag_name }
+		if (!data?.id || !data?.tag_name) console.log("Réponse inattendue de l'API tags.");
 		return data;
 		} catch (e) {
 		console.error(e);
@@ -194,12 +196,15 @@ const TagInput = ({
 					tag && tag.tag_name && (
 						<Tag key={tag.id}>
 							{tag.tag_name}
-							<RemoveButton onClick={() => removeTag(tag)}>×</RemoveButton>
+							<RemoveButton onClick={() => removeTag(tag)}>
+								<X size={16} />
+							</RemoveButton>
 						</Tag>
 					)
 				))}
 
 				<StyledInput
+					id={id}
 					value={inputValue}
 					onFocus={() => setIsOpen(true)}
 					onChange={(e) => {
@@ -267,44 +272,54 @@ const Label = styled.label`
 const TagContainer = styled.div`
 	display: flex;
 	flex-wrap: wrap;
-	align-items: flex-start;
-	gap: var(--spacing-xs, 0.25rem);
+	align-items: center;
+	gap: var(--spacing-2xs, 0.25rem);
 	border-radius: var(--border-radius);
 
     padding: ${({ $size }) =>
-            $size === 's' ? '0.5rem 0.625rem' :
-                    $size === 'l' ? '0.9375rem 1.875rem' : '0.75rem 1rem'};
+            $size === 's' ? '0.5rem' :
+                    $size === 'l' ? '0.9375rem' : '0.5rem'};
 	
-	background: var(--color-background-input, #fff);
-	min-height: 50px;
+	background: var(--color-input-background, #fff);
+    border: 1px solid var(--color-input-border, #ccc);
 	height: ${({ height }) => height};
-	&:focus-within { border-color: var(--color-primary-bg, #2684ff); }
+	min-height: 54px;
+	
+	&:focus-within { 
+		border-color: var(--color-primary-bg, #2684ff); 
+	}
 `;
 
 const Tag = styled.div`
 	display: flex;
 	align-items: center;
-	background: var(--color-primary-bg, #2684ff);
-	color: var(--color-text, #333);
+	background: var(--color-primary-muted, #2684ff);
+	border: 1px solid var(--color-primary-bg, #2684ff);
+	color: var(--color-primary-bg, #333);
 	border-radius: var(--border-radius);
 	padding: var(--spacing-xs) var(--spacing-s);
 	font-size: var(--font-size-s);
+	gap: var(--spacing-2xs);
 `;
 
 const RemoveButton = styled.div`
 	background: none;
 	border: none;
-	margin-left: var(--spacing-xs);
-	color: var(--color-text, #333);
+	color: var(--color-primary-bg, #333);
 	font-size: var(--font-size);
 	cursor: pointer;
-	width: 20px;
-	height: 20px;
+	width: 22px;
+	height: 22px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--border-radius-full);
-	&:hover { background: var(--color-primary-bg-hover, #2684ff); }
+	border-radius: var(--border-radius-s);
+	transition: all 0.2s ease;
+	
+	&:hover { 
+		color: var(--color-primary-text);
+		background: var(--color-primary-bg-hover, #2684ff); 
+	}
 `;
 
 const StyledInput = styled.input`
@@ -318,7 +333,7 @@ const StyledInput = styled.input`
 	height: 34px;
 
     &::placeholder {
-        color: var(--color-placeholder, #aaa);
+        color: var(--color-text-muted, #aaa);
     }
 `;
 
@@ -329,7 +344,7 @@ const Dropdown = styled.ul`
 	margin: 0.25rem 0 0;
 	padding: 0;
 	list-style: none;
-	background: var(--color-background-input, #fff);
+	background: var(--color-input-background, #fff);
 	border: 1px solid var(--color-border, #ccc);
 	border-radius: var(--border-radius);
 	max-height: 150px;
@@ -337,11 +352,34 @@ const Dropdown = styled.ul`
 	box-shadow: var(--box-shadow);
 	transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.25s ease-in-out;
 	z-index: 1000;
+	
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary-bg) var(--color-background-muted);
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        background: var(--color-background-muted);
+        border-radius: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--color-primary-bg);
+        border-radius: 8px;
+        border: 2px solid var(--color-background-muted);
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-primary-bg-hover);
+    }
 `;
 
 const DropdownItem = styled.li`
 	height: 40px; line-height: 40px;
 	padding: 0 var(--spacing-s, 0.25rem);
+    transition: all 0.2s ease;
 	cursor: pointer;
-	&:hover { background: var(--color-primary-bg, #f0f0f0); }
+
+    &:hover {
+        background: var(--color-primary-bg, #f0f0f0);
+        color: var(--color-primary-text);
+    }
 `;

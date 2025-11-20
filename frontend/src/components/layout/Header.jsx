@@ -66,7 +66,7 @@ const Left = styled.div`
     h1 {
         line-height: 40px;
 		font-weight: 600;
-        font-size: var(--font-size-2xl);
+        font-size: var(--font-size-xl);
     }
 
     span {
