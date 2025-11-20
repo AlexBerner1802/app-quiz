@@ -327,7 +327,7 @@ const Container = styled.div`
 const DropPlaceholder = styled.div`
     min-height:160px;
     border: 1px dashed var(--color-border);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     display:flex;
     flex-direction: column;
     align-items: center;
@@ -343,7 +343,7 @@ const DropPlaceholder = styled.div`
 
 const QuestionCard = styled.div`
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-l);
+    border-radius: var(--border-radius-xs);
     width: 100%;
     margin: 0 auto;
     display: flex;
@@ -413,7 +413,7 @@ const RemoveDescriptionLink = styled.button`
 	align-self: flex-start;
 	gap: var(--spacing-xs);
 
-	&:hover {
+	&:hover:not(:disabled) {
         background: none;
 		color: var(--color-error-bg-hover, darkred);
 	}
@@ -441,11 +441,11 @@ const AnswersLabel = styled.p`
 const ModeBadge = styled.span`
     display: inline-flex;
     align-items: center;
-    padding: var(--spacing-xs) var(--spacing-s);
+    padding: var(--spacing-s) var(--spacing-s);
     border: 1px solid var(--color-border);
     font-size: var(--font-size-xs);
     font-weight: 500;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     background: var(--color-primary-muted);
     color: var(--color-text-muted);
 	margin-right: var(--spacing-s);
@@ -459,9 +459,9 @@ const IconButton = styled(Button)`
     padding: var(--spacing-xs);
     line-height: 0;
     transition: color .2s ease;
-	border-radius: var(--border-radius-s);
+	border-radius: var(--border-radius-xs);
 	
-    &:hover {
+    &:hover:not(:disabled) {
         background: transparent !important;
         color: var(--color-primary-bg);
 		border: 1px solid var(--color-primary-bg);
@@ -485,11 +485,11 @@ const IconDelButton = styled(Button)`
     color: var(--color-text-muted);
     cursor: pointer;
     padding: var(--spacing-xs);
-    border-radius: var(--border-radius-s);
+    border-radius: var(--border-radius-xs);
     line-height: 0;
     transition: color .2s ease;
-	
-    &:hover {
+
+    &:hover:not(:disabled) {
         background: transparent !important;
         color: var(--color-error-bg);
         border: 1px solid var(--color-error-bg);
@@ -536,7 +536,7 @@ const OptionContent = styled.div`
     width: 100%;
     gap: var(--spacing-2xs);
     background-color: var(--color-background-muted);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     padding: var(--spacing-2xs) var(--spacing);
 `;
 
@@ -546,11 +546,11 @@ const RemoveOpt = styled(Button)`
     color: var(--color-text-muted);
     cursor: pointer;
     padding: var(--spacing-xs);
-    border-radius: var(--border-radius-s);
+    border-radius: var(--border-radius-xs);
     line-height: 0;
     transition: color .2s ease;
 
-    &:hover {
+    &:hover:not(:disabled) {
         background: transparent !important;
         color: var(--color-error-bg);
         border: 1px solid var(--color-error-bg);

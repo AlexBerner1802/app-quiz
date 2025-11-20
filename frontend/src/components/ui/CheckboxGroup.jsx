@@ -65,7 +65,7 @@ const Wrapper = styled.div`
 const Label = styled.label`
     font-size: var(--font-size);
     font-weight: 500;
-    margin-bottom: var(--spacing-xs, 0.25rem);
+    margin-bottom: var(--spacing, 0.25rem);
     color: var(--color-text, #333);
 `;
 
@@ -96,7 +96,7 @@ const OptionBox = styled.div`
     gap: var(--spacing-xs, 0.5rem);
     padding: 0 var(--spacing-s, 0.75rem);
     border: 1px solid ${({ checked }) => (checked ? "var(--color-primary-bg, #2684ff)" : "var(--color-border)")};
-    border-radius: var(--border-radius, 4px); 
+    border-radius: var(--border-radius-xs, 4px); 
     background-color: ${({ checked }) => (checked ? "var(--color-primary-muted, #2684ff)" : "var(--color-input-background)")};
     color: ${({ checked }) => (checked ? "var(--color-primary-text)" : "var(--color-input-placeholder, #333)")};
     cursor: pointer;

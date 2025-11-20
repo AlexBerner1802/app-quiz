@@ -112,7 +112,7 @@ const Placeholder = styled.div`
 
 const DropZone = styled.div`
     border: 1px dashed var(--color-border, #ccc);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     background-color: var(--color-input-background, #f9f9f9);
     cursor: pointer;
     outline: none;
@@ -187,7 +187,7 @@ const ClearButton = styled.button`
     color: var(--color-error-text, #fff);
     width: 32px;
     height: 32px;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     display: flex;
     align-items: center;
     justify-content: center;

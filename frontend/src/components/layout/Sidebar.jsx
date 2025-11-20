@@ -114,7 +114,7 @@ const IconButton = styled.button`
     border: none;
     background: none;
     padding: var(--spacing-s);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     cursor: pointer;
     transition: background 0.2s;
     display: flex;
@@ -142,7 +142,7 @@ const IconButton = styled.button`
 const Avatar = styled.div`
     width: 36px;
     height: 36px;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-xs);
     background-color: var(--color-background-surface-3);
     display: flex;
     align-items: center;
@@ -167,14 +167,15 @@ const TooltipWrapper = styled.div`
 const Tooltip = styled.div`
 	position: absolute;
 	top: 50%;
-	left: 110%;
+	left: 100%;
 	transform: translateY(-50%) translateX(0);
-	background-color: var(--color-background-surface-2);
+	background-color: var(--color-background-surface-3);
 	color: var(--color-text);
-	padding: var(--spacing-xs) var(--spacing-s);
-	border-radius: var(--border-radius-s);
+	padding: var(--spacing-s);
+	border-radius: var(--border-radius-2xs);
+	border: 1px solid var(--color-border);
 	font-size: var(--font-size-s);
-    box-shadow: var(--box-shadow);
+    box-shadow: var(--box-shadow-l);
 	white-space: nowrap;
 	opacity: 0;
 	visibility: hidden;
