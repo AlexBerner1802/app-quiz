@@ -60,15 +60,26 @@ export default function QuizCard(props) {
 
 				<TagsContainer>
 					{loading ? (
-						<ModulesRow>{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} width={100} height={24} style={{ borderRadius: 4 }} />)}</ModulesRow>
+						<>
+							{Array.from({ length: 2 }).map((_, i) => (
+								<Skeleton key={`module-${i}`} width={100} height={24} style={{ borderRadius: 4, marginRight: 4 }} />
+							))}
+							{Array.from({ length: 3 }).map((_, i) => (
+								<Skeleton key={`tag-${i}`} width={80} height={24} style={{ borderRadius: 4, marginRight: 4 }} />
+							))}
+						</>
 					) : (
-						safeModules.length > 0 && <ModulesRow>{safeModules.slice(0,3).map((m,i)=><Tag key={i}>{m}</Tag>)}{safeModules.length>3 && <Tag>+{safeModules.length-3}</Tag>}</ModulesRow>
-					)}
+						<>
+							{safeModules.slice(0, 3).map((m, i) => (
+								<Tag key={`module-${i}`}>{m}</Tag>
+							))}
+							{safeModules.length > 3 && <Tag>+{safeModules.length - 3}</Tag>}
 
-					{loading ? (
-						<TagsRow>{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} width={80} height={24} style={{ borderRadius: 4 }} />)}</TagsRow>
-					) : (
-						<TagsRow>{safeTags.map((tag,i)=><Tag key={i} variant={"secondary"}>{tag}</Tag>)}{tagsTotal>3 && <Tag variant={"secondary"}>+{tagsTotal-3}</Tag>}</TagsRow>
+							{safeTags.map((tag, i) => (
+								<Tag key={`tag-${i}`} variant="secondary">{tag}</Tag>
+							))}
+							{tagsTotal > 3 && <Tag variant="secondary">+{tagsTotal - 3}</Tag>}
+						</>
 					)}
 				</TagsContainer>
 
@@ -85,8 +96,6 @@ const ImageWrapper = styled.div`
 	border-radius: var(--border-radius);
 	overflow: hidden;
 	transition: height 0.3s ease-in-out;
-
-	/* Disable pointer events if loading */
 	pointer-events: ${(props) => (props.$loading ? 'none' : 'auto')};
 `;
 
@@ -100,7 +109,7 @@ const Section = styled.div`
 	padding: 0 var(--spacing-s) var(--spacing-s);
 	transition: height 0.3s ease-in-out, opacity 0.2s ease, visibility 0.2s ease, padding 0.2s ease;
 	border-radius: var(--border-radius);
-	`;
+`;
 
 const Overlay = styled.div`
 	position: absolute;
@@ -136,8 +145,8 @@ const Container = styled.div`
 	padding: var(--spacing-s);
 	height: 100%;
 	min-height: 280px;
-	border-radius: var(--border-radius-l);
-	border: 2px solid var(--color-border);
+	border-radius: var(--border-radius-s);
+	border: 1px solid var(--color-border);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 	cursor: pointer;
 
@@ -202,12 +211,13 @@ const Description = styled.p`
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.5;
-    height: calc(1.5em * 3);
+    max-height: calc(1.5em * 3);
 `;
 
 const TagsRow = styled.div`
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	gap: var(--spacing-xs);
 `;
 

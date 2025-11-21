@@ -1,41 +1,43 @@
 import React from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Button from "../../components/ui/Button";
 
-export default function QuizHeader({ title, createdAt, updatedAt, description, coverImageUrl }) {
-    const created = createdAt?.slice?.(0, 10) ?? "—";
-    const updated = updatedAt?.slice?.(0, 10) ?? "—";
-    const { t } = useTranslation();
+export default function QuizHeader({ title, createdAt, updatedAt }) {
+	const created = createdAt?.slice?.(0, 10) ?? "—";
+	const updated = updatedAt?.slice?.(0, 10) ?? "—";
+	const { t } = useTranslation();
+	const navigate = useNavigate();
 
-    return (
-        <Header>
-        <HeaderTop>
-            <h1>{title}</h1>
-            <Meta>
-            <span>{t("quiz.show.createdAt")}{created}</span>
-            <span>•</span>
-            <span>{t("quiz.show.modifiedAt")}{updated}</span>
-            </Meta>
-        </HeaderTop>
+	return (
+		<Header>
+			<Button onClick={() => navigate(-1)} variant="ghost">
+				<ChevronLeft size={30} />
+			</Button>
 
-        {coverImageUrl && (
-            <Cover
-            src={coverImageUrl.startsWith("/")
-                ? (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000") + coverImageUrl
-                : coverImageUrl}
-            alt={title}
-            loading="lazy"
-            />
-        )}
-
-        {description && <Description>{description}</Description>}
-        </Header>
-    );
+			<HeaderTop>
+				<h1>{title}</h1>
+				<Meta>
+					<span>{t("quiz.show.createdAt")}{created}</span>
+					<span>•</span>
+					<span>{t("quiz.show.modifiedAt")}{updated}</span>
+				</Meta>
+			</HeaderTop>
+		</Header>
+	);
 }
 
 const Header = styled.header`
-    display: grid;
+    display: flex;
     gap: var(--spacing);
+	background-color: var(--color-background);
+	padding: var(--spacing);
+	border: 1px solid var(--color-border);
+`;
+
+const BackButton = styled(Button)`
 `;
 
 const HeaderTop = styled.div`

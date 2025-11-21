@@ -48,6 +48,8 @@
 		"settings": "Paramètres",
 		"lang": "Langue",
 		"languages": "Langues",
+		"search": "Recherche",
+		"filter": "Filtre",
 		"placeholders": {
 			"typeHere": "Tapez ici"
 		},
@@ -84,7 +86,10 @@
 			"questions": "Questions",
 			"tagAdd": "Nouveau tag",
 			"existingTag": "Tags",
-			"module": "Modules",
+			"module": "Module",
+			"modules": "Modules",
+			"tag": "Tag",
+			"tags": "Tags",
 			"noModule": "Pas de module existant"
 		},
 		"hints": {

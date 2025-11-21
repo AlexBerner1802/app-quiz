@@ -8,15 +8,18 @@ import App from './App.jsx'
 import {SkeletonTheme} from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css';
 import {ModalProvider} from "./context/modal";
+import {DrawerProvider} from "./context/drawer";
 
 createRoot(document.getElementById('root')).render(
 	<StrictMode>
 		<AuthProvider>
 			<ThemeProvider>
 				<ModalProvider>
-					<SkeletonTheme baseColor={"var(--color-skeleton-base)"} highlightColor={"var(--color-skeleton-highlight)"}>
-						<App />
-					</SkeletonTheme>
+					<DrawerProvider>
+						<SkeletonTheme baseColor={"var(--color-skeleton-base)"} highlightColor={"var(--color-skeleton-highlight)"}>
+							<App />
+						</SkeletonTheme>
+					</DrawerProvider>
 				</ModalProvider>
 			</ThemeProvider>
 		</AuthProvider>

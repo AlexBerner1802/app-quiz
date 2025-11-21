@@ -45,7 +45,6 @@ export const routes = [
 		path: "/quizzes/:id",
 		element: <ShowQuiz />,
 		protected: true,
-		layout: AppLayout
 	},
 	{
 		path: "*",

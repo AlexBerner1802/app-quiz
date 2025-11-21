@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import { FlaskConical, Plus, SearchX } from "lucide-react";
-import styled from "styled-components";
+import {FlaskConical, Search, Plus, SearchX, Funnel} from "lucide-react";
+import styled, {keyframes} from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
 import Header from "../../components/layout/Header";
@@ -11,12 +11,16 @@ import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import { getLangCode } from "../../services/i18n_lang";
 import { Highlight } from "../../utils/hightlight.jsx";
-import SelectMultiple from "../../components/ui/SelectMultiple";
+import Input from "../../components/ui/Input";
+import {useDrawer} from "../../context/drawer";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 
 export default function HomePage() {
 
 	const navigate = useNavigate();
-	const { t, i18n } = useTranslation();
+
+	const { openDrawer } = useDrawer();
+	const { t } = useTranslation();
 
 	const [quizzes, setQuizzes] = useState([]);
 	const [searchText, setSearchText] = useState("");
@@ -27,32 +31,24 @@ export default function HomePage() {
 
 
 	useEffect(() => {
-		let alive = true;
+		setLoading(true);
+		setErr("");
 
-		(async () => {
-			try {
-				setErr(""); // clear previous errors
-				setLoading(true);
-
-				const data = await getQuizzes({ onlyActive: true, lang: getLangCode() })
-
+		getQuizzes({ onlyActive: true, lang: getLangCode() })
+			.then(data => {
 				console.log(data);
-				if (!alive) return;
+				setQuizzes(Array.isArray(data) ? data : [])
+			})
+			.catch(err => {
+				setErr(err.message || String(err))
+			})
+			.finally(() => {
+				setTimeout(() => {
+					setLoading(false)
+				}, 2000)
+			});
 
-				setQuizzes(Array.isArray(data) ? data : []);
-			} catch (e) {
-				if (alive) setErr(e.message || String(e));
-			} finally {
-				if (alive) {
-					setTimeout(() => {
-						setLoading(false);
-					}, 2000);
-				}
-			}
-		})();
-
-		return () => { alive = false; };
-	}, [i18n.language]);
+	}, []);
 
 
 	const filteredQuizzes = useMemo(() => {
@@ -122,7 +118,17 @@ export default function HomePage() {
 		return Array.from(tagsSet).sort();
 	}, [quizzes]);
 
-	console.log(filteredQuizzes)
+	const handleOpenFilterDrawer = () => {
+		openDrawer("filter", {
+			modules: allModules,
+			tags: allTags,
+			selectedModules,
+			selectedTags,
+			setSelectedModules,
+			setSelectedTags,
+		});
+	};
+
 	return (
 		<>
 			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
@@ -149,51 +155,54 @@ export default function HomePage() {
 					{err && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</pre>}
 
 					{!err && (
-						<SearchFilterContainer>
-							<SearchInput
-								placeholder={t("searchPlaceholder")}
-								value={searchText}
-								onChange={(e) => setSearchText(e.target.value)}
-							/>
-							<SelectMultiple
-								options={allModules}
-								value={selectedModules}
-								onChange={setSelectedModules}
-								placeholder={t("filterModules")}
-							/>
-							<SelectMultiple
-								options={allTags}
-								value={selectedTags}
-								onChange={setSelectedTags}
-								placeholder={t("filterTags")}
-							/>
-						</SearchFilterContainer>
+						<AnimatedDiv>
+							<SearchFilterContainer>
+								<Input
+									icon={<Search size={20} color={"var(--color-text-muted)"} />}
+									placeholder={t("common.search")}
+									value={searchText}
+									onChange={(e) => setSearchText(e.target.value)}
+									size="m"
+									width="100%"
+								/>
+
+								<Button key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
+									<Funnel size={20} />
+									{t("common.filter")}
+								</Button>
+							</SearchFilterContainer>
+						</AnimatedDiv>
 					)}
 
 					{!err && (
-						<QuizGrid>
-							{(!filteredQuizzes || filteredQuizzes.length === 0) && !loading ? (
-								<NoCards>
-									<SearchX size={50} color={"var(--color-disabled)"} />
-									<NoCardsText>{t("quiz.empty")}</NoCardsText>
-								</NoCards>
-							) : (
-								filteredQuizzes.map((q) => (
-									<QuizCard
-										key={q.id_quiz}
-										{...q}
-										loading={loading} // pass loading flag
-										title={<Highlight text={q.title} query={searchText} />}
-										description={<Highlight text={q.quiz_description} query={searchText} />}
-										onEdit={handleEdit}
-										onDelete={handleDelete}
-										onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
-									/>
-								))
-							)}
-						</QuizGrid>
-
+						filteredQuizzes.length === 0 && !loading ? (
+							<NoCards>
+								<SearchX size={50} color={"var(--color-disabled)"} />
+								<NoCardsText>{t("quiz.empty")}</NoCardsText>
+							</NoCards>
+						) : (
+							<ResponsiveMasonry
+								columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 5 }}
+							>
+								<Masonry gutter={"var(--spacing)"}>
+									{filteredQuizzes.map((q, index) => (
+										<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
+											<QuizCard
+												{...q}
+												loading={loading}
+												title={<Highlight text={q.title} query={searchText} />}
+												description={<Highlight text={q.quiz_description} query={searchText} />}
+												onEdit={handleEdit}
+												onDelete={handleDelete}
+												onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
+											/>
+										</AnimatedDiv>
+									))}
+								</Masonry>
+							</ResponsiveMasonry>
+						)
 					)}
+
 				</Content>
 			</Main>
 		</>
@@ -216,21 +225,22 @@ const Content = styled.section`
 	padding: var(--spacing-xl);
 `;
 
+const fadeIn = keyframes`
+	from { opacity: 0; transform: translateY(10px); }
+	to { opacity: 1; transform: translateY(0); }
+`;
+
+const AnimatedDiv = styled.div`
+	opacity: 0;
+    width: 100%;
+  	animation: ${fadeIn} 0.5s ease forwards;
+`;
+
 const SearchFilterContainer = styled.div`
-  display: flex;
-  gap: var(--spacing-s);
-  flex-wrap: wrap;
-  margin-bottom: var(--spacing-l);
+	display: flex;
+	gap: var(--spacing-s);
+	margin-bottom: var(--spacing-l);
 `;
-
-const SearchInput = styled.input`
-  flex: 1;
-  padding: var(--spacing-xs);
-  font-size: var(--font-size);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--color-border);
-`;
-
 
 const QuizGrid = styled.section`
 	display: grid;
