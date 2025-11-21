@@ -36,7 +36,7 @@ class Question extends Model
     // Translations
     public function translations(): HasMany
     {
-        return $this->hasMany(Translation::class, 'question_id', 'id_question')
+        return $this->hasMany(Translation::class, 'element_id', 'id_question')
                     ->where('element_type', 'question');
     }
 }

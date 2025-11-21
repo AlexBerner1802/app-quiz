@@ -112,10 +112,10 @@ class QuizController extends Controller
         $tRows = DB::table('translations')
             ->where('element_type', 'quiz')
             ->where('lang', $lang)
-            ->whereIn('quiz_id', $quizIds)
+            ->whereIn('element_id', $quizIds)
             ->whereIn('field_name', ['title','quiz_description','cover_image_url'])
             ->get()
-            ->groupBy('quiz_id');
+            ->groupBy('element_id');
 
         $actives = DB::table('active_quiz')
             ->whereIn('id_quiz', $quizIds)
@@ -165,7 +165,7 @@ class QuizController extends Controller
         // i18n quiz
         $tQuiz = DB::table('translations')
             ->where('element_type','quiz')->where('lang',$lang)
-            ->where('quiz_id',$qid)
+            ->where('element_id',$qid)
             ->whereIn('field_name',['title','quiz_description','cover_image_url'])
             ->get()->keyBy('field_name');
 
@@ -183,17 +183,17 @@ class QuizController extends Controller
         // i18n questions
         $tQ = DB::table('translations')
             ->where('element_type','question')->where('lang',$lang)
-            ->whereIn('question_id',$qIds ?: [-1])
+            ->whereIn('element_id',$qIds ?: [-1])
             ->whereIn('field_name',['question_title','question_description'])
-            ->get()->groupBy('question_id');
+            ->get()->groupBy('element_id');
 
         // i18n answers
         $aIds = $answers->flatten()->pluck('id_answer')->all();
         $tA = DB::table('translations')
             ->where('element_type','answer')->where('lang',$lang)
-            ->whereIn('answer_id',$aIds ?: [-1])
+            ->whereIn('element_id',$aIds ?: [-1])
             ->where('field_name','answer_text')
-            ->get()->groupBy('answer_id');
+            ->get()->groupBy('element_id');
 
         $quiz->questions = $questions->map(function($q) use ($answers, $tQ, $tA) {
             $qt = collect($tQ->get($q->id_question, []))->keyBy('field_name');
@@ -454,7 +454,7 @@ class QuizController extends Controller
 
             $this->deleteQuizQuestions($quiz);
 
-            DB::table('translations')->where('element_type','quiz')->where('quiz_id',$quiz->{$this->quizPk()})->delete();
+            DB::table('translations')->where('element_type','quiz')->where('element_id',$quiz->{$this->quizPk()})->delete();
             DB::table('active_quiz')->where('id_quiz',$quiz->{$this->quizPk()})->delete();
 
             $quiz->delete();
@@ -596,8 +596,15 @@ class QuizController extends Controller
         $qIds = Question::where('id_quiz', $quiz->{$this->quizPk()})->pluck('id_question')->all();
         $aIds = Answer::whereIn('id_question', $qIds ?: [-1])->pluck('id_answer')->all();
 
-        DB::table('translations')->whereIn('answer_id', $aIds ?: [-1])->delete();
-        DB::table('translations')->whereIn('question_id', $qIds ?: [-1])->delete();
+        DB::table('translations')
+            ->where('element_type', 'answer')
+            ->whereIn('element_id', $aIds ?: [-1])
+            ->delete();
+
+        DB::table('translations')
+            ->where('element_type', 'question')
+            ->whereIn('element_id', $qIds ?: [-1])
+            ->delete();
 
         Answer::whereIn('id_question', $qIds ?: [-1])->delete();
         Question::where('id_quiz', $quiz->{$this->quizPk()})->delete();
@@ -634,9 +641,7 @@ class QuizController extends Controller
 
                 $rows[] = [
                     'element_type' => 'quiz',
-                    'quiz_id'      => $qid,
-                    'question_id'  => null,
-                    'answer_id'    => null,
+                    'element_id'      => $qid,
                     'lang'         => $lang,
                     'field_name'   => $field,
                     'element_text' => $val,
@@ -649,7 +654,7 @@ class QuizController extends Controller
         if (!empty($rows)) {
             DB::table('translations')->upsert(
                 $rows,
-                ['lang','field_name','quiz_id'],
+                ['lang','field_name','element_id'],
                 ['element_text','updated_at']
             );
         }
@@ -691,9 +696,7 @@ class QuizController extends Controller
                     if (!empty($payload['question_title'])) {
                         $rows[] = [
                             'element_type' => 'question',
-                            'quiz_id'      => null,
-                            'question_id'  => $questionId,
-                            'answer_id'    => null,
+                            'element_id'  => $questionId,
                             'lang'         => $lang,
                             'field_name'   => 'question_title',
                             'element_text' => $payload['question_title'],
@@ -704,9 +707,7 @@ class QuizController extends Controller
                     if (array_key_exists('question_description',$payload) && $payload['question_description'] !== null) {
                         $rows[] = [
                             'element_type' => 'question',
-                            'quiz_id'      => null,
-                            'question_id'  => $questionId,
-                            'answer_id'    => null,
+                            'element_id'  => $questionId,
                             'lang'         => $lang,
                             'field_name'   => 'question_description',
                             'element_text' => $payload['question_description'],
@@ -724,9 +725,7 @@ class QuizController extends Controller
 
                     $rows[] = [
                         'element_type' => 'answer',
-                        'quiz_id'      => null,
-                        'question_id'  => null,
-                        'answer_id'    => $answerId,
+                        'element_id'    => $answerId,
                         'lang'         => $lang,
                         'field_name'   => 'answer_text',
                         'element_text' => $text,
@@ -741,7 +740,7 @@ class QuizController extends Controller
             foreach (array_chunk($rows, 500) as $slice) {
                 DB::table('translations')->upsert(
                     $slice,
-                    ['lang','field_name','quiz_id','question_id','answer_id'],
+                    ['lang','field_name','element_id'],
                     ['element_text','updated_at']
                 );
             }
@@ -763,7 +762,7 @@ class QuizController extends Controller
 
         $langsPresent = DB::table('translations')
             ->where('element_type','quiz')
-            ->where('quiz_id', $qid)
+            ->where('element_id', $qid)
             ->distinct()
             ->pluck('lang')
             ->filter(fn($l) => in_array($l, $allowed, true))
@@ -792,22 +791,22 @@ class QuizController extends Controller
         foreach ($langsPresent as $lg) {
             $tQuiz = DB::table('translations')
                 ->where('element_type','quiz')->where('lang',$lg)
-                ->where('quiz_id',$qid)
+                ->where('element_id',$qid)
                 ->whereIn('field_name',['title','quiz_description','cover_image_url'])
                 ->get()->keyBy('field_name');
 
             $tQ = DB::table('translations')
                 ->where('element_type','question')->where('lang',$lg)
-                ->whereIn('question_id',$qIds ?: [-1])
+                ->whereIn('element_id',$qIds ?: [-1])
                 ->whereIn('field_name',['question_title','question_description'])
-                ->get()->groupBy('question_id');
+                ->get()->groupBy('element_id');
 
             $aIds = $answersByQ->flatten()->pluck('id_answer')->all();
             $tA = DB::table('translations')
                 ->where('element_type','answer')->where('lang',$lg)
-                ->whereIn('answer_id',$aIds ?: [-1])
+                ->whereIn('element_id',$aIds ?: [-1])
                 ->where('field_name','answer_text')
-                ->get()->groupBy('answer_id');
+                ->get()->groupBy('element_id');
 
             $translations[] = [
                 'lang' => $lg,

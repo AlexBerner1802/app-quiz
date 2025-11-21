@@ -27,7 +27,7 @@ class Answer extends Model
     // i18n
     public function translations(): HasMany
     {
-        return $this->hasMany(Translation::class, 'answer_id', 'id_answer')
+        return $this->hasMany(Translation::class, 'element_id', 'id_answer')
                     ->where('element_type', 'answer');
     }
 }

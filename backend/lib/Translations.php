@@ -9,21 +9,21 @@ function resolveLangId(PDO $db, string $langCode): int {
 }
 
 function upsertQuizTranslation(PDO $db, int $langId, int $quizId, string $field, string $text): void {
-    $sql = "INSERT INTO translations (lang, element_type, field_name, quiz_id, element_text)
+    $sql = "INSERT INTO translations (lang, element_type, field_name, element_id, element_text)
             VALUES (:lang, 'quiz', :field, :id, :txt)
             ON DUPLICATE KEY UPDATE element_text = VALUES(element_text), updated_at = CURRENT_TIMESTAMP";
     $db->prepare($sql)->execute([':lang'=>$langId, ':field'=>$field, ':id'=>$quizId, ':txt'=>$text]);
 }
 
 function upsertQuestionTranslation(PDO $db, int $langId, int $questionId, string $field, ?string $text): void {
-    $sql = "INSERT INTO translations (lang, element_type, field_name, question_id, element_text)
+    $sql = "INSERT INTO translations (lang, element_type, field_name, element_id, element_text)
             VALUES (:lang, 'question', :field, :id, :txt)
             ON DUPLICATE KEY UPDATE element_text = VALUES(element_text), updated_at = CURRENT_TIMESTAMP";
     $db->prepare($sql)->execute([':lang'=>$langId, ':field'=>$field, ':id'=>$questionId, ':txt'=>($text ?? '')]);
 }
 
 function upsertAnswerTranslation(PDO $db, int $langId, int $answerId, string $text): void {
-    $sql = "INSERT INTO translations (lang, element_type, field_name, answer_id, element_text)
+    $sql = "INSERT INTO translations (lang, element_type, field_name, element_id, element_text)
             VALUES (:lang, 'answer', 'answer_text', :id, :txt)
             ON DUPLICATE KEY UPDATE element_text = VALUES(element_text), updated_at = CURRENT_TIMESTAMP";
     $db->prepare($sql)->execute([':lang'=>$langId, ':id'=>$answerId, ':txt'=>$text]);
