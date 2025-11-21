@@ -10,8 +10,8 @@ import { getQuizzes, deleteQuiz } from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import { getLangCode } from "../../services/i18n_lang";
-
-const NUM_PLACEHOLDERS = 10;
+import { Highlight } from "../../utils/hightlight.jsx";
+import SelectMultiple from "../../components/ui/SelectMultiple";
 
 export default function HomePage() {
 
@@ -19,6 +19,9 @@ export default function HomePage() {
 	const { t, i18n } = useTranslation();
 
 	const [quizzes, setQuizzes] = useState([]);
+	const [searchText, setSearchText] = useState("");
+	const [selectedModules, setSelectedModules] = useState([]);
+	const [selectedTags, setSelectedTags] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [err, setErr] = useState("");
 
@@ -43,7 +46,7 @@ export default function HomePage() {
 				if (alive) {
 					setTimeout(() => {
 						setLoading(false);
-					}, 200);
+					}, 2000);
 				}
 			}
 		})();
@@ -51,6 +54,30 @@ export default function HomePage() {
 		return () => { alive = false; };
 	}, [i18n.language]);
 
+
+	const filteredQuizzes = useMemo(() => {
+		return quizzes.filter((q) => {
+			const searchMatch =
+				q.title.toLowerCase().includes(searchText.toLowerCase()) ||
+				q.quiz_description.toLowerCase().includes(searchText.toLowerCase());
+
+			const modulesArray = Array.isArray(q.modules)
+				? q.modules.map((m) => (typeof m === "string" ? m : m.module_name))
+				: [];
+
+			const tagsArray = Array.isArray(q.tags)
+				? q.tags.map((t) => (typeof t === "string" ? t : t.tag_name))
+				: [];
+
+			const moduleMatch =
+				selectedModules.length === 0 || modulesArray.some((m) => selectedModules.includes(m));
+
+			const tagMatch =
+				selectedTags.length === 0 || tagsArray.some((t) => selectedTags.includes(t));
+
+			return searchMatch && moduleMatch && tagMatch;
+		});
+	}, [quizzes, searchText, selectedModules, selectedTags]);
 
 
 	// Open the editor
@@ -75,34 +102,27 @@ export default function HomePage() {
 		[t] // dependencies: only `t` because `setQuizzes` is stable
 	);
 
+	const allModules = useMemo(() => {
+		const modulesSet = new Set();
+		quizzes.forEach((q) => {
+			if (Array.isArray(q.modules)) {
+				q.modules.forEach((m) => modulesSet.add(typeof m === "string" ? m : m.module_name));
+			}
+		});
+		return Array.from(modulesSet).sort();
+	}, [quizzes]);
 
-	const cards = useMemo(() => {
-		const fallbackImg =
-			"https://img.freepik.com/free-vector/gradient-ui-ux-background-illustrated_23-2149050187.jpg?semt=ais_hybrid&w=740&q=80";
+	const allTags = useMemo(() => {
+		const tagsSet = new Set();
+		quizzes.forEach((q) => {
+			if (Array.isArray(q.tags)) {
+				q.tags.forEach((t) => tagsSet.add(typeof t === "string" ? t : t.tag_name));
+			}
+		});
+		return Array.from(tagsSet).sort();
+	}, [quizzes]);
 
-		if (loading) {
-			// Return an array of skeleton placeholders
-			return Array.from({ length: NUM_PLACEHOLDERS }, (_, i) => ({ id: `skeleton-${i}`, loading: true }));
-		}
-
-
-		return quizzes.map((q) => ({
-			id: q.id_quiz,
-			title: q.title ?? "Untitled",
-			modules: Array.isArray(q.modules) ? q.modules.map((m) => m.module_name).slice(0, 3) : [],
-			tags: Array.isArray(q.tags) ? q.tags.map((t) => t.tag_name).slice(0, 3) : [],
-			tagsTotal: Array.isArray(q.tags) ? q.tags.length : 0,
-			imgURL: q.cover_image_url || fallbackImg,
-			date: q.created_at?.slice(0, 10) ?? "",
-			modified: q.updated_at?.slice(0, 10) ?? "",
-			isActive: !!q.is_active,
-			onClick: () => q.is_active && navigate(`/quizzes/${q.id_quiz}`),
-			onEdit: handleEdit,
-			onDelete: handleDelete,
-		}));
-	}, [loading, quizzes, handleEdit, handleDelete, navigate]);
-
-
+	console.log(filteredQuizzes)
 	return (
 		<>
 			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
@@ -129,16 +149,50 @@ export default function HomePage() {
 					{err && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</pre>}
 
 					{!err && (
+						<SearchFilterContainer>
+							<SearchInput
+								placeholder={t("searchPlaceholder")}
+								value={searchText}
+								onChange={(e) => setSearchText(e.target.value)}
+							/>
+							<SelectMultiple
+								options={allModules}
+								value={selectedModules}
+								onChange={setSelectedModules}
+								placeholder={t("filterModules")}
+							/>
+							<SelectMultiple
+								options={allTags}
+								value={selectedTags}
+								onChange={setSelectedTags}
+								placeholder={t("filterTags")}
+							/>
+						</SearchFilterContainer>
+					)}
+
+					{!err && (
 						<QuizGrid>
-							{!cards || cards.length === 0 ? (
+							{(!filteredQuizzes || filteredQuizzes.length === 0) && !loading ? (
 								<NoCards>
 									<SearchX size={50} color={"var(--color-disabled)"} />
 									<NoCardsText>{t("quiz.empty")}</NoCardsText>
 								</NoCards>
 							) : (
-								cards.map((item) => <QuizCard key={item.id} {...item} />)
+								filteredQuizzes.map((q) => (
+									<QuizCard
+										key={q.id_quiz}
+										{...q}
+										loading={loading} // pass loading flag
+										title={<Highlight text={q.title} query={searchText} />}
+										description={<Highlight text={q.quiz_description} query={searchText} />}
+										onEdit={handleEdit}
+										onDelete={handleDelete}
+										onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
+									/>
+								))
 							)}
 						</QuizGrid>
+
 					)}
 				</Content>
 			</Main>
@@ -161,6 +215,22 @@ const Content = styled.section`
 	flex: 1;
 	padding: var(--spacing-xl);
 `;
+
+const SearchFilterContainer = styled.div`
+  display: flex;
+  gap: var(--spacing-s);
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-l);
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  padding: var(--spacing-xs);
+  font-size: var(--font-size);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--color-border);
+`;
+
 
 const QuizGrid = styled.section`
 	display: grid;

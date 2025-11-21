@@ -88,7 +88,7 @@ class QuizController extends Controller
             $request->merge(['new_tags' => $v]);
         }
     }
-    
+
     private const ALLOWED_LANGS = ['fr','en','de','it'];
 
     private function quizPk(): string { return 'id_quiz'; }
@@ -223,13 +223,13 @@ class QuizController extends Controller
 
         $validated = $request->validate([
             // i18n quiz
-            'title'                               => 'nullable|string|max:30',
-            'quiz_description'                    => 'nullable|string|max:255',
+            'title'                               => 'nullable|string',
+            'quiz_description'                    => 'nullable|string',
             'cover_image_url'                     => 'nullable|url',
             'cover_image'                         => 'nullable|image|max:4096',
             'translations'                        => 'array',
-            'translations.*.title'                => 'nullable|string|max:30',
-            'translations.*.quiz_description'     => 'nullable|string|max:255',
+            'translations.*.title'                => 'nullable|string',
+            'translations.*.quiz_description'     => 'nullable|string',
             'translations.*.cover_image_url'      => 'nullable|url',
 
             // Activity
@@ -266,7 +266,7 @@ class QuizController extends Controller
         // Activity by lang
         $isActiveByLang = $this->resolveActiveByLang($request, array_keys($i18nQuiz));
 
-        // Q/A structure 
+        // Q/A structure
         $questions = $this->parseQuestionsStructure($request->input('questions'));
         $qaI18nByLang = $this->normalizeQuestionsTranslations($request, $questions);
 
@@ -340,8 +340,8 @@ class QuizController extends Controller
             'cover_image_url'                     => 'nullable|url',
             'cover_image'                         => 'nullable|image|max:4096',
             'translations'                        => 'array',
-            'translations.*.title'                => 'nullable|string|max:30',
-            'translations.*.quiz_description'     => 'nullable|string|max:255',
+            'translations.*.title'                => 'nullable|string',
+            'translations.*.quiz_description'     => 'nullable|string',
             'translations.*.cover_image_url'      => 'nullable|url',
 
             'is_active'                           => 'required|boolean',
