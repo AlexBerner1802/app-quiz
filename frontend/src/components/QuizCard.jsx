@@ -8,7 +8,7 @@ import Skeleton from "react-loading-skeleton";
 export default function QuizCard(props) {
 
 	const { t } = useTranslation();
-	const { id, title, modules, tags, tagsTotal, imgURL, date, modified, isActive = true, onClick, onEdit, onDelete, loading } = props;
+	const { id, title, description, modules, tags, tagsTotal, imgURL, created_at, updated_at, isActive = true, onClick, onEdit, onDelete, loading } = props;
 
 	const safeClick = () => {
 		if (!isActive) return; // désactive l’ouverture plein cadre si inactif
@@ -35,92 +35,43 @@ export default function QuizCard(props) {
 	return (
 		<Container data-inactive={!isActive} $loading={loading} onClick={safeClick}>
 			<ImageWrapper $loading={loading}>
-				{
-					loading ?
-						<Skeleton width={"100%"} height={"100%"} /> :
-						<>
-							<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!isActive} />
-							<Overlay>
-								<SquareArrowOutUpRight size={32} color="var(--gray-50)" strokeWidth={2} />
-								<OverlayTitle>{title}</OverlayTitle>
-								<OverlayActions>
-									<OverlayBtn
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											onEdit?.(id);
-										}}
-										title={t("actions.edit")}
-										aria-label={t("actions.edit")}
-									>
-										{t("actions.edit")}
-									</OverlayBtn>
-									<OverlayBtn
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											onDelete?.(id);
-										}}
-										title={t("actions.delete")}
-										aria-label={t("actions.delete")}
-										data-variant="danger"
-									>
-										{t("actions.delete")}
-									</OverlayBtn>
-								</OverlayActions>
-							</Overlay>
-						</>
-				}
-
-				{!isActive && !loading && <Ribbon>{t("common.inactive")}</Ribbon>}
+				{loading ? (
+					<Skeleton width="100%" height="100%" />
+				) : (
+					<>
+						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!isActive} />
+						<Overlay>
+							<SquareArrowOutUpRight size={32} color="var(--gray-50)" strokeWidth={2} />
+							<OverlayTitle>{title}</OverlayTitle>
+							<OverlayActions>
+								<OverlayBtn type="button" onClick={(e) => { e.stopPropagation(); onEdit?.(id); }} title={t("actions.edit")}>{t("actions.edit")}</OverlayBtn>
+								<OverlayBtn type="button" data-variant="danger" onClick={(e) => { e.stopPropagation(); onDelete?.(id); }} title={t("actions.delete")}>{t("actions.delete")}</OverlayBtn>
+							</OverlayActions>
+						</Overlay>
+					</>
+				)}
 			</ImageWrapper>
 
 			<Section>
-				<Title>
-					{
-						title || <Skeleton width={"70%"} height={"var(--font-size)"}/>
-					}
-				</Title>
 
-				{loading ? (
-					<ModulesRow>
-						{Array.from({ length: 2 }).map((_, i) => (
-							<Skeleton key={i} width={100} height={24} style={{ borderRadius: 4 }} />
-						))}
-					</ModulesRow>
-				) : (
-					safeModules.length > 0 && (
-						<ModulesRow>
-							{safeModules.slice(0, 3).map((mod, i) => (
-								<Tag key={i} variant="primary">
-									{mod}
-								</Tag>
-							))}
-							{safeModules.length > 3 && <Tag variant="primary">+{safeModules.length - 3}</Tag>}
-						</ModulesRow>
-					)
-				)}
+				<Title>{loading ? <Skeleton width="70%" /> : title}</Title>
+				<Description>{loading ? <Skeleton width="100%" /> : description}</Description>
+				<Timestamp>{loading ? <Skeleton width="50%" /> : (created_at && updated_at && createTimestamp(created_at, updated_at))}</Timestamp>
 
-				{loading ? (
-					<TagsRow>
-						{Array.from({ length: 3 }).map((_, i) => (
-							<Skeleton key={i} width={80} height={24} style={{ borderRadius: 4 }} />
-						))}
-					</TagsRow>
-				) : (
-					<TagsRow>
-						{safeTags.map((tag, index) => (
-							<Tag key={index} variant="secondary">
-								{tag}
-							</Tag>
-						))}
-						{typeof tagsTotal === "number" && tagsTotal > 3 && (
-							<Tag variant="secondary">+{tagsTotal - 3}</Tag>
-						)}
-					</TagsRow>
-				)}
+				<TagsContainer>
+					{loading ? (
+						<ModulesRow>{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} width={100} height={24} style={{ borderRadius: 4 }} />)}</ModulesRow>
+					) : (
+						safeModules.length > 0 && <ModulesRow>{safeModules.slice(0,3).map((m,i)=><Tag key={i}>{m}</Tag>)}{safeModules.length>3 && <Tag>+{safeModules.length-3}</Tag>}</ModulesRow>
+					)}
 
-				<Timestamp>{(date && modified && createTimestamp(date, modified)) || <Skeleton width={"50%"} height={"var(--font-size-xs)"}/>}</Timestamp>
+					{loading ? (
+						<TagsRow>{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} width={80} height={24} style={{ borderRadius: 4 }} />)}</TagsRow>
+					) : (
+						<TagsRow>{safeTags.map((tag,i)=><Tag key={i} variant={"secondary"}>{tag}</Tag>)}{tagsTotal>3 && <Tag variant={"secondary"}>+{tagsTotal-3}</Tag>}</TagsRow>
+					)}
+				</TagsContainer>
+
 			</Section>
 		</Container>
 	);
@@ -182,17 +133,16 @@ const OverlayTitle = styled.h3`
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	padding: 1px;
+	padding: var(--spacing-s);
 	height: 100%;
 	min-height: 280px;
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-l);
 	border: 2px solid var(--color-border);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 	cursor: pointer;
 
 	/* Disable hover if loading */
 	&:hover {
-		transform: ${(props) => (props.$loading ? 'none' : 'scale(1.05)')};
 		z-index: ${(props) => (props.$loading ? 'auto' : '1000')};
 	}
 	&:hover ${ImageWrapper} {
@@ -224,19 +174,6 @@ const Container = styled.div`
 	}
 `;
 
-const Ribbon = styled.div`
-	position: absolute;
-	top: 10px;
-	left: 10px;
-	background: #111827cc;
-	color: #fff;
-	font-size: 11px;
-	font-weight: 700;
-	padding: 4px 8px;
-	border-radius: 999px;
-	z-index: 2;
-`;
-
 const Image = styled.div`
 	width: 100%;
 	height: 100%;
@@ -249,21 +186,29 @@ const Image = styled.div`
 `;
 
 const Title = styled.p`
-	height: 40px;
-	font-size: var(--font-size);
-	line-height: var(--line-height-l);
+	font-size: var(--font-size-xl);
 	font-weight: 500;
-	margin: var(--spacing-s) 0 var(--spacing-xs);
+	margin: var(--spacing) 0 var(--spacing-xs);
 	color: var(--color-text);
+`;
+
+const Description = styled.p`
+    font-size: var(--font-size);
+    font-weight: 500;
+    margin: 0 0 var(--spacing);
+    color: var(--color-text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+    height: calc(1.5em * 3);
 `;
 
 const TagsRow = styled.div`
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
-	gap: var(--spacing-2xs);
-	margin-bottom: var(--spacing);
-
+	gap: var(--spacing-xs);
 `;
 
 const Timestamp = styled.div`
@@ -271,6 +216,13 @@ const Timestamp = styled.div`
 	color: var(--color-text-muted);
 	margin-top: auto;
 	width: 100%;
+`;
+
+const TagsContainer = styled.div`
+  	display: flex;
+	flex-wrap: wrap;
+    gap: var(--spacing-xs);
+	margin-top: var(--spacing-xs);
 `;
 
 const ModulesRow = styled(TagsRow)`

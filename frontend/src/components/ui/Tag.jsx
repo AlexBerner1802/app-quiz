@@ -9,7 +9,7 @@ const variants = {
         border: 1px solid transparent;
   `,
 	secondary: css`
-        background: var(--color-background-surface-2);
+        background: var(--color-background-surface-3);
         color: var(--color-secondary-text);
         border: 1px solid transparent;
   `,
@@ -53,12 +53,11 @@ export default function Tag({ children, variant = "primary", size = "m", ...prop
 
 const StyledTag = styled.span`
     display: inline-block;
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-2xs);
     font-weight: 500;
     ${({ $variant }) => variants[$variant] || variants.primary}
     ${({ $size }) => sizes[$size] || sizes.m}
     line-height: 1;
     white-space: nowrap;
     cursor: default;
-    color: var(--color-text);
 `;

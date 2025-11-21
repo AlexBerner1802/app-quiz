@@ -58,7 +58,7 @@ body.dark-mode {
     --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-700) 100%);
 
     /* Additional Utility Colors */
-    --color-highlight: var(--amber-400);             /* Highlighted text or UI elements */
+    --color-highlight: var(--brand-primary-950);     /* Highlighted text or UI elements */
     --color-link: var(--brand-primary-500);          /* Links */
     --color-link-hover: var(--brand-primary-600);    /* Links hover */
 

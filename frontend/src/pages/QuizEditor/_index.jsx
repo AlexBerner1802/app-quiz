@@ -116,7 +116,7 @@ export default function NewQuiz() {
 					answerIds,
 					correctIndices,
 				};
-				});
+			});
 
 				newDrafts[langCode] = {
 				title: translation.title || "",
