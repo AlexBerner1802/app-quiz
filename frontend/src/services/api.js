@@ -1,5 +1,5 @@
 // src/services/api.js
-const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const DEFAULT_LANG = import.meta.env.VITE_I18N_DEFAULT_LANG || "fr";
 import { getLangCode } from "../services/i18n_lang";
 
@@ -365,6 +365,21 @@ export async function updateQuizMulti(id, body, drafts = {}) {
 
 export async function getQuizEditor(id, lang) {
 	const l = lang || getLangCode();
-	const r = await fetch(`${API_URL}/api/quizzes/${id}/editor?lang=${l}`);
-	return toJsonResponse(r);
+
+	// sécurité basique sur l'ID
+	const safeId = id !== null && id !== undefined ? String(id) : "";
+	if (!safeId || safeId === "undefined" || safeId === "null") {
+		throw new Error("Invalid quiz ID in getQuizEditor");
+	}
+
+	const url = `${API_URL}/api/quizzes/${encodeURIComponent(safeId)}/editor?lang=${l}`;
+	console.log("[getQuizEditor] fetch URL =", url);
+
+	try {
+		const r = await fetch(url);
+		return toJsonResponse(r);
+	} catch (e) {
+		console.error("[getQuizEditor] Network error:", e);
+		throw e;
+	}
 }

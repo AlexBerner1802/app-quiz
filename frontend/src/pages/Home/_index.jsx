@@ -14,6 +14,7 @@ import { Highlight } from "../../utils/hightlight.jsx";
 import Input from "../../components/ui/Input";
 import {useDrawer} from "../../context/drawer";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { safeNavigateToEditor } from "../../utils/navigation";
 
 export default function HomePage() {
 
@@ -77,12 +78,10 @@ export default function HomePage() {
 
 
 	// Open the editor
-	const handleEdit = useCallback(
-		(id) => {
-			navigate(`/quizzes/${id}/edit`);
-		},
-		[navigate] // dependency on navigate only
-	);
+	const handleEdit = (quiz) => {
+		const id = quiz?.id_quiz ?? quiz?.id;
+    	safeNavigateToEditor(navigate, id);
+  };
 
 	const handleDelete = useCallback(
 		async (id_quiz) => {
@@ -192,7 +191,7 @@ export default function HomePage() {
 												loading={loading}
 												title={<Highlight text={q.title} query={searchText} />}
 												description={<Highlight text={q.quiz_description} query={searchText} />}
-												onEdit={handleEdit}
+												onEdit={() => handleEdit(q)}
 												onDelete={handleDelete}
 												onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
 											/>

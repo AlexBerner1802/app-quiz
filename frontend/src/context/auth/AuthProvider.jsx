@@ -3,7 +3,7 @@ import * as msal from "@azure/msal-browser";
 import { AuthContext } from "./AuthContext";
 
 const redirectUri = import.meta.env.VITE_AZURE_REDIRECT_URI || window.location.origin;
-const apiUrl = (import.meta?.env?.VITE_API_URL || "http://127.0.0.1:8000");
+const apiUrl = (import.meta?.env?.VITE_API_URL || "http://localhost:8000");
 
 const pca = new msal.PublicClientApplication({
 	auth: {

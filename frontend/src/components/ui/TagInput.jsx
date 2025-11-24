@@ -21,7 +21,7 @@ const TagInput = ({
 	wrapperClassName,
 	labelClassName,
 	inputClassName,
-	apiUrl = (import.meta?.env?.VITE_API_URL || "http://127.0.0.1:8000"),
+	apiUrl = (import.meta?.env?.VITE_API_URL || "http://localhost:8000"),
 	fetchFromApi = true,
 	dedupeCaseInsensitive = true,
 }) => {

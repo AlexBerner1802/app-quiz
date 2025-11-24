@@ -28,7 +28,7 @@ export default function CenterPanel({
 									}) {
 
 	const {t} = useTranslation();
-	const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 	return (
 		<Wrapper
@@ -82,6 +82,7 @@ export default function CenterPanel({
 						<TextArea
 							size="m"
 							width="100%"
+							rows={10}
 							value={draft.quiz_description}
 							onChange={(e) =>
 								updateDraft({ quiz_description: e.target.value })

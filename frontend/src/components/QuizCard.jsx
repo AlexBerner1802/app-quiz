@@ -16,7 +16,7 @@ export default function QuizCard(props) {
 	};
 
 
-	const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 	const resolvedImg = imgURL?.startsWith("/") ? `${API_URL}${imgURL}` : imgURL;
 
 	const safeModules = Array.isArray(modules)
@@ -130,7 +130,7 @@ const OverlayTitle = styled.h3`
 	margin-top: var(--spacing);
 	color: var(--gray-50);
 	font-size: var(--font-size-xl);
-	line-height: var(--line-height-l);
+	line-height: var(--line-height-xl);
 	font-weight: 600;
 	text-align: center;
 	opacity: 0;
