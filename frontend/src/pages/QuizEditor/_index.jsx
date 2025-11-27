@@ -50,16 +50,16 @@ export default function NewQuiz() {
 	const emptyDraft = useMemo(
 		() => ({
 			title: "",
-			quiz_description: "",
+			description: "",
 			questions: [],
-			active: false,
+			is_active: false,
 			cover_image_file: null,
 			cover_image_url: "",
 			selectedModuleIds: [],
 			selectedTags: [],
 			selectedTagIds: [],
-			isDirty: false,
-			hasTranslation: false,
+			is_dirty: false,
+			has_translation: false,
 		}),
 		[]
 	);
@@ -80,6 +80,7 @@ export default function NewQuiz() {
 		const init = async () => {
 			try {
 				const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
+				console.log(allModules, allTags)
 				setModules(allModules || []);
 				setTags(allTags || []);
 
@@ -257,15 +258,15 @@ export default function NewQuiz() {
 	};
 
 	const onCreateTranslation = (langCode) => {
-		setTranslations((prev) => ({ ...prev, [langCode]: { ...emptyDraft, is_dirty: true, hasTranslation: false } }));
+		setTranslations((prev) => ({ ...prev, [langCode]: { ...emptyDraft, is_dirty: true, has_translation: false } }));
 		setCurrentLang(langCode);
 	};
 
-	const onToggleActive = (langCode) => setTranslations((prev) => ({ ...prev, [langCode]: { ...prev[langCode], active: !prev[langCode].active, is_dirty: true } }));
+	const onToggleActive = (langCode) => setTranslations((prev) => ({ ...prev, [langCode]: { ...prev[langCode], is_active: !prev[langCode].is_active, is_dirty: true } }));
 
 	const onDeleteLang = (langCode) => {
 		const otherLangs = Object.keys(translations).filter((c) => c !== langCode);
-		const otherHasData = otherLangs.some((c) => translations[c]?.hasTranslation || translations[c]?.title || (translations[c]?.questions?.length ?? 0) > 0);
+		const otherHasData = otherLangs.some((c) => translations[c]?.has_translation || translations[c]?.title || (translations[c]?.questions?.length ?? 0) > 0);
 
 		if (!otherHasData) {
 			if (!window.confirm(t("actions.deleteLastLang"))) return;
@@ -358,7 +359,7 @@ export default function NewQuiz() {
 								const d = translations[l.code] ?? {};
 								return {
 									...l,
-									hasTranslation: d.hasTranslation || !!d.title || (d.questions?.length ?? 0) > 0,
+									has_translation: d.has_translation || !!d.title || (d.questions?.length ?? 0) > 0,
 									is_active: d.is_active,
 									is_dirty: d.is_dirty,
 								};

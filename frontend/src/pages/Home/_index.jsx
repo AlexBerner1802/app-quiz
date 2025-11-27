@@ -42,7 +42,6 @@ export default function HomePage() {
 		const init = async () => {
 
 			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-
 			setModules(allModules[currentLang]);
 			setTags(allTags[currentLang]);
 

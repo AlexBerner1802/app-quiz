@@ -6,6 +6,7 @@ import SettingsPage from "./pages/Settings/_index";
 import Users from "./pages/Users/_index";
 import ShowQuiz from "./pages/ShowQuiz/_index.jsx";
 import AppLayout from "./components/layout/AppLayout";
+import ContentPage from "./pages/Content/_index";
 
 export const routes = [
 	{
@@ -28,6 +29,12 @@ export const routes = [
 		path: "/quizzes/:id/edit",
 		element: <NewQuiz />,
 		protected: true,
+	},
+	{
+		path: "/content",
+		element: <ContentPage />,
+		protected: true,
+		layout: AppLayout
 	},
 	{
 		path: "/settings",

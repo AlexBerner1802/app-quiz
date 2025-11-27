@@ -56,14 +56,14 @@ export default function RightSidebar({
 						{langsStatus
 							.filter((lang) =>
 								lang.code === currentLang ||	// always show current
-								lang.isActive ||            	// active languages
-								lang.hasTranslation ||			// existing saved translations
-								lang.isDirty					// newly added but unsaved languages
+								lang.is_active ||            	// active languages
+								lang.has_translation ||			// existing saved translations
+								lang.is_dirty					// newly added but unsaved languages
 							)
 							.map((lang) => {
-								const { hasTranslation, isActive, isDirty } = lang;
+								const { has_translation, is_active, is_dirty } = lang;
 								const isCurrent = lang.code === currentLang;
-								
+
 								return (
 									<LangCard
 										key={lang.code}
@@ -74,22 +74,22 @@ export default function RightSidebar({
 											<LangFlag>{lang.label}</LangFlag>
 											<LangIcons>
 												<IconWrapper
-													data-tooltip={hasTranslation ? "Translation exists" : "No translation"}
-													color={hasTranslation ? "var(--color-primary-bg)" : "var(--color-text-muted)"}
+													data-tooltip={has_translation ? "Translation exists" : "No translation"}
+													color={has_translation ? "var(--color-primary-bg)" : "var(--color-text-muted)"}
 												>
 													<Type size={16} />
 												</IconWrapper>
 
 												<IconWrapper
-													data-tooltip={isActive ? "Active" : "Inactive"}
-													color={isActive ? "var(--color-success-bg)" : "var(--color-text-muted)"}
+													data-tooltip={is_active ? "Active" : "Inactive"}
+													color={is_active ? "var(--color-success-bg)" : "var(--color-text-muted)"}
 												>
 													<MonitorCheck size={16} />
 												</IconWrapper>
 
 												<IconWrapper
 													data-tooltip="Unsaved changes"
-													color={isDirty ? "var(--color-warning-bg)" : "var(--color-success-bg)"}
+													color={is_dirty ? "var(--color-warning-bg)" : "var(--color-success-bg)"}
 												>
 													<DiskIcon size={16} />
 												</IconWrapper>
@@ -116,7 +116,7 @@ export default function RightSidebar({
 												</EraseButton>
 
 												<ToggleSwitch
-													checked={!!isActive}
+													checked={!!is_active}
 													onChange={() => onToggleActive(currentLang)}
 													onLabel="Active"
 													offLabel="Inactive"

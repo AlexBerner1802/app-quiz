@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
-import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical } from "lucide-react";
+import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MyLogo from "../../assets/images/raflogo.png";
@@ -40,6 +40,7 @@ export default function AppLayout({ children }) {
 	]), [t]);
 
 	const itemsBottom = useMemo(() => ([
+		{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
 		{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
 		{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
 	]), [t]);

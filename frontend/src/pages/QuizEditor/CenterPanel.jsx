@@ -6,7 +6,7 @@ import {ChevronDown, ChevronUp, MonitorCheck, PenLine} from "lucide-react";
 import Input from "../../components/ui/Input";
 import TextArea from "../../components/ui/TextArea";
 import CheckboxGroup from "../../components/ui/CheckboxGroup";
-import TagInput from "../../components/ui/TagInput";
+import TagSelect from "../../components/ui/TagSelect";
 import ImageUploader from "../../components/ui/ImageUploader";
 import Collapse from "../../components/ui/Collapse";
 import QuestionsContent from "./QuestionsContent";
@@ -32,6 +32,7 @@ export default function CenterPanel({
 									}) {
 
 	const {t} = useTranslation();
+	console.log(translation);
 
 	return (
 		<Wrapper
@@ -126,7 +127,7 @@ export default function CenterPanel({
 							direction="row"
 						/>
 
-						<TagInput
+						<TagSelect
 							wrapperStyle={{ marginBottom: "var(--spacing-s)" }}
 							label={t("quiz.sections.existingTag")}
 							placeholder={t("quiz.sections.tagAdd")}

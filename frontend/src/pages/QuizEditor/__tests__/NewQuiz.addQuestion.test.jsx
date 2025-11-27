@@ -34,7 +34,7 @@ vi.mock('../../../components/ui/TextArea', () => ({ default: (p) => <textarea {.
 vi.mock('../../../components/ui/ImageUploader', () => ({ default: () => <div /> }));
 vi.mock('../../../components/ui/CheckboxGroup', () => ({ default: () => <div /> }));
 vi.mock('../../../components/ui/CheckBox', () => ({ default: (p) => <input type="checkbox" {...p} /> }));
-vi.mock('../../../components/ui/TagInput', () => ({ default: () => <div /> }));
+vi.mock('../../../components/ui/TagSelect', () => ({ default: () => <div /> }));
 vi.mock('../../../components/layout/Icon.jsx', () => ({ default: () => null }));
 
 vi.mock('../../../services/api', () => ({
