@@ -13,6 +13,8 @@ import QuestionsContent from "./QuestionsContent";
 import {useTranslation} from "react-i18next";
 
 export default function CenterPanel({
+										quiz,
+										currentLang,
 										leftSidebarVisible,
 										rightSidebarVisible,
 										quizExpanded,
@@ -20,15 +22,16 @@ export default function CenterPanel({
 										questionsExpanded,
 										setQuestionsExpanded,
 										modules,
-										draft,
-										updateDraft,
+										tags,
+										translation,
+										updateQuizField,
+										updateTranslationField,
 										addSingleQuestion,
 										moveQuestion,
 										questionRefs,
 									}) {
 
 	const {t} = useTranslation();
-	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 	return (
 		<Wrapper
@@ -43,7 +46,7 @@ export default function CenterPanel({
 						<Title>{t("quiz.general_quiz_information")}</Title>
 						<TitleRowRight>
 							{
-								draft.active ?
+								translation.is_active ?
 									<ActiveBadge>Quiz active <MonitorCheck size={18} color={"var(--color-success-bg"}/></ActiveBadge> :
 									<InactiveBadge>Quiz inactive <MonitorCheck size={18} color={"var(--color-text-muted"}/></InactiveBadge>
 							}
@@ -72,8 +75,8 @@ export default function CenterPanel({
 									color={"var(--color-text-muted"}
 								/>
 							}
-							value={draft.title}
-							onChange={(e) => updateDraft({ title: e.target.value })}
+							value={translation.title}
+							onChange={(e) => updateTranslationField({ title: e.target.value })}
 							size="m"
 							width="100%"
 							placeholder={t("quiz.fields.title") || "Sans titre"}
@@ -82,10 +85,10 @@ export default function CenterPanel({
 						<TextArea
 							size="m"
 							width="100%"
-							rows={10}
-							value={draft.quiz_description}
+							rows={8}
+							value={translation.description}
 							onChange={(e) =>
-								updateDraft({ quiz_description: e.target.value })
+								updateTranslationField({ description: e.target.value })
 							}
 							icon={
 								<PenLine
@@ -100,12 +103,12 @@ export default function CenterPanel({
 
 						<ImageUploader
 							style={{ marginBottom: "var(--spacing-s)" }}
-							value={draft.coverImageFile || draft.coverImageUrl || null}
+							value={quiz.cover_image_file || quiz.cover_image_url || null}
 							onChange={(file) =>
-								updateDraft({ coverImageFile: file, coverImageUrl: "" })
+								updateQuizField({ cover_image_file: file, cover_image_url: "" })
 							}
 							onClear={() =>
-								updateDraft({ coverImageFile: null, coverImageUrl: "" })
+								updateQuizField({ cover_image_file: null, cover_image_url: "" })
 							}
 							placeholder={t("quiz.fields.coverImage")}
 							changeText={t("quiz.hints.changeImage")}
@@ -114,12 +117,12 @@ export default function CenterPanel({
 						<CheckboxGroup
 							wrapperStyle={{ marginBottom: "var(--spacing-s)" }}
 							label={t("quiz.sections.module")}
-							options={modules.map((m) => ({
+							options={(modules?.[currentLang] ?? []).map((m) => ({
 								id: m.id,
-								label: m.module_name,
+								label: m.name,
 							}))}
-							value={draft.selectedModuleIds}
-							onChange={(ids) => updateDraft({ selectedModuleIds: ids })}
+							value={translation.modules}
+							onChange={(ids) => updateTranslationField({ modules: ids })}
 							direction="row"
 						/>
 
@@ -129,16 +132,18 @@ export default function CenterPanel({
 							placeholder={t("quiz.sections.tagAdd")}
 							prefixAdd="Ajouter"
 							allowNew
-							value={draft.selectedTags}
+							value={translation.tags}
 							onChange={(arr) =>
-								updateDraft({
-									selectedTags: arr,
-									selectedTagIds: arr.map((t) => t.id),
+								updateTranslationField({
+									tags: arr,
 								})
 							}
 							width="100%"
-							apiUrl={API_URL}
-							fetchFromApi
+							fetchFromApi={false}
+							suggestions={(tags?.[currentLang] ?? []).map((m) => ({
+								id: m.id,
+								label: m.name,
+							}))}
 						/>
 					</Collapse>
 				</QuizBlock>
@@ -148,7 +153,7 @@ export default function CenterPanel({
 					<TitleRow onClick={() => setQuestionsExpanded(!questionsExpanded)}>
 						<Title>{t("quiz.questions")}</Title>
 						<TitleRowRight>
-							<Subtitle>{draft.questions && draft.questions.length > 0 ? draft.questions.length+" questions" : ""}</Subtitle>
+							<Subtitle>{translation.questions && translation.questions.length > 0 ? translation.questions.length+" questions" : ""}</Subtitle>
 							{questionsExpanded ? (
 								<ChevronDown size={24} strokeWidth={2} />
 							) : (
@@ -159,9 +164,9 @@ export default function CenterPanel({
 
 					<Collapse isOpen={questionsExpanded}>
 						<QuestionsContent
-							draft={draft}
-							updateDraft={updateDraft}
-							setIsDirty={() => updateDraft({})}
+							translation={translation}
+							updateTranslationField={updateTranslationField}
+							setIsDirty={() => updateTranslationField({})}
 							questionRefs={questionRefs}
 							moveQuestion={moveQuestion}
 							addSingleQuestion={addSingleQuestion}

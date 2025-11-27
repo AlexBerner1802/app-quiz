@@ -18,8 +18,8 @@ import { useTranslation } from "react-i18next";
 import { AddQuestionButton as SidebarAddQuestionButton } from "./LeftSidebar";
 
 export default function QuestionsContent({
-											 draft,
-											 updateDraft,
+											 translation,
+											 updateTranslationField,
 											 questionRefs,
 											 moveQuestion,
 											 addSingleQuestion,
@@ -27,7 +27,7 @@ export default function QuestionsContent({
 	const { t } = useTranslation();
 
 	const updateQuestions = (updater) => {
-		updateDraft((prevDraft) => ({
+		updateTranslationField((prevDraft) => ({
 			...prevDraft,
 			questions:
 				typeof updater === "function" ? updater(prevDraft.questions || []) : updater,
@@ -38,9 +38,9 @@ export default function QuestionsContent({
 		updateQuestions((prev) =>
 			prev.map((q) => {
 				if (q.id !== id) return q;
-				const s = new Set(q.correctIndices || []);
+				const s = new Set(q.correct_indices || []);
 				s.has(idx) ? s.delete(idx) : s.add(idx);
-				return { ...q, correctIndices: Array.from(s).sort((a, b) => a - b) };
+				return { ...q, correct_indices: Array.from(s).sort((a, b) => a - b) };
 			})
 		);
 	};
@@ -62,10 +62,10 @@ export default function QuestionsContent({
 				if (x.id !== qId) return x;
 				const newOptions = (x.options ?? []).filter((_, i) => i !== idx);
 				const newAnswerIds = (x.answerIds ?? []).filter((_, i) => i !== idx);
-				const nextCorrect = (x.correctIndices ?? [])
+				const nextCorrect = (x.correct_indices ?? [])
 					.filter((i) => i !== idx)
 					.map((i) => (i > idx ? i - 1 : i));
-				return { ...x, options: newOptions, answerIds: newAnswerIds, correctIndices: nextCorrect };
+				return { ...x, options: newOptions, answerIds: newAnswerIds, correct_indices: nextCorrect };
 			})
 		);
 	};
@@ -117,7 +117,7 @@ export default function QuestionsContent({
 				nextOptions.splice(dropIndex, 0, movedOpt);
 				nextIds.splice(dropIndex, 0, movedId);
 
-				const oldCorrect = q.correctIndices ?? [];
+				const oldCorrect = q.correct_indices ?? [];
 				const newCorrect = oldCorrect
 					.map((i) => {
 						if (i === from) return dropIndex;
@@ -127,7 +127,7 @@ export default function QuestionsContent({
 					})
 					.sort((a, b) => a - b);
 
-				return { ...q, options: nextOptions, answerIds: nextIds, correctIndices: newCorrect };
+				return { ...q, options: nextOptions, answerIds: nextIds, correct_indices: newCorrect };
 			})
 		);
 	};
@@ -136,7 +136,7 @@ export default function QuestionsContent({
 		setDragState({ draggingQId: null, draggingIdx: null, overQId: null, overIdx: null });
 	};
 
-	const questions = draft.questions || [];
+	const questions = translation.questions || [];
 
 	if (questions.length === 0) {
 		return (
@@ -151,7 +151,7 @@ export default function QuestionsContent({
 	return (
 		<Container>
 			{questions.map((q, index) => {
-				const correctCount = q?.correctIndices?.length || 0;
+				const correctCount = q?.correct_indices?.length || 0;
 				const tagBadge = correctCount > 0;
 				return (
 					<QuestionCard key={q.id} ref={(el) => (questionRefs.current[q.id] = el)}>
@@ -267,7 +267,7 @@ export default function QuestionsContent({
 										</DragHandle>
 										<OptionContent>
 											<CheckBox
-												checked={(q.correctIndices || []).includes(idx)}
+												checked={(q.correct_indices || []).includes(idx)}
 												onChange={() => toggleCorrect(q.id, idx)}
 											/>
 											<TextArea

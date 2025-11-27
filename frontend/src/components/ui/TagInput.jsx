@@ -1,111 +1,49 @@
 // TagInput.jsx
-
-import React, {useCallback, useEffect, useId, useRef, useState} from "react";
-import {X} from "lucide-react";
+import React, { useState, useId, useRef } from "react";
+import { X } from "lucide-react";
 import styled from "styled-components";
 
 const TagInput = ({
-	label,
-	suggestions = [],
-	value = [],
-	onChange,
-	placeholder = "Ajouter un tag...",
-	prefixAdd = "Ajouter ",
-	allowNew = true,
-	width = "fit-content",
-	height="fit-content",
-	loadingText="Chargement...",
-	wrapperStyle,
-	labelStyle,
-	inputStyle,
-	wrapperClassName,
-	labelClassName,
-	inputClassName,
-	apiUrl = (import.meta?.env?.VITE_API_URL || "http://localhost:8000"),
-	fetchFromApi = true,
-	dedupeCaseInsensitive = true,
-}) => {
-	const [inputValue, setInputValue] = useState("");
-	const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-	const [isOpen, setIsOpen] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [err, setErr] = useState(null);
-	const containerRef = useRef(null);
-	const debounceRef = useRef(0);
+					  label,
+					  suggestions = [], // Array of objects: { id, label }
+					  value = [],
+					  onChange,
+					  placeholder = "Ajouter un tag...",
+					  prefixAdd = "Ajouter ",
+					  allowNew = true,
+					  width = "fit-content",
+					  height = "fit-content",
+					  wrapperStyle,
+					  labelStyle,
+					  inputStyle,
+					  wrapperClassName,
+					  labelClassName,
+					  inputClassName,
+				  }) => {
 
+	const [inputValue, setInputValue] = useState("");
+	const [isOpen, setIsOpen] = useState(false);
+	const containerRef = useRef(null);
 	const id = useId();
 
-	const normalize = (s) => (s || "").trim().toLowerCase();
-
-	const notAlreadySelected = useCallback(
-		(s) => s && s.tag_name && !value.some(t => t?.id === s?.id || t.tag_name === s.tag_name),
-		[value]
-	);
-
-	const localFilter = useCallback((val, pool) => {
-		const filtered = (pool || []).filter(notAlreadySelected);
-		const matches = val
-		? filtered.filter((s) => s.tag_name.toLowerCase().includes(val.toLowerCase()))
-		: filtered;
-		setFilteredSuggestions(matches);
-	}, [notAlreadySelected]);
-
-	// Fetch from the API when we type (with a little debounce)
-	const remoteFetch = useCallback((val) => {
-		window.clearTimeout(debounceRef.current);
-		debounceRef.current = window.setTimeout(async () => {
-		if (!fetchFromApi) {
-			// fallback local
-			return localFilter(val, suggestions);
-		}
-		setLoading(true); setErr(null);
-		try {
-			const qs = val ? `?search=${encodeURIComponent(val)}` : "";
-			const res = await fetch(`${apiUrl}/api/tags${qs}`, {
-				method: "GET",
-				headers: { Accept: "application/json" },
-				credentials: "omit",
-			});
-			const data = await res.json().catch(() => ([]));
-			if (!res.ok) console.log(data?.message || `HTTP ${res.status}`);
-			// Assure an objects table {id, tag_name}
-			const safe = Array.isArray(data) ? data : [];
-			localFilter(val, safe);
-		} catch (e) {
-			console.error(e);
-			setErr(e.message || "Erreur de chargement des tags");
-			// In error case, filter at least on local suggestions if available
-			localFilter(val, suggestions);
-		} finally {
-			setLoading(false);
-		}
-		}, 200);
-	}, [apiUrl, fetchFromApi, localFilter, suggestions]);
-
-	// Update the list at each character wrote
-	useEffect(() => {
-		remoteFetch(inputValue);
-		return () => window.clearTimeout(debounceRef.current);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [inputValue, fetchFromApi, apiUrl]);
-
-	// Close dropdown if clicked outside
-	useEffect(() => {
-		const handleClickOutside = (event) => {
-		if (containerRef.current && !containerRef.current.contains(event.target)) {
-			setIsOpen(false);
-		}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
+	const filteredSuggestions = (Array.isArray(suggestions) ? suggestions : [])
+		.filter(
+			(s) =>
+				s?.label &&
+				!value.some(
+					(t) => String(t?.id) === String(s?.id) || t.label.toLowerCase() === s.label.toLowerCase()
+				)
+		)
+		.filter((s) =>
+			inputValue
+				? s.label.toLowerCase().includes(inputValue.toLowerCase())
+				: true
+		);
 
 	const addTag = (tag) => {
 		if (!tag) return;
-		const exists = value.find((t) => t?.id === tag.id);
-		if (!exists) {
-		onChange?.([...value, tag]);
-		}
+		const exists = value.some((t) => String(t.id) === String(tag.id));
+		if (!exists) onChange([...value, tag]);
 		setInputValue("");
 		setIsOpen(false);
 	};
@@ -114,222 +52,158 @@ const TagInput = ({
 		onChange?.(value.filter((t) => t?.id !== tag.id));
 	};
 
-	const tryFindExistingLocally = useCallback((name) => {
-		const n = normalize(name);
-		const pool = [...filteredSuggestions, ...value, ...suggestions];
-		return pool.find((s) => dedupeCaseInsensitive
-		? normalize(s?.tag_name) === n
-		: s?.tag_name === name
-		);
-	}, [filteredSuggestions, suggestions, value, dedupeCaseInsensitive]);
-
-	const createRemoteTag = useCallback(async (name) => {
-		// Client-side security: if already existing (ignoring case), we reuse it
-		const local = tryFindExistingLocally(name);
-		if (local) return local;
-
-		try {
-		const res = await fetch(`${apiUrl}/api/tags`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json", Accept: "application/json" },
-			credentials: "omit",
-			body: JSON.stringify({ tag_name: name.trim() }),
-		});
-		const data = await res.json().catch(() => ({}));
-		if (res.status === 409) {
-			// Server-side duplicate -> try to get it back from search
-			const searchRes = await fetch(`${apiUrl}/api/tags?search=${encodeURIComponent(name)}`, {
-			headers: { Accept: "application/json" },
-			});
-			const arr = await searchRes.json().catch(() => ([]));
-			if (Array.isArray(arr) && arr.length) {
-			// Find the exact match (case-insensitive)
-				return arr.find(t => normalize(t.tag_name) === normalize(name)) || arr[0];
-			}
-			console.log("Tag déjà existant.");
-		}
-		if (!res.ok) console.log(data?.message || `HTTP ${res.status}`);
-		// Data shall look like { id, tag_name }
-		if (!data?.id || !data?.tag_name) console.log("Réponse inattendue de l'API tags.");
-		return data;
-		} catch (e) {
-		console.error(e);
-		throw e;
-		}
-	}, [apiUrl, tryFindExistingLocally]);
-
-	const onValidateInput = async () => {
+	const onValidateInput = () => {
 		const raw = inputValue.trim();
 		if (!raw) return;
-		// 1) If already in suggestions we take
-		const existing = filteredSuggestions.find(
-		(s) => s?.tag_name?.toLowerCase() === raw.toLowerCase()
-		);
-		if (existing) { addTag(existing); return; }
 
-		// 2) If allowNew, we try to create in DB then we add
-		if (allowNew) {
-		try {
-			const created = fetchFromApi ? await createRemoteTag(raw) : { id: `new-${Date.now()}`, tag_name: raw };
-			addTag(created);
-		} catch (e) {
-			alert(e.message || "Impossible de créer ce tag");
+		const existing = filteredSuggestions.find(
+			(s) => s?.label.toLowerCase() === raw.toLowerCase()
+		);
+
+		if (existing) {
+			addTag(existing);
+			return;
 		}
+
+		if (allowNew) {
+			addTag({ id: `new-${Date.now()}`, label: raw });
 		}
 	};
 
+	React.useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (containerRef.current && !containerRef.current.contains(event.target)) {
+				setIsOpen(false);
+			}
+		};
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, []);
+
 	return (
-		<Wrapper
-			style={wrapperStyle}
-			className={wrapperClassName}
-			width={width}
-			ref={containerRef}
-		>
-			{label && (
-				<Label style={labelStyle} className={labelClassName}>
-					{label}
-				</Label>
-			)}
+		<Wrapper style={wrapperStyle} className={wrapperClassName} width={width} ref={containerRef}>
+			{label && <Label style={labelStyle} className={labelClassName}>{label}</Label>}
 
 			<TagContainer height={height}>
-				{value.map((tag) => (
-					tag && tag.tag_name && (
+				{value.map((tag) =>
+					tag && tag.label ? (
 						<Tag key={tag.id}>
-							{tag.tag_name}
+							{tag.label}
 							<RemoveButton onClick={() => removeTag(tag)}>
 								<X size={16} />
 							</RemoveButton>
 						</Tag>
-					)
-				))}
+					) : null
+				)}
 
 				<StyledInput
 					id={id}
 					value={inputValue}
 					onFocus={() => setIsOpen(true)}
-					onChange={(e) => {
-						const val = e.target.value;  // <-- define val
-						setInputValue(val);
-						setIsOpen(true);
-					}}
+					onChange={(e) => setInputValue(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter" || e.key === "Tab") {
-						e.preventDefault();
-						onValidateInput();
+							e.preventDefault();
+							onValidateInput();
 						}
 						if (e.key === "ArrowDown") setIsOpen(true);
 					}}
 					placeholder={placeholder}
 					style={inputStyle}
 					className={inputClassName}
-					aria-invalid={!!err}
 				/>
 			</TagContainer>
 
-			{isOpen && (
+			{isOpen && filteredSuggestions.length > 0 && (
 				<Dropdown>
-					{loading && <DropdownItem>{loadingText}</DropdownItem>}
-					{err && !loading && <DropdownItem>{err}</DropdownItem>}
-					{!loading && filteredSuggestions.map(
+					{filteredSuggestions.map(
 						(s) =>
 							s && (
 								<DropdownItem key={s.id} onClick={() => addTag(s)}>
-									{s.tag_name}
+									{s.label}
 								</DropdownItem>
 							)
 					)}
+
 					{allowNew &&
 						inputValue &&
-						!filteredSuggestions.find((s) => s?.tag_name?.toLowerCase() === inputValue.trim().toLowerCase()) && (
+						!filteredSuggestions.some(
+							(s) => s.label.toLowerCase() === inputValue.trim().toLowerCase()
+						) && (
 							<DropdownItem key={`new-${inputValue}`} onClick={onValidateInput}>
-								{prefixAdd} "{inputValue}"
+								{prefixAdd}"{inputValue}"
 							</DropdownItem>
 						)}
-					</Dropdown>
-				)}
+				</Dropdown>
+			)}
 		</Wrapper>
 	);
 };
 
 export default TagInput;
 
+
 /* ---------------- styled components ---------------- */
 
 const Wrapper = styled.div`
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	width: ${({ width }) => width};
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: ${({ width }) => width};
 `;
 
 const Label = styled.label`
-	font-size: var(--font-size);
-	font-weight: 500;
-	margin-bottom: var(--spacing, 0.25rem);
-	color: var(--color-text, #333);
+    font-size: var(--font-size);
+    font-weight: 500;
+    margin-bottom: var(--spacing, 0.25rem);
+    color: var(--color-text, #333);
 `;
 
 const TagContainer = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: var(--spacing-xs, 0.25rem);
-	border-radius: var(--border-radius-xs);
-
-    padding: ${({ $size }) =>
-            $size === 's' ? '0.5rem' :
-                    $size === 'l' ? '0.9375rem' : '0.5rem'};
-	
-	background: var(--color-input-background, #fff);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs, 0.25rem);
+    border-radius: var(--border-radius-xs);
+    padding: 0.5rem;
+    background: var(--color-input-background, #fff);
     border: 1px solid var(--color-input-border, #ccc);
-	height: ${({ height }) => height};
-	min-height: 46px;
-	
-	&:focus-within { 
-		border-color: var(--color-primary-bg, #2684ff); 
-	}
+    height: ${({ height }) => height};
+    min-height: 46px;
+
+    &:focus-within {
+        border-color: var(--color-primary-bg, #2684ff);
+    }
 `;
 
 const Tag = styled.div`
-	display: flex;
-	align-items: center;
-	background: var(--color-primary-muted, #2684ff);
-	border: 1px solid var(--color-primary-bg, #2684ff);
-	color: var(--color-primary-bg, #333);
-	border-radius: var(--border-radius-xs);
-	padding: var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-s);
-	font-size: var(--font-size-s);
-	gap: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    background: var(--color-primary-muted, #2684ff);
+    border: 1px solid var(--color-primary-bg, #2684ff);
+    color: var(--color-primary-bg, #333);
+    border-radius: var(--border-radius-xs);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    gap: 0.25rem;
 `;
 
 const RemoveButton = styled.div`
-	background: none;
-	border: none;
-	color: var(--color-primary-bg, #333);
-	font-size: var(--font-size);
-	cursor: pointer;
-	width: 20px;
-	height: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--border-radius-2xs);
-	transition: all 0.2s ease;
-	
-	&:hover { 
-		color: var(--color-primary-text);
-		background: var(--color-primary-bg-hover, #2684ff); 
-	}
+    background: none;
+    border: none;
+    color: var(--color-primary-bg, #333);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 `;
 
 const StyledInput = styled.input`
-	border: none;
-	outline: none;
-	flex: 1;
-	min-width: 120px;
-	padding: 0.25rem;
-	font-size: 0.875rem;
-	background: transparent;
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 120px;
+    background: transparent;
 
     &::placeholder {
         color: var(--color-text-muted, #aaa);
@@ -337,46 +211,26 @@ const StyledInput = styled.input`
 `;
 
 const Dropdown = styled.ul`
-	position: absolute;
-	top: 100%;
-	left: 0; right: 0;
-	margin: 0.25rem 0 0;
-	padding: 0;
-	list-style: none;
-	background: var(--color-input-background, #fff);
-	border: 1px solid var(--color-border, #ccc);
-	border-radius: var(--border-radius-xs);
-	max-height: 150px;
-	overflow-y: auto;
-	box-shadow: var(--box-shadow);
-	transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.25s ease-in-out;
-	z-index: 1000;
-	
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-primary-bg) var(--color-background-muted);
-    &::-webkit-scrollbar {
-        width: 8px;
-    }
-    &::-webkit-scrollbar-track {
-        background: var(--color-background-muted);
-        border-radius: 8px;
-    }
-    &::-webkit-scrollbar-thumb {
-        background-color: var(--color-primary-bg);
-        border-radius: 8px;
-        border: 2px solid var(--color-background-muted);
-    }
-    &::-webkit-scrollbar-thumb:hover {
-        background-color: var(--color-primary-bg-hover);
-    }
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    background: var(--color-input-background, #fff);
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: var(--border-radius-xs);
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
 `;
 
 const DropdownItem = styled.li`
-	height: 40px; line-height: 40px;
-	padding: 0 var(--spacing-s, 0.25rem);
-    transition: all 0.2s ease;
-	cursor: pointer;
-
+    height: 40px;
+    line-height: 40px;
+    padding: 0 0.5rem;
+    cursor: pointer;
     &:hover {
         background: var(--color-primary-bg, #f0f0f0);
         color: var(--color-primary-text);

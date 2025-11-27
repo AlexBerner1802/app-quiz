@@ -11,8 +11,13 @@ export default function ImageUploader({
 										  width = "100%",
 										  height = "240px",
 										  minHeight = "240px",
+										  maxFileSize = import.meta.env.VITE_MAX_UPLOAD_FILE_SIZE_MB,
 										  style
 									  }) {
+
+
+	const MAX_FILE_SIZE_BYTES = maxFileSize * 1024 * 1024;
+
 	const inputRef = useRef(null);
 	const [isHover, setIsHover] = useState(false);
 	const [preview, setPreview] = useState("");
@@ -30,17 +35,24 @@ export default function ImageUploader({
 		}
 
 		if (typeof value === "string") {
-			setPreview(value);
+			setPreview(import.meta.env.VITE_MEDIA_URL + value);
 		}
 	}, [value]);
 
 	const handleFiles = (files) => {
 		const file = files?.[0];
 		if (!file) return;
+
 		if (!file.type.startsWith("image/")) {
 			alert("Please select an image file.");
 			return;
 		}
+
+		if (file.size > MAX_FILE_SIZE_BYTES) {
+			alert(`File is too large. Max allowed size is ${maxFileSize} MB.`);
+			return;
+		}
+
 		onChange(file);
 	};
 
@@ -143,7 +155,7 @@ const PreviewImage = styled.img`
 const Overlay = styled.div`
     position: absolute;
     inset: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: var(--color-background-overlay);
     display: none;
     flex-direction: column;
     align-items: center;
@@ -162,6 +174,7 @@ const PreviewContainer = styled.div`
     width: 100%;
     height: 100%;
     position: relative;
+	transition: all .2s ease;
 
     &:hover {
         ${Overlay}{
@@ -192,7 +205,7 @@ const ClearButton = styled.button`
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: all 0.15s ease;
 	padding: 0;
     z-index: 12;
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import styled from "styled-components";
-import {SquareChevronRight, Save, Type, MonitorCheck, Save as DiskIcon, Trash2, Plus, Settings} from "lucide-react";
+import {SquareChevronRight, Languages, Type, MonitorCheck, Save as DiskIcon, Trash2, Plus} from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useTranslation } from "react-i18next";
 import ToggleSwitch from "../../components/buttons/ToggleSwitchButton";
@@ -16,7 +16,6 @@ export default function RightSidebar({
 										 onCreateTranslation,
 										 onToggleActive,
 										 onChangeLang,
-										 onSaveClick,
 										 onDeleteLang
 									 }) {
 
@@ -31,16 +30,14 @@ export default function RightSidebar({
 						<SquareChevronRight size={24} color={"var(--color-text)"} />
 					</HideButton>
 					<RightTitle>
-						{t("common.settings")}
-						<Settings size={22} />
+						{t("common.languages")}
+						<Languages size={22} />
 					</RightTitle>
 				</Header>
 
 				<Content>
 
 					<LangGrid>
-						<Title>{t("common.languages")}</Title>
-
 						<Button
 							variant="outline"
 							onClick={() =>
@@ -134,17 +131,6 @@ export default function RightSidebar({
 					</LangGrid>
 
 				</Content>
-
-				<Footer>
-					<Button
-						variant="success"
-						onClick={onSaveClick}
-						style={{ width: "100%" }}
-					>
-						<Save size={16} />
-						{t("actions.save")}
-					</Button>
-				</Footer>
 			</RightPanel>
 		</SidebarWrapper>
 	);
@@ -181,7 +167,7 @@ const Header = styled.div`
 const RightTitle = styled.h2`
 	display: flex;
 	align-items: center;
-	gap: var(--spacing-xs);
+	gap: var(--spacing-s);
     font-size: var(--font-size);
 	color: var(--color-text-muted);
     font-weight: 600;
@@ -203,7 +189,7 @@ const Content = styled.div`
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
-    padding: 0 var(--spacing-l) var(--spacing-l);
+    padding: 0 var(--spacing-l) var(--spacing);
     gap: var(--spacing);
 
 	scrollbar-width: thin;
@@ -230,13 +216,6 @@ const LangGrid = styled.div`
     display: flex;
     gap: var(--spacing-xs);
     flex-wrap: wrap;
-`;
-
-const Title = styled.div`
-    font-size: var(--font-size);
-    font-weight: 500;
-    margin-bottom: var(--spacing-s, 0.25rem);
-    color: var(--color-text, #333);
 `;
 
 const LangCard = styled.div`
@@ -332,16 +311,4 @@ const EraseButton = styled.div`
     &:active {
         transform: scale(0.92);
     }
-`;
-
-const Footer = styled.div`
-	position: sticky;
-	bottom: 0;
-    background-color: var(--color-background);
-	border-top: 1px solid var(--color-border);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--spacing-xs);
-    padding: var(--spacing);
 `;

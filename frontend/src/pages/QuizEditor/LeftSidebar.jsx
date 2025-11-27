@@ -2,16 +2,16 @@
 
 import React, { useState, useMemo } from "react";
 import styled from "styled-components";
-import {BadgeQuestionMark, Move, SquareChevronLeft} from "lucide-react";
+import {BadgeQuestionMark, Move, SquareChevronLeft, Plus} from "lucide-react";
 import Button from "../../components/ui/Button";
 import { useTranslation } from "react-i18next";
 
 export default function LeftSidebar({
-										drafts,
+										translation,
 										currentLang,
 										questionRefs,
 										addSingleQuestion,
-										setDrafts,
+										setTranslations,
 										visible = true,
 										onHide,
 									}) {
@@ -22,8 +22,8 @@ export default function LeftSidebar({
 		[t]
 	);
 
-	const draft = drafts[currentLang];
-	const questions = draft?.questions || [];
+
+	const questions = translation?.questions || [];
 
 	const [draggingIndex, setDraggingIndex] = useState(null);
 	const [overIndex, setOverIndex] = useState(null);
@@ -54,16 +54,15 @@ export default function LeftSidebar({
 	const onDropRow = () => {
 		if (draggingIndex === null || overIndex === null) return;
 
-		setDrafts((prev) => {
-			const draft = prev[currentLang];
-			const nextQuestions = [...draft.questions];
+		setTranslations((prev) => {
+			const nextQuestions = [...translation.questions];
 			const [moved] = nextQuestions.splice(draggingIndex, 1);
 			nextQuestions.splice(overIndex, 0, moved);
 
 			return {
 				...prev,
 				[currentLang]: {
-					...draft,
+					...translation,
 					questions: nextQuestions,
 					isDirty: true,
 				},
@@ -88,7 +87,7 @@ export default function LeftSidebar({
 				</Header>
 
 				<Button variant={"outline"} onClick={addSingleQuestion}>
-					<BadgeQuestionMark size={18} /> {t("actions.addQuestion")}
+					<Plus size={18} /> {t("actions.addQuestion")}
 				</Button>
 
 				<LeftList>
@@ -175,13 +174,13 @@ const Header = styled.div`
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-2xs);
+    margin-bottom: var(--spacing);
 `;
 
 const LeftTitle = styled.h2`
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-s);
     font-size: var(--font-size);
     color: var(--color-text-muted);
     font-weight: 600;

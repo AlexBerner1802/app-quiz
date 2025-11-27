@@ -81,7 +81,7 @@ body.dark-mode {
     --color-background-surface-4: var(--gray-600);     /* High elevation (popovers, menus) */
     --color-background-surface-5: var(--gray-500);     /* Highest elevation if needed */
 
-    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.7);   /* expand of --gray-900 */
+    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.8);   /* expand of --gray-900 */
 
 
     /* ---------------- Inputs / Form Controls ---------------- */

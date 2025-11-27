@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 
 const CheckboxGroup = ({
 						   label,
-						   options = [],
+						   options = [],  // Array of objects: { id, label }
 						   value = [],
 						   onChange,
 						   direction = "column",
@@ -15,11 +15,15 @@ const CheckboxGroup = ({
 						   labelClassName,
 						   optionClassName,
 					   }) => {
+
 	const handleToggle = (id) => {
-		if (value.includes(id)) {
-			onChange(value.filter((v) => v !== id));
+		if (value.some((v) => v.id === id)) {
+			onChange(value.filter((v) => v.id !== id));
 		} else {
-			onChange([...value, id]);
+			const newOption = options.find((o) => o.id === id);
+			if (newOption) {
+				onChange([...value, newOption]);
+			}
 		}
 	};
 
@@ -33,7 +37,7 @@ const CheckboxGroup = ({
 
 			<Options direction={direction}>
 				{options.map((opt) => {
-					const isChecked = value.includes(opt.id);
+					const isChecked = value.some((v) => v.id === opt.id);
 					return (
 						<OptionBox
 							key={opt.id}

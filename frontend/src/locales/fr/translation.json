@@ -72,6 +72,7 @@
 		"remove_description": "Retirer la remarque",
 		"description": "Remarque de la question (facultatif)",
 		"add_language": "Ajouter une langue",
+		"saved_successfully": "Quiz enregistré avec succès !",
 		"placeholders": {
 			"title": "Titre du quiz",
 			"categoryTitle": "Tapez le titre de la catégorie ici",
@@ -172,5 +173,9 @@
 			"stay": "Rester",
 			"leave": "Quitter"
 		}
+	},
+	"errors": {
+		"quiz_not_found": "Quiz non trouvé",
+		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifié ce quiz"
 	}
 }

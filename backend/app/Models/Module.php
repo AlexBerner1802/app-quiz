@@ -8,15 +8,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Module extends Model
 {
     protected $table = 'modules';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'id_module';
     public $timestamps = true;
 
     protected $fillable = ['module_name'];
 
-    public function quizzes(): BelongsToMany
+    public function quiz(): BelongsToMany
     {
-        return $this->belongsToMany(Quiz::class, 'quiz_modules', 'id_module', 'id_quiz')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            Quiz::class,
+            'quiz_modules',
+            'id_module', // FK on pivot pointing to Module
+            'id_quiz'    // FK on pivot pointing to Quiz
+        )->withTimestamps();
     }
 }
 

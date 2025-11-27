@@ -1,20 +1,21 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import { useNavigate } from "react-router-dom";
-import {FlaskConical, Search, Plus, SearchX, Funnel} from "lucide-react";
+import {FlaskConical, Search, Plus, SearchX, Funnel, Loader2} from "lucide-react";
 import styled, {keyframes} from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
 import Header from "../../components/layout/Header";
 import Button from "../../components/ui/Button";
-import { getQuizzes, deleteQuiz } from "../../services/api";
+import {getQuizzes, deleteQuiz, getModules, getTags} from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import { getLangCode } from "../../services/i18n_lang";
-import { Highlight } from "../../utils/hightlight.jsx";
 import Input from "../../components/ui/Input";
 import {useDrawer} from "../../context/drawer";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { safeNavigateToEditor } from "../../utils/navigation";
+import i18n from "i18next";
+
 
 export default function HomePage() {
 
@@ -23,59 +24,77 @@ export default function HomePage() {
 	const { openDrawer } = useDrawer();
 	const { t } = useTranslation();
 
+	const currentLang = i18n.language;
 	const [quizzes, setQuizzes] = useState([]);
 	const [searchText, setSearchText] = useState("");
 	const [selectedModules, setSelectedModules] = useState([]);
 	const [selectedTags, setSelectedTags] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [showLoader, setShowLoader] = useState(true);
 	const [err, setErr] = useState("");
-
+	const [modules, setModules] = useState([]);
+	const [tags, setTags] = useState([]);
 
 	useEffect(() => {
 		setLoading(true);
 		setErr("");
 
-		getQuizzes({ onlyActive: true, lang: getLangCode() })
-			.then(data => {
-				console.log(data);
-				setQuizzes(Array.isArray(data) ? data : [])
-			})
-			.catch(err => {
-				setErr(err.message || String(err))
-			})
-			.finally(() => {
-				setTimeout(() => {
-					setLoading(false)
-				}, 2000)
-			});
+		const init = async () => {
 
-	}, []);
+			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
+
+			setModules(allModules[currentLang]);
+			setTags(allTags[currentLang]);
+
+			getQuizzes({ onlyActive: true, lang: getLangCode() })
+				.then(data => {
+					console.log(data);
+					setQuizzes(data);
+				})
+				.catch(err => {
+					setErr(err.message || String(err))
+				})
+				.finally(() => {
+					setShowLoader(false);
+					setTimeout(() => setLoading(false), 1000);
+				});
+		}
+
+		init().then(() => false);
+
+	}, [currentLang]);
 
 
 	const filteredQuizzes = useMemo(() => {
 		return quizzes.filter((q) => {
+			const quiz = q || {};
+
+			// Search filter
 			const searchMatch =
-				q.title.toLowerCase().includes(searchText.toLowerCase()) ||
-				q.quiz_description.toLowerCase().includes(searchText.toLowerCase());
+				(quiz.title || "").toLowerCase().includes(searchText.toLowerCase()) ||
+				(quiz.description || "").toLowerCase().includes(searchText.toLowerCase());
 
-			const modulesArray = Array.isArray(q.modules)
-				? q.modules.map((m) => (typeof m === "string" ? m : m.module_name))
+			const moduleIds = Array.isArray(quiz.modules)
+				? quiz.modules.map((m) => m.id)
 				: [];
 
-			const tagsArray = Array.isArray(q.tags)
-				? q.tags.map((t) => (typeof t === "string" ? t : t.tag_name))
+			const tagIds = Array.isArray(quiz.tags)
+				? quiz.tags.map((tag) => tag.id)
 				: [];
 
+			// Module filter by ID
 			const moduleMatch =
-				selectedModules.length === 0 || modulesArray.some((m) => selectedModules.includes(m));
+				selectedModules.length === 0 ||
+				moduleIds.some((id) => selectedModules.includes(id));
 
+			// Tag filter by ID
 			const tagMatch =
-				selectedTags.length === 0 || tagsArray.some((t) => selectedTags.includes(t));
+				selectedTags.length === 0 ||
+				tagIds.some((id) => selectedTags.includes(id));
 
 			return searchMatch && moduleMatch && tagMatch;
 		});
 	}, [quizzes, searchText, selectedModules, selectedTags]);
-
 
 	// Open the editor
 	const handleEdit = (quiz) => {
@@ -94,33 +113,13 @@ export default function HomePage() {
 				alert(e.message || "Erreur lors de la suppression");
 			}
 		},
-		[t] // dependencies: only `t` because `setQuizzes` is stable
+		[t]
 	);
-
-	const allModules = useMemo(() => {
-		const modulesSet = new Set();
-		quizzes.forEach((q) => {
-			if (Array.isArray(q.modules)) {
-				q.modules.forEach((m) => modulesSet.add(typeof m === "string" ? m : m.module_name));
-			}
-		});
-		return Array.from(modulesSet).sort();
-	}, [quizzes]);
-
-	const allTags = useMemo(() => {
-		const tagsSet = new Set();
-		quizzes.forEach((q) => {
-			if (Array.isArray(q.tags)) {
-				q.tags.forEach((t) => tagsSet.add(typeof t === "string" ? t : t.tag_name));
-			}
-		});
-		return Array.from(tagsSet).sort();
-	}, [quizzes]);
 
 	const handleOpenFilterDrawer = () => {
 		openDrawer("filter", {
-			modules: allModules,
-			tags: allTags,
+			modules: modules,
+			tags: tags,
 			selectedModules,
 			selectedTags,
 			setSelectedModules,
@@ -133,6 +132,12 @@ export default function HomePage() {
 			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
 
 			<Main>
+
+				{loading && (
+					<LoadingWrapper $fadingOut={!showLoader}>
+						<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"}/>
+					</LoadingWrapper>
+				)}
 
 				<Header
 					title={t("pages.home.title")}
@@ -165,10 +170,14 @@ export default function HomePage() {
 									width="100%"
 								/>
 
-								<Button key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
-									<Funnel size={20} />
-									{t("common.filter")}
-								</Button>
+								{
+									modules && tags && (
+										<Button key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
+											<Funnel size={20} />
+											{t("common.filter")}
+										</Button>
+									)
+								}
 							</SearchFilterContainer>
 						</AnimatedDiv>
 					)}
@@ -187,12 +196,11 @@ export default function HomePage() {
 									{filteredQuizzes.map((q, index) => (
 										<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
 											<QuizCard
-												{...q}
+												quiz={q}
+												searchText={searchText}
 												loading={loading}
-												title={<Highlight text={q.title} query={searchText} />}
-												description={<Highlight text={q.quiz_description} query={searchText} />}
 												onEdit={() => handleEdit(q)}
-												onDelete={handleDelete}
+												onDelete={() => handleDelete(q.id_quiz)}
 												onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
 											/>
 										</AnimatedDiv>
@@ -216,12 +224,35 @@ const Main = styled.main`
     background-color: var(--color-background);
 `;
 
+const LoadingWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    inset: 0; // top:0; left:0; right:0; bottom:0;
+    background-color: var(--color-background, #fff);
+    color: var(--color-primary-bg, #2684ff);
+    opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+    transition: opacity 0.4s ease;
+    z-index: 100;
+
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+`;
+
 const NewQuizButton = styled(Button)`
 `;
 
 const Content = styled.section`
 	flex: 1;
-	padding: var(--spacing-xl);
+	padding: var(--spacing);
 `;
 
 const fadeIn = keyframes`
@@ -239,14 +270,6 @@ const SearchFilterContainer = styled.div`
 	display: flex;
 	gap: var(--spacing-s);
 	margin-bottom: var(--spacing-l);
-`;
-
-const QuizGrid = styled.section`
-	display: grid;
-    width: 100%;
-    min-height: 50%;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: var(--spacing);
 `;
 
 const NoCards = styled.div`

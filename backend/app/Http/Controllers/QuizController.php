@@ -2,449 +2,407 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
-use App\Models\Module;
-use App\Models\Tag;
-use App\Models\ActiveQuiz;
-use Illuminate\Support\Facades\Schema;
+
 
 class QuizController extends Controller
 {
-    private function coerceFrontInputs(Request $request): void
-    {
-        $decode = function ($val) {
-            if (is_string($val)) {
-                $trim = trim($val);
-                if (($trim !== '' && $trim[0] === '{' && str_ends_with($trim, '}'))
-                || ($trim !== '' && $trim[0] === '[' && str_ends_with($trim, ']'))) {
-                    $tmp = json_decode($trim, true);
-                    if (json_last_error() === JSON_ERROR_NONE) return $tmp;
-                }
-            }
-            return $val;
-        };
-
-        foreach ([
-            'translations',
-            'is_active_by_lang',
-            'questions',
-            'questions_translations',
-            'module_ids',
-            'tag_ids',
-            'new_tags',
-        ] as $k) {
-            if ($request->has($k)) {
-                $request->merge([$k => $decode($request->input($k))]);
-            }
-        }
-
-        // booleans "true"/"false" → bool
-        if ($request->has('is_active')) {
-            $v = $request->input('is_active');
-            if (is_string($v)) {
-                $vv = strtolower($v);
-                if ($vv === 'true' || $vv === '1')  { $request->merge(['is_active' => true]); }
-                if ($vv === 'false' || $vv === '0') { $request->merge(['is_active' => false]); }
-            }
-        }
-
-        // map booleans for is_active_by_lang
-        if ($request->has('is_active_by_lang') && is_array($request->input('is_active_by_lang'))) {
-            $map = $request->input('is_active_by_lang');
-            foreach ($map as $k => $v) {
-                if (is_string($v)) {
-                    $vv = strtolower($v);
-                    if ($vv === 'true' || $vv === '1')  $map[$k] = true;
-                    if ($vv === 'false' || $vv === '0') $map[$k] = false;
-                }
-            }
-            $request->merge(['is_active_by_lang' => $map]);
-        }
-
-        $normalizeIds = function ($v) {
-            if (is_string($v)) {
-                $v = array_filter(array_map('trim', explode(',', $v)), fn($x) => $x !== '');
-            }
-            if (!is_array($v)) return [];
-            return array_map(fn($x) => is_numeric($x) ? (int)$x : $x, $v);
-        };
-        foreach (['module_ids','tag_ids'] as $k) {
-            if ($request->has($k)) $request->merge([$k => $normalizeIds($request->input($k))]);
-        }
-
-        if ($request->has('new_tags')) {
-            $v = $request->input('new_tags');
-            if (is_string($v)) {
-                $v = array_filter(array_map('trim', explode(',', $v)), fn($x) => $x !== '');
-            }
-            if (!is_array($v)) $v = [];
-            $request->merge(['new_tags' => $v]);
-        }
-    }
-
-    private const ALLOWED_LANGS = ['fr','en','de','it'];
 
     private function quizPk(): string { return 'id_quiz'; }
 
-    // GET /api/quizzes
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $lang = strtolower($request->input('lang', 'en'));
-        if (!in_array($lang, self::ALLOWED_LANGS, true)) $lang = 'en';
+        try {
+            // requested language (single)
+            $lang = strtolower($request->query('lang', 'en'));
 
-        $quizzes = Quiz::query()
-            ->with(['tags:id,tag_name', 'modules:id,module_name'])
-            ->get();
+            // eager load modules/tags (using your column names)
+            $quizzes = Quiz::with(['modules:id_module,slug', 'tags:id_tag,slug'])->get();
 
-        if ($quizzes->isEmpty()) {
-            return response()->json([]);
+            if ($quizzes->isEmpty()) {
+                return response()->json([]);
+            }
+
+            $quizIds = $quizzes->pluck($this->quizPk())->all();
+
+            // fetch translations only for the requested language
+            $tRows = DB::table('translations')
+                ->where('element_type', 'quiz')
+                ->where('lang', $lang)
+                ->whereIn('element_id', $quizIds)
+                ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
+                ->get()
+                ->groupBy('element_id'); // grouped by quiz id
+
+            // active flags for this language
+            $actives = DB::table('active_quiz')
+                ->whereIn('id_quiz', $quizIds)
+                ->where('lang', $lang)
+                ->pluck('is_active', 'id_quiz'); // [id_quiz => is_active]
+
+            // map quizzes -> flattened structure for this lang
+            $mapped = $quizzes->map(function ($quiz) use ($tRows, $actives, $lang) {
+                $qid = $quiz->{$this->quizPk()};
+                $tmap = collect($tRows->get($qid, []))->keyBy('field_name');
+
+                return [
+                    $this->quizPk()    => $qid,
+                    'lang'             => $lang,
+                    'title'            => optional($tmap->get('title'))->element_text ?? '',
+                    'description'      => optional($tmap->get('quiz_description'))->element_text ?? '',
+                    'cover_image_url'  => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
+                    'modules'          => collect($quiz->modules)
+                        ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])
+                        ->values(),
+                    'tags'             => collect($quiz->tags)
+                        ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])
+                        ->values(),
+                    'is_active'        => (bool)($actives[$qid] ?? 0),
+                    'created_at'       => $quiz->created_at,
+                    'updated_at'       => $quiz->updated_at,
+                    // include any other fields you need here (created_at, updated_at, etc.)
+                ];
+            });
+
+            // optional filter: only quizzes active in this language
+            if ($request->boolean('only_active')) {
+                $mapped = $mapped->filter(fn($q) => (bool)($q['is_active'] ?? false));
+            }
+
+            return response()->json($mapped->values());
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error mapping quizzes',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
-
-        $quizIds = $quizzes->pluck($this->quizPk())->all();
-
-        $tRows = DB::table('translations')
-            ->where('element_type', 'quiz')
-            ->where('lang', $lang)
-            ->whereIn('element_id', $quizIds)
-            ->whereIn('field_name', ['title','quiz_description','cover_image_url'])
-            ->get()
-            ->groupBy('element_id');
-
-        $actives = DB::table('active_quiz')
-            ->whereIn('id_quiz', $quizIds)
-            ->where('lang', $lang)
-            ->pluck('is_active','id_quiz');
-
-        $mapped = $quizzes->map(function ($quiz) use ($tRows, $actives) {
-            $qid = $quiz->{$this->quizPk()};
-            $tmap = collect($tRows->get($qid, []))->keyBy('field_name');
-
-            $quiz->title            = optional($tmap->get('title'))->element_text;
-            $quiz->quiz_description = optional($tmap->get('quiz_description'))->element_text;
-            $quiz->cover_image_url  = optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url;
-
-            $quiz->is_active = (bool)($actives[$qid] ?? 0);
-            return $quiz;
-        });
-
-        if ($request->boolean('only_active')) {
-            $mapped = $mapped->filter(fn($q) => $q->is_active);
-        }
-
-        return response()->json($mapped->values());
     }
 
-    // GET /api/quizzes/{id}
-    public function show(Request $request, $id)
+    public function show(Request $request, $id): JsonResponse
     {
-        $lang = strtolower($request->input('lang', 'en'));
-        if (!in_array($lang, self::ALLOWED_LANGS, true)) $lang = 'en';
+        try {
+            $lang = strtolower($request->query('lang', 'en'));
 
-        $quiz = Quiz::with(['tags:id,tag_name', 'modules:id,module_name'])
-            ->find($id);
+            $quiz = Quiz::with(['modules:id_module,slug', 'tags:id_tag,slug'])
+                ->find($id);
 
-        if (!$quiz) {
-            return response()->json(['message' => "Quiz not found for ID $id"], 404);
-        }
+            if (!$quiz) {
+                return response()->json(['message' => "Quiz not found for ID $id"], 404);
+            }
 
-        $qid = $quiz->{$this->quizPk()};
+            $qid = $quiz->{$this->quizPk()};
 
-        // Active in this language ?
-        $isActive = ActiveQuiz::where('id_quiz', $qid)->where('lang', $lang)->where('is_active', 1)->exists();
-        if (!$isActive) {
-            return response()->json(['message' => 'Quiz is inactive'], 403);
-        }
+            $isActive = DB::table('active_quiz')
+                ->where('id_quiz', $qid)
+                ->where('lang', $lang)
+                ->value('is_active');
 
-        // i18n quiz
-        $tQuiz = DB::table('translations')
-            ->where('element_type','quiz')->where('lang',$lang)
-            ->where('element_id',$qid)
-            ->whereIn('field_name',['title','quiz_description','cover_image_url'])
-            ->get()->keyBy('field_name');
+            if (!$isActive) {
+                return response()->json(['message' => 'Quiz is inactive'], 403);
+            }
 
-        $quiz->title            = optional($tQuiz->get('title'))->element_text;
-        $quiz->quiz_description = optional($tQuiz->get('quiz_description'))->element_text;
-        $quiz->cover_image_url  = optional($tQuiz->get('cover_image_url'))->element_text ?? $quiz->cover_image_url;
+            $tQuiz = DB::table('translations')
+                ->where('element_type', 'quiz')
+                ->where('lang', $lang)
+                ->where('element_id', $qid)
+                ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
+                ->get()
+                ->keyBy('field_name');
 
-        // Questions
-        $questions = Question::where('id_quiz', $qid)->orderBy('order')->get();
-        $qIds = $questions->pluck('id_question')->all();
+            $title       = optional($tQuiz->get('title'))->element_text ?? '';
+            $desc        = optional($tQuiz->get('quiz_description'))->element_text ?? '';
+            $coverImage  = optional($tQuiz->get('cover_image_url'))->element_text ?? $quiz->cover_image_url;
 
-        // Answers grouped by question
-        $answers = Answer::whereIn('id_question', $qIds ?: [-1])->get()->groupBy('id_question');
+            $questions = DB::table('questions')
+                ->where('id_quiz', $qid)
+                ->where('lang', $lang)
+                ->orderBy('order')
+                ->get();
 
-        // i18n questions
-        $tQ = DB::table('translations')
-            ->where('element_type','question')->where('lang',$lang)
-            ->whereIn('element_id',$qIds ?: [-1])
-            ->whereIn('field_name',['question_title','question_description'])
-            ->get()->groupBy('element_id');
+            if ($questions->isEmpty()) {
+                $qIds = [];
+            } else {
+                $qIds = $questions->pluck('id_question')->all();
+            }
 
-        // i18n answers
-        $aIds = $answers->flatten()->pluck('id_answer')->all();
-        $tA = DB::table('translations')
-            ->where('element_type','answer')->where('lang',$lang)
-            ->whereIn('element_id',$aIds ?: [-1])
-            ->where('field_name','answer_text')
-            ->get()->groupBy('element_id');
+            $answers = DB::table('answers')
+                ->whereIn('id_question', $qIds ?: [-1])
+                ->get()
+                ->groupBy('id_question');
 
-        $quiz->questions = $questions->map(function($q) use ($answers, $tQ, $tA) {
-            $qt = collect($tQ->get($q->id_question, []))->keyBy('field_name');
+            $answerIds = $answers->flatten()->pluck('id_answer')->all();
 
-            $q->question_title       = optional($qt->get('question_title'))->element_text;
-            $q->question_description = optional($qt->get('question_description'))->element_text;
+            $tQuestions = DB::table('translations')
+                ->where('element_type', 'question')
+                ->where('lang', $lang)
+                ->whereIn('element_id', $qIds ?: [-1])
+                ->whereIn('field_name', ['question_title', 'question_description'])
+                ->get()
+                ->groupBy('element_id');
 
-            $q->answers = ($answers->get($q->id_question, collect()))->map(function($a) use ($tA) {
-                $txt = optional(collect($tA->get($a->id_answer, []))->first())->element_text;
+            $tAnswers = DB::table('translations')
+                ->where('element_type', 'answer')
+                ->where('lang', $lang)
+                ->whereIn('element_id', $answerIds ?: [-1])
+                ->where('field_name', 'answer_text')
+                ->get()
+                ->groupBy('element_id');
+
+            $questionBlocks = collect($questions)->map(function ($q) use ($answers, $tQuestions, $tAnswers) {
+                $qt = collect($tQuestions->get($q->id_question, []))->keyBy('field_name');
+
+                $title = optional($qt->get('question_title'))->element_text ?? '';
+                $desc  = optional($qt->get('question_description'))->element_text ?? '';
+
+                $ans = collect($answers->get($q->id_question, []))->map(function ($a) use ($tAnswers) {
+                    $txt = optional(collect($tAnswers->get($a->id_answer, []))->first())->element_text ?? '';
+                    return [
+                        'id'         => $a->id_answer,
+                        'text'       => $txt,
+                        'is_correct' => (bool) $a->is_correct,
+                    ];
+                })->values();
+
                 return [
-                    'id_answer'   => $a->id_answer,
-                    'answer_text' => $txt,
-                    'is_correct'  => (bool)$a->is_correct,
+                    'id'          => $q->id_question,
+                    'title'       => $title,
+                    'description' => $desc,
+                    'answers'     => $ans,
                 ];
             })->values();
 
-            return $q;
-        })->values();
+            return response()->json([
+                $this->quizPk()    => $qid,
+                'lang'             => $lang,
+                'title'            => $title,
+                'description'      => $desc,
+                'cover_image_url'  => $coverImage,
+                'is_active'        => (bool) $isActive,
 
-        return response()->json($quiz);
-    }
+                'modules' => collect($quiz->modules)
+                    ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])
+                    ->values(),
 
-    // POST /api/quizzes
-    public function store(Request $request)
-    {
-        $this->coerceFrontInputs($request);
+                'tags' => collect($quiz->tags)
+                    ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])
+                    ->values(),
 
-        $validated = $request->validate([
-            // i18n quiz
-            'title'                               => 'nullable|string',
-            'quiz_description'                    => 'nullable|string',
-            'cover_image_url'                     => 'nullable|url',
-            'cover_image'                         => 'nullable|image|max:4096',
-            'translations'                        => 'array',
-            'translations.*.title'                => 'nullable|string',
-            'translations.*.quiz_description'     => 'nullable|string',
-            'translations.*.cover_image_url'      => 'nullable|url',
-
-            // Activity
-            'is_active'                           => 'required|boolean',
-            'is_active_by_lang'                   => 'array',
-            'is_active_by_lang.*'                 => 'boolean',
-
-            // Questions structure + i18n Q/A
-            'questions'                           => 'nullable',
-            'questions_translations'              => 'array',
-            'questions_translations.*'            => 'array',
-
-            // modules/tags
-            'module_ids'                          => 'array',
-            'module_ids.*'                        => 'integer|exists:modules,id',
-            'tag_ids'                             => 'array',
-            'tag_ids.*'                           => 'integer|exists:tags,id',
-            'new_tags'                            => 'array',
-            'new_tags.*'                          => 'string|min:1|max:50',
-        ]);
-
-        // Cover
-        $coverUrl = null;
-        if ($request->hasFile('cover_image')) {
-            $path = $request->file('cover_image')->store('quiz-cards', 'public');
-            $coverUrl = url(Storage::url($path));
-        } elseif (!empty($validated['cover_image_url'])) {
-            $coverUrl = $validated['cover_image_url'];
-        }
-
-        // i18n quiz
-        $i18nQuiz = $this->normalizeQuizI18n($request, $coverUrl);
-
-        // Activity by lang
-        $isActiveByLang = $this->resolveActiveByLang($request, array_keys($i18nQuiz));
-
-        // Q/A structure
-        $questions = $this->parseQuestionsStructure($request->input('questions'));
-        $qaI18nByLang = $this->normalizeQuestionsTranslations($request, $questions);
-
-        DB::beginTransaction();
-        try {
-            // Create quiz
-            $firstLang = array_key_first($i18nQuiz);
-            $quiz = Quiz::create([
-                'cover_image_url' => $i18nQuiz[$firstLang]['cover_image_url'] ?? $coverUrl,
+                'questions' => $questionBlocks,
             ]);
 
-            // i18n quiz + activity
-            $this->upsertQuizTranslations($quiz, $i18nQuiz);
-            $this->upsertActiveByLang($quiz, $isActiveByLang);
-
-            // Q/A
-            [$qIdsByIdx, $aIdsByQIdx] = $this->createQuestionsAndAnswers($quiz, $questions);
-
-            // i18n Q/A
-            if (!empty($qaI18nByLang)) {
-                $this->upsertQA_Translations($qIdsByIdx, $aIdsByQIdx, $qaI18nByLang);
-            }
-
-            // Modules
-            if (!empty($validated['module_ids'])) {
-                $quiz->modules()->sync($validated['module_ids']);
-            }
-
-            // Existing tags + new ones
-            $tagIds = $validated['tag_ids'] ?? [];
-            $createdTagIds = [];
-            if (!empty($validated['new_tags'])) {
-                foreach ($validated['new_tags'] as $name) {
-                    $name = trim($name);
-                    if ($name === '') continue;
-                    $tag = Tag::firstOrCreate(['tag_name' => $name]);
-                    $createdTagIds[] = $tag->id;
-                }
-            }
-            if (!empty($tagIds) || !empty($createdTagIds)) {
-                $quiz->tags()->sync(array_merge($tagIds, $createdTagIds));
-            }
-
-            DB::commit();
-
-            $fresh = Quiz::select($this->quizPk(), 'cover_image_url', 'created_at', 'updated_at')
-                ->with(['modules:id,module_name','tags:id,tag_name'])
-                ->find($quiz->{$this->quizPk()});
-
-            return response()->json($fresh, 201);
-
         } catch (\Throwable $e) {
-            DB::rollBack();
             return response()->json([
-                'message' => 'Error while creating the quiz',
-                'error'   => $e->getMessage()
+                'message' => 'Error loading quiz',
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
 
-    // PUT/PATCH /api/quizzes/{id}
-    public function update(Request $request, $id)
+    public function store(Request $request): JsonResponse
     {
-        $this->coerceFrontInputs($request);
+        $quiz = $this->saveQuiz($request, null);
+        return response()->json(['quiz' => $quiz], 201);
+    }
 
-        $quiz = Quiz::findOrFail($id);
-
-        $validated = $request->validate([
-            'title'                               => 'nullable|string|max:30',
-            'quiz_description'                    => 'nullable|string|max:255',
-            'cover_image_url'                     => 'nullable|url',
-            'cover_image'                         => 'nullable|image|max:4096',
-            'translations'                        => 'array',
-            'translations.*.title'                => 'nullable|string',
-            'translations.*.quiz_description'     => 'nullable|string',
-            'translations.*.cover_image_url'      => 'nullable|url',
-
-            'is_active'                           => 'required|boolean',
-            'is_active_by_lang'                   => 'array',
-            'is_active_by_lang.*'                 => 'boolean',
-
-            'questions'                           => 'nullable',
-            'questions_translations'              => 'array',
-            'questions_translations.*'            => 'array',
-
-            'module_ids'       => 'array',
-            'module_ids.*'     => 'integer|exists:modules,id',
-            'tag_ids'          => 'array',
-            'tag_ids.*'        => 'integer|exists:tags,id',
-            'new_tags'         => 'array',
-            'new_tags.*'       => 'string|min:1|max:50',
-        ]);
-
-        // Cover
-        if ($request->hasFile('cover_image')) {
-            $path = $request->file('cover_image')->store('quiz-cards', 'public');
-            $quiz->cover_image_url = url(Storage::url($path));
-        } elseif (!empty($validated['cover_image_url'])) {
-            $quiz->cover_image_url = $validated['cover_image_url'];
+    public function update(Request $request, $id): JsonResponse
+    {
+        $quiz = Quiz::find($id);
+        if (!$quiz) {
+            return response()->json([
+                'error_code' => 'quiz_not_found',
+                'message' => 'Quiz not found for ID '.$id
+            ], 404);
         }
 
-        // i18n quiz
-        $i18nQuiz = $this->normalizeQuizI18n($request, $quiz->cover_image_url ?? null);
+        // Make sure quiz has an owner
+        if (!$quiz->owner_id || $quiz->owner_id != $request->input('owner_id')) {
+            return response()->json([
+                'error_code' => 'unauthorized_quiz',
+                'message' => "Unauthorized: you are not the owner"
+            ], 403);
+        }
 
-        // Activity by lang
-        $isActiveByLang = $this->resolveActiveByLang($request, empty($i18nQuiz) ? self::ALLOWED_LANGS : array_keys($i18nQuiz));
+        $quiz = $this->saveQuiz($request, $quiz);
+        return response()->json(['quiz' => $quiz], 200);
+    }
 
-        // Questions structures + i18n Q/A
-        $questions     = $this->parseQuestionsStructure($request->input('questions'));
-        $qaI18nByLang  = $this->normalizeQuestionsTranslations($request, $questions);
+    private function saveQuiz(Request $request, ?Quiz $quiz = null): ?Quiz
+    {
+        $isNew = !$quiz;
+        if ($isNew) {
+            $quiz = new Quiz();
+            $quiz->cover_image_url = $request->input('cover_image_url') ?? null;
+            $quiz->owner_id = $request->input('owner_id');
+            $quiz->save();
+        }
+
+        // Decode translations if sent as JSON string
+        if (is_string($request->input('translations'))) {
+            $request->merge([
+                'translations' => json_decode($request->input('translations'), true) ?? [],
+            ]);
+        }
+
+        $request->validate([
+            'cover_image_url' => 'nullable|string',
+            'cover_image_file' => 'nullable|file|image|max:5120',
+            'translations' => 'required|array',
+        ]);
 
         DB::beginTransaction();
         try {
+            // --- Handle cover image ---
+            $newCoverUrl  = $request->input('cover_image_url');
+            $newCoverFile = $request->file('cover_image_file');
+            $oldPath = $quiz->cover_image_url
+                ? ltrim(str_replace('/storage/', '', parse_url($quiz->cover_image_url, PHP_URL_PATH)), '/')
+                : null;
+
+            if ($newCoverFile) {
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $filename = 'quiz-cards/' . uniqid() . '.' . $newCoverFile->getClientOriginalExtension();
+                Storage::disk('public')->putFileAs('quiz-cards', $newCoverFile, basename($filename));
+                $quiz->cover_image_url = Storage::url($filename);
+            } elseif ($newCoverUrl === null) {
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $quiz->cover_image_url = null;
+            }
+
             $quiz->save();
 
-            if ($request->has('module_ids')) {
-                $quiz->modules()->sync($validated['module_ids'] ?? []);
-            }
+            // --- Handle translations per language ---
+            $translations = $request->input('translations', []);
+            foreach ($translations as $lang => $data) {
 
-            $tagIds = $validated['tag_ids'] ?? [];
-            $createdTagIds = [];
-            if (!empty($validated['new_tags'])) {
-                foreach ($validated['new_tags'] as $name) {
-                    $name = trim($name);
-                    if ($name === '') continue;
-                    $tag = Tag::firstOrCreate(['tag_name' => $name]);
-                    $createdTagIds[] = $tag->id;
+                // --- Quiz title and description translations ---
+                foreach (['title', 'description'] as $field) {
+                    $fieldName = $field === 'description' ? 'quiz_description' : $field;
+                    DB::table('translations')->updateOrInsert(
+                        [
+                            'element_type' => 'quiz',
+                            'element_id' => $quiz->id_quiz,
+                            'lang' => $lang,
+                            'field_name' => $fieldName,
+                        ],
+                        ['element_text' => $data[$field] ?? '']
+                    );
                 }
-            }
-            if ($request->has('tag_ids') || $request->has('new_tags')) {
-                $quiz->tags()->sync(array_merge($tagIds, $createdTagIds));
-            }
 
-            // Rebuild Q/A if 'questions' is given
-            $qIdsByIdx = [];
-            $aIdsByQIdx = [];
-            if ($request->has('questions')) {
-                $this->deleteQuizQuestions($quiz);
-                [$qIdsByIdx, $aIdsByQIdx] = $this->createQuestionsAndAnswers($quiz, $questions);
-            }
+                // --- Active flag per language ---
+                DB::table('active_quiz')->updateOrInsert(
+                    ['id_quiz' => $quiz->id_quiz, 'lang' => $lang],
+                    ['is_active' => !empty($data['is_active']) ? 1 : 0]
+                );
 
-            // i18n quiz
-            if (!empty($i18nQuiz)) {
-                $this->upsertQuizTranslations($quiz, $i18nQuiz);
-            }
+                // --- Modules & tags per language ---
+                $moduleIds = collect($data['modules'] ?? [])->pluck('id')->filter()->all();
+                $quiz->modules()->sync($moduleIds);
 
-            // Activity by lang
-            if (!empty($isActiveByLang)) {
-                $this->upsertActiveByLang($quiz, $isActiveByLang);
-            }
+                $tagIds = collect($data['tags'] ?? [])->pluck('id')->filter()->all();
+                $quiz->tags()->sync($tagIds);
 
-            // i18n Q/A
-            if (!empty($qaI18nByLang)) {
-                if (empty($qIdsByIdx)) {
-                    [$qIdsByIdx, $aIdsByQIdx] = $this->loadExistingQAMap($quiz);
+                // --- Questions & answers per language ---
+                $questions = $data['questions'] ?? [];
+                $existingQuestions = DB::table('questions')->where('id_quiz', $quiz->id_quiz)->where('lang', $lang)->pluck('id_question')->all();
+                $incomingQuestionIds = collect($questions)->pluck('id')->filter()->all();
+
+                // Delete removed questions
+                $toDelete = array_diff($existingQuestions, $incomingQuestionIds);
+                if (!empty($toDelete)) {
+                    DB::table('answers')->whereIn('id_question', $toDelete)->delete();
+                    DB::table('translations')->where('element_type', 'question')->whereIn('element_id', $toDelete)->delete();
+                    DB::table('questions')->whereIn('id_question', $toDelete)->delete();
                 }
-                $this->upsertQA_Translations($qIdsByIdx, $aIdsByQIdx, $qaI18nByLang);
+
+                foreach ($questions as $orderIndex => $q) {
+                    // Insert or update question
+                    $questionId = $q['id'] ?? DB::table('questions')->insertGetId([
+                        'id_quiz' => $quiz->id_quiz,
+                        'lang' => $lang,
+                        'order' => $orderIndex + 1,
+                    ]);
+                    if (!isset($q['id'])) {
+                        DB::table('questions')->where('id_question', $questionId)->update(['order' => $orderIndex + 1]);
+                    }
+
+                    // Question translations
+                    foreach (['title', 'description'] as $field) {
+                        $fieldName = $field === 'description' ? 'question_description' : 'question_title';
+                        DB::table('translations')->updateOrInsert(
+                            [
+                                'element_type' => 'question',
+                                'element_id' => $questionId,
+                                'lang' => $lang,
+                                'field_name' => $fieldName,
+                            ],
+                            ['element_text' => $q[$field] ?? '']
+                        );
+                    }
+
+                    // Answers
+                    $existingAnswers = DB::table('answers')->where('id_question', $questionId)->pluck('id_answer')->all();
+                    $incomingAnswerIds = [];
+                    $correctIndices = $q['correct_indices'] ?? [];
+
+                    foreach ($q['options'] ?? [] as $index => $text) {
+                        if (empty($text)) continue;
+                        $answerId = $q['answer_ids'][$index] ?? null;
+                        $isCorrect = in_array($index, $correctIndices) ? 1 : 0;
+
+                        if ($answerId && in_array($answerId, $existingAnswers)) {
+                            DB::table('answers')->where('id_answer', $answerId)->update(['is_correct' => $isCorrect]);
+                        } else {
+                            $answerId = DB::table('answers')->insertGetId([
+                                'id_question' => $questionId,
+                                'is_correct' => $isCorrect,
+                            ]);
+                        }
+
+                        DB::table('translations')->updateOrInsert(
+                            [
+                                'element_type' => 'answer',
+                                'element_id' => $answerId,
+                                'lang' => $lang,
+                                'field_name' => 'answer_text',
+                            ],
+                            ['element_text' => $text]
+                        );
+
+                        $incomingAnswerIds[] = $answerId;
+                    }
+
+                    // Delete removed answers
+                    $toDeleteAnswers = array_diff($existingAnswers, $incomingAnswerIds);
+                    if (!empty($toDeleteAnswers)) {
+                        DB::table('translations')->where('element_type', 'answer')->whereIn('element_id', $toDeleteAnswers)->delete();
+                        DB::table('answers')->whereIn('id_answer', $toDeleteAnswers)->delete();
+                    }
+                }
             }
 
             DB::commit();
-
-            $fresh = Quiz::select($this->quizPk(), 'cover_image_url', 'created_at', 'updated_at')
-                ->with(['modules:id,module_name','tags:id,tag_name'])
-                ->find($quiz->{$this->quizPk()});
-
-            return response()->json($fresh, 200);
+            return $quiz;
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Error while updating the quiz',
-                'error'   => $e->getMessage()
-            ], 500);
+            logger($e);
+            throw $e;
         }
     }
 
-    // DELETE /api/quizzes/{id}
-    public function destroy($id)
+    public function destroy($id): Response
     {
         $quiz = Quiz::findOrFail($id);
 
@@ -463,132 +421,135 @@ class QuizController extends Controller
         return response()->noContent();
     }
 
-     // Helpers – i18n / activity
-    private function normalizeQuizI18n(Request $request, ?string $coverUrl): array
+    public function editor(Request $request, $id): JsonResponse
     {
-        $translations = $request->input('translations', []);
-        $norm = [];
+        $langsQuery = $request->query('langs', 'en');
+        $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
 
-        if (is_array($translations) && !empty($translations)) {
-            foreach ($translations as $lang => $fields) {
-                $lang = strtolower(trim((string)$lang));
-                if (!in_array($lang, self::ALLOWED_LANGS, true)) continue;
-                $norm[$lang] = [
-                    'title'            => $fields['title'] ?? null,
-                    'quiz_description' => $fields['quiz_description'] ?? null,
-                    'cover_image_url'  => $fields['cover_image_url'] ?? $coverUrl,
-                ];
-            }
-        } else {
-            $singleLang = strtolower($request->input('lang', 'en'));
-            if (!in_array($singleLang, self::ALLOWED_LANGS, true)) $singleLang = 'en';
-            $norm[$singleLang] = [
-                'title'            => $request->input('title'),
-                'quiz_description' => $request->input('quiz_description'),
-                'cover_image_url'  => $coverUrl ?? $request->input('cover_image_url'),
-            ];
+        $quiz = Quiz::with(['modules:id_module', 'tags:id_tag'])->find($id);
+        if (!$quiz) {
+            return response()->json(['message' => "Quiz not found for ID $id"], 404);
         }
 
-        return array_filter($norm, fn($f) =>
-            $f['title'] !== null || $f['quiz_description'] !== null || $f['cover_image_url'] !== null
-        );
-    }
+        $qid = $quiz->{$this->quizPk()};
 
-    private function resolveActiveByLang(Request $request, array $langs): array
-    {
-        $byLang = $request->input('is_active_by_lang', []);
-        $global = (bool) $request->input('is_active', false);
+        // Determine which languages are present for this quiz
+        $langsPresent = DB::table('translations')
+            ->where('element_type', 'quiz')
+            ->where('element_id', $qid)
+            ->distinct()
+            ->pluck('lang')
+            ->filter(fn($l) => in_array($l, $allowed, true))
+            ->values()
+            ->all();
 
-        $out = [];
-        foreach ($langs as $lang) {
-            $out[$lang] = isset($byLang[$lang]) ? (bool)$byLang[$lang] : $global;
-        }
-        return $out;
-    }
-
-    private function parseQuestionsStructure($raw): array
-    {
-        if (is_string($raw)) $raw = json_decode($raw, true) ?? [];
-        if (!is_array($raw)) $raw = [];
-
-        return array_values(array_map(function($q, $idx){
-            return [
-                'id_type' => isset($q['id_type']) ? (int)$q['id_type'] : ((count($q['correctIndices'] ?? []) > 1) ? 2 : 1),
-                'order'   => isset($q['order']) ? (int)$q['order'] : ($idx+1),
-                'options' => array_values($q['options'] ?? []),
-                'correct' => array_values($q['correctIndices'] ?? []),
-                'title'   => $q['question_titre'] ?? $q['title'] ?? null,
-                'desc'    => $q['question_description'] ?? $q['description'] ?? null,
-            ];
-        }, $raw, array_keys($raw)));
-    }
-
-    private function normalizeQuestionsTranslations(Request $request, array $questions): array
-    {
-        $byLang = $request->input('questions_translations', []);
-        $out = [];
-
-        if (is_array($byLang) && !empty($byLang)) {
-            foreach ($byLang as $lang => $arr) {
-                $lang = strtolower(trim((string)$lang));
-                if (!in_array($lang, self::ALLOWED_LANGS, true)) continue;
-                if (!is_array($arr)) continue;
-
-                $out[$lang] = [];
-                foreach ($questions as $i => $q) {
-                    $qL = $arr[$i] ?? [];
-                    $out[$lang][$i] = [
-                        'question_title'       => $qL['question_title'] ?? null,
-                        'question_description' => $qL['question_description'] ?? null,
-                        'answers'              => is_array($qL['answers'] ?? null) ? array_values($qL['answers']) : [],
-                    ];
-                }
-            }
-        } else {
-            $lang = strtolower($request->input('lang', 'en'));
-            if (!in_array($lang, self::ALLOWED_LANGS, true)) $lang = 'en';
-
-            $out[$lang] = [];
-            foreach ($questions as $i => $q) {
-                $out[$lang][$i] = [
-                    'question_title'       => $q['title'] ?? null,
-                    'question_description' => $q['desc'] ?? null,
-                    'answers'              => $q['options'] ?? [],
-                ];
-            }
-        }
-
-        return $out;
-    }
-
-    // Helpers DB OPS
-
-    private function createQuestionsAndAnswers(Quiz $quiz, array $questions): array
-    {
-        $qIdsByIdx = [];
-        $aIdsByQIdx = [];
-
-        foreach ($questions as $i => $q) {
-            $question = Question::create([
-                'id_quiz' => $quiz->{$this->quizPk()},
-                'id_type' => (int)$q['id_type'],
-                'order'   => (int)$q['order'],
+        if (empty($langsPresent)) {
+            return response()->json([
+                'id_quiz' => $qid,
+                'modules' => [],
+                'tags' => [],
+                'cover_image_url' => $quiz->cover_image_url ?? '',
+                'translations' => [],
             ]);
-            $qIdsByIdx[$i] = $question->id_question;
-
-            $aIdsByQIdx[$i] = [];
-            $opts = $q['options'] ?? [];
-            $corr = $q['correct'] ?? [];
-            foreach ($opts as $idx => $_) {
-                $answer = Answer::create([
-                    'id_question' => $question->id_question,
-                    'is_correct'  => in_array($idx, $corr) ? 1 : 0,
-                ]);
-                $aIdsByQIdx[$i][$idx] = $answer->id_answer;
-            }
         }
 
-        return [$qIdsByIdx, $aIdsByQIdx];
+        // Fetch active flags per language
+        $actives = DB::table('active_quiz')
+            ->where('id_quiz', $qid)
+            ->whereIn('lang', $langsPresent)
+            ->pluck('is_active', 'lang');
+
+        $moduleIds = $quiz->modules->pluck('id_module')->all();
+        $tagIds = $quiz->tags->pluck('id_tag')->all();
+
+        $translations = [];
+
+        foreach ($langsPresent as $lang) {
+            // Fetch questions for this language
+            $questions = DB::table('questions')
+                ->where('id_quiz', $qid)
+                ->where('lang', $lang)
+                ->orderBy('order')
+                ->get();
+
+            $qIds = $questions->pluck('id_question')->all();
+
+            // Fetch answers for these questions
+            $answersByQ = DB::table('answers')
+                ->whereIn('id_question', $qIds ?: [-1])
+                ->get()
+                ->groupBy('id_question');
+
+            $answerIds = $answersByQ->flatten()->pluck('id_answer')->all();
+
+            // Pre-load all translations for this language
+            $allElementIds = array_merge([$qid], $qIds, $answerIds, $moduleIds, $tagIds);
+            $allTranslations = DB::table('translations')
+                ->where('lang', $lang)
+                ->whereIn('element_type', ['quiz','question','answer','module','tag'])
+                ->whereIn('element_id', $allElementIds ?: [-1])
+                ->get()
+                ->groupBy(['element_type','element_id']);
+
+            $tQuiz = $allTranslations['quiz'][$qid] ?? collect();
+            $tQ = $allTranslations['question'] ?? collect();
+            $tA = $allTranslations['answer'] ?? collect();
+            $modulesTranslated = $allTranslations['module'] ?? collect();
+            $tagsTranslated = $allTranslations['tag'] ?? collect();
+
+            // Build questions array (language-specific)
+            $quizQuestions = collect($questions)->map(function($q) use ($answersByQ, $tQ, $tA) {
+                // Wrap the question translations in a collection
+                $qtTranslations = collect($tQ->get($q->id_question, []))->keyBy('field_name');
+
+                // Wrap the answers for this question in a collection
+                $answers = collect($answersByQ->get($q->id_question, []))->map(function($a) use ($tA) {
+                    $answerTranslations = collect($tA->get($a->id_answer, []))->keyBy('field_name');
+                    return [
+                        'id' => $a->id_answer,
+                        'text' => $answerTranslations->get('answer_text')->element_text ?? null,
+                        'is_correct' => (bool) $a->is_correct,
+                    ];
+                })->filter(fn($a) => $a['text'] !== null)->values();
+
+                return [
+                    'id' => $q->id_question,
+                    'title' => $qtTranslations->get('question_title')->element_text ?? null,
+                    'description' => $qtTranslations->get('question_description')->element_text ?? null,
+                    'answers' => $answers,
+                ];
+            })->filter(fn($q) => $q['title'] !== null || count($q['answers']) > 0)->values();
+
+            // Build modules array (language-specific, only if translation exists)
+            $modulesArray = collect($moduleIds)->map(function($id) use ($modulesTranslated) {
+                $label = $modulesTranslated->get($id, collect())->first()?->element_text;
+                return $label ? ['id' => $id, 'label' => $label] : null;
+            })->filter()->values();
+
+            // Build tags array (language-specific, only if translation exists)
+            $tagsArray = collect($tagIds)->map(function($id) use ($tagsTranslated) {
+                $label = $tagsTranslated->get($id, collect())->first()?->element_text;
+                return $label ? ['id' => $id, 'label' => $label] : null;
+            })->filter()->values();
+
+            $translations[] = [
+                'lang' => $lang,
+                'title' => $tQuiz->firstWhere('field_name', 'title')->element_text ?? null,
+                'description' => $tQuiz->firstWhere('field_name', 'quiz_description')->element_text ?? null,
+                'questions' => $quizQuestions,
+                'modules' => $modulesArray,
+                'tags' => $tagsArray,
+                'has_translation' => true,
+                'is_dirty' => false,
+                'is_active' => (bool) ($actives[$lang] ?? 0),
+            ];
+        }
+
+        return response()->json([
+            'id_quiz' => $qid,
+            'cover_image_url' => $quiz->cover_image_url ?? '',
+            'translations' => $translations,
+        ]);
     }
 
     private function deleteQuizQuestions(Quiz $quiz): void
@@ -608,242 +569,6 @@ class QuizController extends Controller
 
         Answer::whereIn('id_question', $qIds ?: [-1])->delete();
         Question::where('id_quiz', $quiz->{$this->quizPk()})->delete();
-    }
-
-    private function loadExistingQAMap(Quiz $quiz): array
-    {
-        $questions = Question::where('id_quiz', $quiz->{$this->quizPk()})->orderBy('order')->get();
-        $qIdsByIdx = [];
-        $aIdsByQIdx = [];
-
-        foreach ($questions as $i => $q) {
-            $qIdsByIdx[$i] = $q->id_question;
-            $answers = Answer::where('id_question', $q->id_question)->orderBy('id_answer')->get();
-            $aIdsByQIdx[$i] = [];
-            foreach ($answers as $j => $a) {
-                $aIdsByQIdx[$i][$j] = $a->id_answer;
-            }
-        }
-        return [$qIdsByIdx, $aIdsByQIdx];
-    }
-
-    private function upsertQuizTranslations(Quiz $quiz, array $i18n): void
-    {
-        $rows = [];
-        $now  = now();
-        $qid  = $quiz->{$this->quizPk()};
-
-        foreach ($i18n as $lang => $fields) {
-            foreach (['title','quiz_description','cover_image_url'] as $field) {
-                if (!array_key_exists($field, $fields)) continue;
-                $val = $fields[$field];
-                if ($val === null) continue;
-
-                $rows[] = [
-                    'element_type' => 'quiz',
-                    'element_id'      => $qid,
-                    'lang'         => $lang,
-                    'field_name'   => $field,
-                    'element_text' => $val,
-                    'created_at'   => $now,
-                    'updated_at'   => $now,
-                ];
-            }
-        }
-
-        if (!empty($rows)) {
-            DB::table('translations')->upsert(
-                $rows,
-                ['lang','field_name','element_id'],
-                ['element_text','updated_at']
-            );
-        }
-    }
-
-    private function upsertActiveByLang(Quiz $quiz, array $isActiveByLang): void
-    {
-        $rows = [];
-        $now = now();
-        $qid = $quiz->{$this->quizPk()};
-        foreach ($isActiveByLang as $lang => $state) {
-            if (!in_array($lang, self::ALLOWED_LANGS, true)) continue;
-            $rows[] = [
-                'id_quiz'    => $qid,
-                'lang'       => $lang,
-                'is_active'  => $state ? 1 : 0,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-        }
-        if (!empty($rows)) {
-            DB::table('active_quiz')->upsert(
-                $rows,
-                ['id_quiz','lang'],
-                ['is_active','updated_at']
-            );
-        }
-    }
-
-    private function upsertQA_Translations(array $qIdsByIdx, array $aIdsByQIdx, array $qaI18nByLang): void
-    {
-        $rows = [];
-        $now  = now();
-
-        foreach ($qaI18nByLang as $lang => $arr) {
-            foreach ($arr as $qi => $payload) {
-                $questionId = $qIdsByIdx[$qi] ?? null;
-                if ($questionId) {
-                    if (!empty($payload['question_title'])) {
-                        $rows[] = [
-                            'element_type' => 'question',
-                            'element_id'  => $questionId,
-                            'lang'         => $lang,
-                            'field_name'   => 'question_title',
-                            'element_text' => $payload['question_title'],
-                            'created_at'   => $now,
-                            'updated_at'   => $now,
-                        ];
-                    }
-                    if (array_key_exists('question_description',$payload) && $payload['question_description'] !== null) {
-                        $rows[] = [
-                            'element_type' => 'question',
-                            'element_id'  => $questionId,
-                            'lang'         => $lang,
-                            'field_name'   => 'question_description',
-                            'element_text' => $payload['question_description'],
-                            'created_at'   => $now,
-                            'updated_at'   => $now,
-                        ];
-                    }
-                }
-
-                $answers = $payload['answers'] ?? [];
-                foreach ($answers as $aj => $text) {
-                    if ($text === null) continue;
-                    $answerId = $aIdsByQIdx[$qi][$aj] ?? null;
-                    if (!$answerId) continue;
-
-                    $rows[] = [
-                        'element_type' => 'answer',
-                        'element_id'    => $answerId,
-                        'lang'         => $lang,
-                        'field_name'   => 'answer_text',
-                        'element_text' => $text,
-                        'created_at'   => $now,
-                        'updated_at'   => $now,
-                    ];
-                }
-            }
-        }
-
-        if (!empty($rows)) {
-            foreach (array_chunk($rows, 500) as $slice) {
-                DB::table('translations')->upsert(
-                    $slice,
-                    ['lang','field_name','element_id'],
-                    ['element_text','updated_at']
-                );
-            }
-        }
-    }
-
-    public function editor(Request $request, $id)
-    {
-        $allowed = ['fr','en','de','it'];
-        $lang = strtolower($request->query('lang', 'en'));
-        if (!in_array($lang, $allowed, true)) $lang = 'en';
-
-        $quiz = Quiz::with(['modules:id,module_name', 'tags:id,tag_name'])->find($id);
-        if (!$quiz) {
-            return response()->json(['message' => "Quiz not found for ID $id"], 404);
-        }
-
-        $qid = $quiz->{$this->quizPk()};
-
-        $langsPresent = DB::table('translations')
-            ->where('element_type','quiz')
-            ->where('element_id', $qid)
-            ->distinct()
-            ->pluck('lang')
-            ->filter(fn($l) => in_array($l, $allowed, true))
-            ->values()
-            ->all();
-
-        if (empty($langsPresent)) {
-            return response()->json([
-                'id_quiz' => $qid,
-                'modules' => $quiz->modules,
-                'tags'    => $quiz->tags,
-                'translations' => [],
-            ]);
-        }
-
-        $actives = DB::table('active_quiz')
-            ->where('id_quiz', $qid)
-            ->whereIn('lang', $langsPresent)
-            ->pluck('is_active', 'lang');
-
-        $questions = Question::where('id_quiz', $qid)->orderBy('order')->get();
-        $qIds = $questions->pluck('id_question')->all();
-        $answersByQ = Answer::whereIn('id_question', $qIds ?: [-1])->get()->groupBy('id_question');
-
-        $translations = [];
-        foreach ($langsPresent as $lg) {
-            $tQuiz = DB::table('translations')
-                ->where('element_type','quiz')->where('lang',$lg)
-                ->where('element_id',$qid)
-                ->whereIn('field_name',['title','quiz_description','cover_image_url'])
-                ->get()->keyBy('field_name');
-
-            $tQ = DB::table('translations')
-                ->where('element_type','question')->where('lang',$lg)
-                ->whereIn('element_id',$qIds ?: [-1])
-                ->whereIn('field_name',['question_title','question_description'])
-                ->get()->groupBy('element_id');
-
-            $aIds = $answersByQ->flatten()->pluck('id_answer')->all();
-            $tA = DB::table('translations')
-                ->where('element_type','answer')->where('lang',$lg)
-                ->whereIn('element_id',$aIds ?: [-1])
-                ->where('field_name','answer_text')
-                ->get()->groupBy('element_id');
-
-            $translations[] = [
-                'lang' => $lg,
-                'title' => optional($tQuiz->get('title'))->element_text ?? '',
-                'quiz_description' => optional($tQuiz->get('quiz_description'))->element_text ?? '',
-                'cover_image_url' => optional($tQuiz->get('cover_image_url'))->element_text ?? ($quiz->cover_image_url ?? ''),
-                'is_active' => (bool) ($actives[$lg] ?? 0),
-
-                'questions' => $questions->map(function($q) use ($answersByQ, $tQ, $tA) {
-                    $qt = collect($tQ->get($q->id_question, []))->keyBy('field_name');
-                    $answers = ($answersByQ->get($q->id_question, collect()))->map(function($a) use ($tA) {
-                        $txt = optional(collect($tA->get($a->id_answer, []))->first())->element_text ?? '';
-                        return [
-                            'id'          => $a->id_answer,
-                            'id_answer'   => $a->id_answer,
-                            'answer_text' => $txt,
-                            'is_correct'  => (bool)$a->is_correct,
-                        ];
-                    })->values();
-
-                    return [
-                        'id' => $q->id_question,
-                        'id_question' => $q->id_question,
-                        'question_titre' => optional($qt->get('question_title'))->element_text ?? '',
-                        'question_description' => optional($qt->get('question_description'))->element_text ?? '',
-                        'answers' => $answers,
-                    ];
-                })->values(),
-            ];
-        }
-
-        return response()->json([
-            'id_quiz' => $qid,
-            'modules' => $quiz->modules,
-            'tags'    => $quiz->tags,
-            'translations' => $translations,
-        ]);
     }
 
 }

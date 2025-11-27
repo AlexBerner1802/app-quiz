@@ -40,15 +40,3 @@ class Question extends Model
                     ->where('element_type', 'question');
     }
 }
-
-// app/Models/Answer.php
-/*
-class Answer extends Model
-{
-    protected $table = 'answers';
-    protected $fillable = ['id_question','answer_text','is_correct','created_at','updated_at'];
-    public $timestamps = true;
-
-    public function question() { return $this->belongsTo(Question::class, 'id_question'); }
-}
-*/

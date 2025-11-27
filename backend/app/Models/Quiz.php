@@ -14,9 +14,7 @@ class Quiz extends Model
     protected $keyType = 'int';
     public $timestamps = true;
 
-    protected $fillable = [
-        'cover_image_url',
-    ];
+    protected $fillable = ['cover_image_url', 'owner_id'];
 
     /**
      * Relationships
@@ -34,16 +32,24 @@ class Quiz extends Model
         return $this->hasMany(Translation::class, 'quiz_id', 'id_quiz')->where('element_type', 'quiz');
     }
 
-    // A quiz can have many modules
     public function modules(): BelongsToMany
     {
-        return $this->belongsToMany(Module::class, 'quiz_modules', 'id_quiz', 'id_module')->withTimestamps();
+        return $this->belongsToMany(
+            Module::class,
+            'quiz_modules',
+            'id_quiz',   // FK on pivot pointing to Quiz
+            'id_module'  // FK on pivot pointing to Module
+        )->withTimestamps();
     }
 
-    // A quiz can have many tags
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class, 'quiz_tags', 'id_quiz', 'id_tag')->withTimestamps();
+        return $this->belongsToMany(
+            Tag::class,
+            'quiz_tags',
+            'id_quiz',  // FK on pivot pointing to Quiz
+            'id_tag'    // FK on pivot pointing to Tag
+        )->withTimestamps();
     }
 
     // A quiz can be activated for multiple languages

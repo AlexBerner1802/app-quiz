@@ -4,48 +4,68 @@ import Tag from "./ui/Tag";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
+import { Highlight } from "../utils/hightlight.jsx";
 
-export default function QuizCard(props) {
+
+export default function QuizCard({
+									 quiz,
+									 searchText = "",
+									 loading = false,
+									 onEdit,
+									 onDelete,
+									 onClick
+								 }) {
 
 	const { t } = useTranslation();
-	const { id, title, description, modules, tags, tagsTotal, imgURL, created_at, updated_at, isActive = true, onClick, onEdit, onDelete, loading } = props;
+
+	const {
+		id,
+		title,
+		description,
+		modules = [],
+		tags = [],
+		cover_image_url,
+		created_at,
+		updated_at,
+		is_active = true
+	} = quiz || {};
 
 	const safeClick = () => {
-		if (!isActive) return; // désactive l’ouverture plein cadre si inactif
-		onClick?.();
+		if (!is_active) return;
+		onClick?.(id);
 	};
 
-
-	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-	const resolvedImg = imgURL?.startsWith("/") ? `${API_URL}${imgURL}` : imgURL;
-
-	const safeModules = Array.isArray(modules)
-		? modules
-			.map((m) => (typeof m === "string" ? m : m?.module_name ?? m?.name ?? ""))
-			.filter(Boolean)
-		: [];
-
-	const safeTags = Array.isArray(tags)
-		? tags
-			.map((t) => (typeof t === "string" ? t : t?.tag_name ?? t?.name ?? ""))
-			.filter(Boolean)
-		: [];
-
+	const MEDIA_URL = import.meta.env.VITE_MEDIA_URL || "http://localhost:8000";
+	const resolvedImg = cover_image_url?.startsWith("/")
+		? `${MEDIA_URL}${cover_image_url}`
+		: cover_image_url;
 
 	return (
-		<Container data-inactive={!isActive} $loading={loading} onClick={safeClick}>
+		<Container data-inactive={!is_active} $loading={loading} onClick={safeClick}>
 			<ImageWrapper $loading={loading}>
 				{loading ? (
 					<Skeleton width="100%" height="100%" />
 				) : (
 					<>
-						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!isActive} />
+						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!is_active} />
 						<Overlay>
 							<SquareArrowOutUpRight size={32} color="var(--gray-50)" strokeWidth={2} />
 							<OverlayTitle>{title}</OverlayTitle>
 							<OverlayActions>
-								<OverlayBtn type="button" onClick={(e) => { e.stopPropagation(); onEdit?.(id); }} title={t("actions.edit")}>{t("actions.edit")}</OverlayBtn>
-								<OverlayBtn type="button" data-variant="danger" onClick={(e) => { e.stopPropagation(); onDelete?.(id); }} title={t("actions.delete")}>{t("actions.delete")}</OverlayBtn>
+								<OverlayBtn
+									type="button"
+									onClick={(e) => { e.stopPropagation(); onEdit?.(id); }}
+								>
+									{t("actions.edit")}
+								</OverlayBtn>
+
+								<OverlayBtn
+									type="button"
+									data-variant="danger"
+									onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}
+								>
+									{t("actions.delete")}
+								</OverlayBtn>
 							</OverlayActions>
 						</Overlay>
 					</>
@@ -53,36 +73,44 @@ export default function QuizCard(props) {
 			</ImageWrapper>
 
 			<Section>
+				<Title>
+					{loading ? <Skeleton width="70%" /> : <Highlight text={title} query={searchText} />}
+				</Title>
 
-				<Title>{loading ? <Skeleton width="70%" /> : title}</Title>
-				<Description>{loading ? <Skeleton width="100%" /> : description}</Description>
-				<Timestamp>{loading ? <Skeleton width="50%" /> : (created_at && updated_at && createTimestamp(created_at, updated_at))}</Timestamp>
+				<Description>
+					{loading ? <Skeleton width="100%" /> : <Highlight text={description} query={searchText} />}
+				</Description>
+
+				<Timestamp>
+					{loading ? <Skeleton width="50%" /> : createTimestamp(created_at, updated_at)}
+				</Timestamp>
 
 				<TagsContainer>
 					{loading ? (
 						<>
 							{Array.from({ length: 2 }).map((_, i) => (
-								<Skeleton key={`module-${i}`} width={100} height={24} style={{ borderRadius: 4, marginRight: 4 }} />
+								<Skeleton key={`module-${i}`} width={100} height={24} style={{ borderRadius: 4 }} />
 							))}
 							{Array.from({ length: 3 }).map((_, i) => (
-								<Skeleton key={`tag-${i}`} width={80} height={24} style={{ borderRadius: 4, marginRight: 4 }} />
+								<Skeleton key={`tag-${i}`} width={80} height={24} style={{ borderRadius: 4 }} />
 							))}
 						</>
 					) : (
 						<>
-							{safeModules.slice(0, 3).map((m, i) => (
-								<Tag key={`module-${i}`}>{m}</Tag>
+							{modules.map((m) => (
+								<Tag key={`module-${m.id}`}>
+									{m.name}
+								</Tag>
 							))}
-							{safeModules.length > 3 && <Tag>+{safeModules.length - 3}</Tag>}
 
-							{safeTags.map((tag, i) => (
-								<Tag key={`tag-${i}`} variant="secondary">{tag}</Tag>
+							{tags.map((t) => (
+								<Tag key={`tag-${t.id}`} variant="secondary">
+									{t.name}
+								</Tag>
 							))}
-							{tagsTotal > 3 && <Tag variant="secondary">+{tagsTotal - 3}</Tag>}
 						</>
 					)}
 				</TagsContainer>
-
 			</Section>
 		</Container>
 	);
@@ -93,12 +121,11 @@ const ImageWrapper = styled.div`
 	width: 100%;
 	height: var(--spacing-5xl);
 	min-height: 128px;
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-s);
 	overflow: hidden;
 	transition: height 0.3s ease-in-out;
 	pointer-events: ${(props) => (props.$loading ? 'none' : 'auto')};
 `;
-
 
 const Section = styled.div`
 	flex: 1;
@@ -145,7 +172,7 @@ const Container = styled.div`
 	padding: var(--spacing-s);
 	height: 100%;
 	min-height: 280px;
-	border-radius: var(--border-radius-s);
+	border-radius: var(--border-radius);
 	border: 1px solid var(--color-border);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 	cursor: pointer;
@@ -214,13 +241,6 @@ const Description = styled.p`
     max-height: calc(1.5em * 3);
 `;
 
-const TagsRow = styled.div`
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: var(--spacing-xs);
-`;
-
 const Timestamp = styled.div`
 	font-size: var(--font-size-xs);
 	color: var(--color-text-muted);
@@ -233,10 +253,6 @@ const TagsContainer = styled.div`
 	flex-wrap: wrap;
     gap: var(--spacing-xs);
 	margin-top: var(--spacing-xs);
-`;
-
-const ModulesRow = styled(TagsRow)`
-  	margin-bottom: 0;
 `;
 
 const OverlayActions = styled.div`
