@@ -1,180 +1,153 @@
-// src/services/api.js
+import api from "./axiosClient";
 import i18n from "i18next";
 import { getLangCode } from "./i18n_lang";
+import { buildQuizFormData } from "../utils/form";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// ---------------------------------------------------------
+//  GENERAL HELPERS
+// ---------------------------------------------------------
 
-function stringifyErrors(errs) {
-	if (!errs || typeof errs !== "object") return "";
-	try {
-		return Object.entries(errs)
-		.map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-		.join(" | ");
-	} catch {
-		return "";
-	}
+/**
+ * Ensures Laravel Sanctum CSRF cookie is set
+ * Only required before POST/PUT/DELETE that need authentication.
+ */
+export async function ensureCsrf() {
+	await api.get("/sanctum/csrf-cookie");
 }
 
-async function toJsonResponse(res) {
-	const text = await res.text();
-	let data;
-	try {
-		data = text ? JSON.parse(text) : null;
-	} catch {
-		data = { raw: text };
-	}
+// ---------------------------------------------------------
+//  QUIZZES
+// ---------------------------------------------------------
 
-	if (!res.ok) {
-		const extra = stringifyErrors(data?.errors);
-		const msg = data?.error || data?.message || `HTTP ${res.status} ${res.statusText}`;		throw new Error(extra ? `${msg} — ${extra}` : msg);
-	}
-	return data;
+/**
+ * Fetch list of quizzes, optionally filtered by lang or active status
+ */
+export async function getQuizzes({ lang = "en", owner_id } = {}) {
+	return api
+		.get("/api/quizzes", {
+			params: {
+				lang: lang.toLowerCase(),
+				owner_id,
+			},
+		})
+		.then(res => res.data)
+		.catch(err => ({ error: err.message }));
 }
 
-// Calls sanctum's CSRF cookie before state-changing request
-async function ensureCsrf() {
-  	await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include" });
-}
-
-function buildQuizFormData(payload = {}) {
-	const fd = new FormData();
-
-	if (payload.cover_image_file instanceof File || payload.cover_image_file instanceof Blob) {
-		fd.append("cover_image_file", payload.cover_image_file);
-	}
-
-	if (payload.cover_image_url !== undefined && payload.cover_image_url !== null) {
-		fd.append("cover_image_url", payload.cover_image_url);
-	}
-
-	if (payload.translations) {
-		fd.append("translations", JSON.stringify(payload.translations));
-	}
-
-	return fd;
-}
-
-
-// QUIZZES
-export async function getQuizzes({ onlyActive = false, lang = "en" } = {}) {
-	const q = new URLSearchParams();
-
-	if (onlyActive) q.set("only_active", "1");
-	if (lang) q.set("lang", lang.toLowerCase());
-
-	try {
-		const res = await fetch(`${API_URL}/api/quizzes?${q.toString()}`);
-		const data = await res.json();
-
-		if (!res.ok) {
-			console.error(data?.message);
-		}
-
-		return data;
-	} catch (err) {
-		console.error("Error fetching quizzes:", err);
-		return { error: err.message };
-	}
-}
-
+/**
+ * Create or update a quiz using FormData
+ * Laravel expects POST + `_method=PUT` for updates
+ */
 export async function saveQuiz(payload, quizId = null) {
-	try {
-		const formData = buildQuizFormData(payload);
+	await ensureCsrf();
+	const formData = buildQuizFormData(payload);
 
-		// If updating, Laravel expects PUT via POST + _method
-		if (quizId) {
-			formData.append("_method", "PUT");
-		}
+	if (quizId) formData.append("_method", "PUT");
 
-		await ensureCsrf();
+	const url = quizId ? `/api/quizzes/${quizId}` : "/api/quizzes";
 
-		const res = await fetch(
-			quizId ? `${API_URL}/api/quizzes/${quizId}` : `${API_URL}/api/quizzes`,
-			{
-				method: "POST",
-				credentials: "include",
-				headers: { Accept: "application/json" },
-				body: formData,
-			}
-		);
-
-		const data = await res.json();
-
-		if (!res.ok) {
-			console.error("Laravel error response:", data);
-			throw new Error(data?.message || "Failed to save quiz");
-		}
-
-		return data;
-	} catch (err) {
-		console.error("Error saving quiz:", err);
-		throw err;
-	}
+	const res = await api.post(url, formData);
+	return res.data;
 }
 
+/**
+ * Load quiz editor data with multiple languages
+ */
 export async function getQuizEditor(id) {
 	if (!id) throw new Error("Invalid quiz ID");
 
-	const allowedLangs = Object.keys(i18n.options.resources)
-		.map(c => c.toLowerCase())
-		.join(',');
+	const langs = Object.keys(i18n.options.resources)
+		.map((l) => l.toLowerCase())
+		.join(",");
 
-	const url = `${API_URL}/api/quizzes/${encodeURIComponent(id)}/editor?langs=${allowedLangs}`;
-	const res = await fetch(url, {
-		headers: { Accept: "application/json" },
-		credentials: "omit",
+	const res = await api.get(`/api/quizzes/${id}/editor`, {
+		params: { langs },
 	});
 
-	if (!res.ok) {
-		const errText = await res.text();
-		throw new Error(errText || `HTTP ${res.status} ${res.statusText}`);
-	}
-
-	return res.json();
+	return res.data;
 }
 
+/**
+ * Get single quiz in a given language
+ */
 export async function getQuiz(id, lang) {
-	const l = lang || getLangCode();
-	const r = await fetch(`${API_URL}/api/quizzes/${id}?lang=${l}`);
-	return toJsonResponse(r);
+	const res = await api.get(`/api/quizzes/${id}`, {
+		params: { lang: lang || getLangCode() },
+	});
+	return res.data;
 }
 
+/**
+ * Delete quiz by ID
+ */
 export async function deleteQuiz(id) {
 	await ensureCsrf();
-	const res = await fetch(`${API_URL}/api/quizzes/${id}`, {
-		method: "DELETE",
-		credentials: "include",
-		headers: { Accept: "application/json" },
-	});
-  return toJsonResponse(res);
+	const res = await api.delete(`/api/quizzes/${id}`);
+	return res.data;
 }
 
 
-// MODULES / TAGS
+// ---------------------------------------------------------
+//  MODULES / TAGS
+// ---------------------------------------------------------
+
+/**
+ * Fetch all modules with requested languages
+ */
 export async function getModules() {
-	const allowedLangs = Object.keys(i18n.options.resources).map(c => c.toLowerCase());
-	const query = allowedLangs.length ? `?langs=${allowedLangs.join(',')}` : '';
-	const res = await fetch(`${API_URL}/api/modules${query}`, {
-		credentials: "omit",
-		headers: { Accept: "application/json" },
+	const langs = Object.keys(i18n.options.resources).map((c) => c.toLowerCase());
+
+	const res = await api.get("/api/modules", {
+		params: langs.length ? { langs: langs.join(",") } : {},
 	});
-	const data = await res.json().catch(() => ([]));
-	if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-	return data;
+
+	return res.data;
 }
 
-export async function getTags() {
-	const allowedLangs = Object.keys(i18n.options.resources).map(c => c.toLowerCase());
-	const queryParams = new URLSearchParams();
-	if (allowedLangs.length) queryParams.append('langs', allowedLangs.join(','));
+export async function updateModules(payload) {
+	try {
+		console.log("Sending modules payload:", payload);
+		const res = await api.post("/api/modules/update", payload);
+		return res.data;
+	} catch (err) {
+		console.error("Backend error full response:", err.response?.data || err.message);
+		console.log(err);
+		throw new Error(
+			err.response?.data?.message ||
+			err.response?.data?.error ||
+			JSON.stringify(err.response?.data) ||
+			err.message
+		);
+	}
+}
 
-	const url = `${API_URL}/api/tags?${queryParams.toString()}`;
-	const res = await fetch(url, {
-		headers: { Accept: "application/json" },
-		credentials: "omit",
+
+/**
+ * Fetch all tags with requested languages
+ */
+export async function getTags() {
+	const langs = Object.keys(i18n.options.resources).map((c) => c.toLowerCase());
+
+	const res = await api.get("/api/tags", {
+		params: langs.length ? { langs: langs.join(",") } : {},
 	});
-	const data = await res.json().catch(() => ([]));
-	if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-	return data;
+
+	return res.data;
+}
+
+export async function updateTags(payload) {
+	try {
+		console.log("Sending payload to backend:", payload);
+		const res = await api.post("/api/tags/update", payload);
+		return res.data;
+	} catch (err) {
+		console.error("Backend error full response:", err.response?.data || err.message);
+		throw new Error(
+			err.response?.data?.message ||
+			err.response?.data?.error ||
+			JSON.stringify(err.response?.data) ||
+			err.message
+		);
+	}
 }
 

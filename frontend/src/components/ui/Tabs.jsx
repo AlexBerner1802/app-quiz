@@ -10,30 +10,33 @@ const TabsContainer = styled.div`
 
 const TabsListContainer = styled.div`
 	display: flex;
-	gap: 8px;
-	border-bottom: 1px solid #ccc;
+	width: fit-content;
+	max-width: 100%;
+	background-color: var(--color-background-surface-3);
+	padding: var(--spacing-xs);
+	border-radius: var(--border-radius-xs);
+	margin-bottom: var(--spacing-s);
 `;
 
-const TabButton = styled.button`
-	padding: 8px 16px;
-	background: ${props => (props.$active ? "#007bff" : "transparent")};
-	color: ${props => (props.$active ? "white" : "#333")};
+const TabButton = styled.div`
+	padding: var(--spacing-xs) var(--spacing-s);
+	background: ${props => (props.$active ? "var(--color-primary-bg)" : "transparent")};
+	color: ${props => (props.$active ? "var(--color-primary-text)" : "var(--color-text)")};
 	border: none;
-	border-radius: 6px 6px 0 0;
+	border-radius: var(--border-radius-2xs);
+    line-height: var(--font-size-2xl);
+	transition: all .2s ease-in-out;
 	cursor: pointer;
-	font-weight: 600;
-
-	&:hover {
-		background: ${props => (props.$active ? "#0069d9" : "#f0f0f0")};
-	}
 `;
 
 const TabContentContainer = styled.div`
-	padding: 16px;
-	border: 1px solid #ccc;
-	border-top: none;
-	border-radius: 0 0 6px 6px;
+	padding: var(--spacing-l);
+	border: 1px solid var(--color-border);
+    background-color: var(--color-background-muted);
+    border-radius: var(--border-radius-xs);
+	box-shadow: var(--box-shadow-s);
 `;
+
 
 // --- Recursive prop drilling ---
 const cloneChildrenWithProps = (children, props) =>

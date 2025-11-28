@@ -80,7 +80,6 @@ export default function NewQuiz() {
 		const init = async () => {
 			try {
 				const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-				console.log(allModules, allTags)
 				setModules(allModules || []);
 				setTags(allTags || []);
 
@@ -180,7 +179,7 @@ export default function NewQuiz() {
 
 			const payload = {
 				...quizRest,
-				owner_id: user.homeAccountId,
+				owner_id: user.localAccountId,
 				translations: Object.fromEntries(
 					Object.entries(translationsToSend).map(([lang, t]) => [
 						lang,

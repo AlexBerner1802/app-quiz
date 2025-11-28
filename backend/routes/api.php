@@ -19,10 +19,11 @@ Route::get('/quizzes/{id}/editor', [QuizController::class, 'editor']);
 // Modules
 Route::get('/modules', [ModuleController::class, 'index']);
 Route::post('/modules', [ModuleController::class, 'store']);
+Route::post('/modules/update', [ModuleController::class, 'update']);
 
 // Tags
 Route::get('/tags', [TagController::class, 'index']);
-Route::post('/tags', [TagController::class, 'store']);
+Route::post('/tags/update', [TagController::class, 'update']);
 
 // Users
 Route::post('/user', [UserController::class, 'createUser']);

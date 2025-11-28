@@ -11,7 +11,7 @@ class Tag extends Model
     protected $primaryKey = 'id_tag';
     public $timestamps = true;
 
-    protected $fillable = ['tag_name'];
+    protected $fillable = ['slug'];
 
     public function quiz(): BelongsToMany
     {

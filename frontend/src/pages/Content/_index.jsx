@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import styled from "styled-components";
 import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -9,11 +9,41 @@ import TagsManager from "../../components/TagsManager";
 import ModulesManager from "../../components/ModulesManager";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/Tabs";
+import {getModules, getTags} from "../../services/api";
+import i18n from "i18next";
 
 // --- ContentPage ---
 export default function ContentPage() {
+	
 	const { t } = useTranslation();
+	const currentLang = i18n.language;
+	
+	const [loading, setLoading] = useState(true);
+	const [showLoader, setShowLoader] = useState(true);
+	const [modules, setModules] = useState([]);
+	const [tags, setTags] = useState([]);
+	
+	
+	useEffect(() => {
+		setLoading(true);
 
+		const init = async () => {
+			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
+			setModules(allModules);
+			setTags(allTags);
+
+			console.log(allTags)
+			console.log(allModules)
+		}
+
+		init().then(() => {
+			setShowLoader(false);
+			setTimeout(() => setLoading(false), 1000);
+		});
+
+	}, []);
+	
+	
 	return (
 		<>
 			<FaviconTitle title={t("pages.ContentPage")} iconHref={faviconUrl} />
@@ -27,11 +57,11 @@ export default function ContentPage() {
 						</TabsList>
 
 						<TabsContent value="tags">
-							<TagsManager languages={["en", "fr", "de"]} />
+							{tags && <TagsManager tags={tags} loading={loading} />}
 						</TabsContent>
 
 						<TabsContent value="modules">
-							<ModulesManager languages={["en", "fr", "de"]} />
+							{modules && <ModulesManager modules={modules} />}
 						</TabsContent>
 					</Tabs>
 				</Content>

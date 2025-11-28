@@ -1,0 +1,29 @@
+TAGS
+
+English (EN):
+Web Development, Mobile App, Database, Cloud Computing, Networking, Cybersecurity, AI, Machine Learning, IoT, Automation, Robotics, DevOps, UI/UX Design, Software Testing, APIs, Agile, Scrum, Data Analysis, Virtualization, IT Support
+
+French (FR):
+Développement Web, Application Mobile, Base de Données, Cloud Computing, Réseaux, Cybersécurité, IA, Apprentissage Automatique, IoT, Automatisation, Robotique, DevOps, Design UI/UX, Tests Logiciels, APIs, Agile, Scrum, Analyse de Données, Virtualisation, Support IT
+
+German (DE):
+Webentwicklung, Mobile App, Datenbank, Cloud Computing, Netzwerke, Cybersicherheit, KI, Maschinelles Lernen, IoT, Automatisierung, Robotik, DevOps, UI/UX Design, Softwaretests, APIs, Agile, Scrum, Datenanalyse, Virtualisierung, IT-Support
+
+Italian (IT):
+Sviluppo Web, App Mobile, Database, Cloud Computing, Reti, Cybersecurity, IA, Machine Learning, IoT, Automazione, Robotica, DevOps, UI/UX Design, Test Software, API, Agile, Scrum, Analisi Dati, Virtualizzazione, Supporto IT
+
+
+
+MODULES
+
+French (FR):
+Développeur, Opérateur, Système
+
+English (EN):
+Developer, Operator, System
+
+German (DE):
+Entwickler, Betreiber, System
+
+Italian (IT):
+Sviluppatore, Operatore, Sistema

@@ -8,16 +8,14 @@ use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
+    // Fetch tags with translations
     public function index(Request $request)
     {
-        // Requested languages (default to 'en')
         $langsQuery = $request->query('langs', 'en');
         $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
 
-        // Fetch all tags
         $tags = Tag::orderBy('slug')->get(['id_tag', 'slug']);
 
-        // Fetch all translations for the allowed languages
         $translations = DB::table('translations')
             ->where('element_type', 'tag')
             ->whereIn('element_id', $tags->pluck('id_tag'))
@@ -47,11 +45,73 @@ class TagController extends Controller
         return response()->json($result);
     }
 
-    public function store(Request $r)
+    // Update tags in bulk: add new + delete removed
+    public function update(Request $request)
     {
-        $data = $r->validate([
-            'slug' => 'required|string|min:1|max:50|unique:tags,slug',
+        $data = $request->validate([
+            'tags' => 'required|array',
+            'removedTags' => 'array',
         ]);
-        return Tag::create($data);
+
+        DB::beginTransaction();
+        try {
+            foreach ($data['tags'] as $lang => $tagItems) {
+                $lang = strtolower($lang);
+
+                foreach ($tagItems as $tag) {
+                    $name = trim($tag['name']);
+                    if ($name === '') continue;
+
+                    if (!empty($tag['id'])) {
+                        // Existing tag, maybe update name if needed
+                        DB::table('translations')
+                            ->where('element_type', 'tag')
+                            ->where('element_id', $tag['id'])
+                            ->where('lang', $lang)
+                            ->where('field_name', 'name')
+                            ->update(['element_text' => $name]);
+                    } else {
+                        // New tag
+                        $slug = strtolower(preg_replace('/[^\w-]/', '', preg_replace('/\s+/', '-', $name)));
+                        $newTag = Tag::create(['slug' => $slug]);
+                        DB::table('translations')->insert([
+                            'element_type' => 'tag',
+                            'element_id' => $newTag->id_tag,
+                            'field_name' => 'name',
+                            'lang' => $lang,
+                            'element_text' => $name,
+                        ]);
+                    }
+                }
+
+                // Remove deleted tags
+                foreach ($data['removedTags'][$lang] ?? [] as $tag) {
+                    $id = $tag['id'] ?? null;
+                    if ($id) {
+                        DB::table('translations')
+                            ->where('element_type', 'tag')
+                            ->where('element_id', $id)
+                            ->where('lang', $lang)
+                            ->where('field_name', 'name')
+                            ->delete();
+
+                        Tag::where('id_tag', $id)->delete();
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update modules',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
+
+
+
 }

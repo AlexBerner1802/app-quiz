@@ -15,6 +15,7 @@ import {useDrawer} from "../../context/drawer";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { safeNavigateToEditor } from "../../utils/navigation";
 import i18n from "i18next";
+import {useAuth} from "../../context/auth";
 
 
 export default function HomePage() {
@@ -22,6 +23,7 @@ export default function HomePage() {
 	const navigate = useNavigate();
 
 	const { openDrawer } = useDrawer();
+	const { user } = useAuth();
 	const { t } = useTranslation();
 
 	const currentLang = i18n.language;
@@ -45,7 +47,10 @@ export default function HomePage() {
 			setModules(allModules[currentLang]);
 			setTags(allTags[currentLang]);
 
-			getQuizzes({ onlyActive: true, lang: getLangCode() })
+			getQuizzes({
+				lang: getLangCode(),
+				owner_id: user.localAccountId
+			})
 				.then(data => {
 					console.log(data);
 					setQuizzes(data);
@@ -61,7 +66,7 @@ export default function HomePage() {
 
 		init().then(() => false);
 
-	}, [currentLang]);
+	}, [currentLang, user.localAccountId]);
 
 
 	const filteredQuizzes = useMemo(() => {

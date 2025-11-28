@@ -17,6 +17,7 @@
 		"quiz": "Quiz",
 		"results": "Résultats",
 		"search": "Recherche",
+		"content": "Contenu",
 		"settings": "Paramètres",
 		"logout": "Déconnexion"
 	},
@@ -148,6 +149,10 @@
 			"microsoftSignIn": "Se connecter avec Microsoft",
 			"microsoftAlt": "Connexion Microsoft",
 			"error": "Échec du login"
+		},
+		"content": {
+			"tag_lang": "Étiquettes {{lang}}",
+			"modules_lang": "Étiquettes {{lang}}"
 		},
 		"homePage": "Accueil - Rafisa Quiz",
 		"createPage": "Création de quiz - Rafisa Quiz",

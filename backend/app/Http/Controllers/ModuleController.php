@@ -45,11 +45,70 @@ class ModuleController extends Controller
         return response()->json($result);
     }
 
-    public function store(Request $r)
+    public function update(Request $request)
     {
-        $data = $r->validate([
-            'slug' => 'required|string|min:1|max:255|unique:modules,slug',
+        $data = $request->validate([
+            'modules' => 'required|array',
+            'removedModules' => 'array',
         ]);
-        return Module::create($data);
+
+        DB::beginTransaction();
+        try {
+            foreach ($data['modules'] as $lang => $moduleItems) {
+                $lang = strtolower($lang);
+
+                foreach ($moduleItems as $module) {
+                    $name = trim($module['name']);
+                    if ($name === '') continue;
+
+                    if (!empty($module['id'])) {
+                        // Update existing module
+                        DB::table('translations')
+                            ->where('element_type', 'module')
+                            ->where('element_id', $module['id'])
+                            ->where('lang', $lang)
+                            ->where('field_name', 'name')
+                            ->update(['element_text' => $name]);
+                    } else {
+                        // New module
+                        $slug = strtolower(preg_replace('/[^\w-]/', '', preg_replace('/\s+/', '-', $name)));
+                        $newModule = Module::create(['slug' => $slug]);
+                        DB::table('translations')->insert([
+                            'element_type' => 'module',
+                            'element_id' => $newModule->id_module,
+                            'field_name' => 'name',
+                            'lang' => $lang,
+                            'element_text' => $name,
+                        ]);
+                    }
+                }
+
+                // Remove deleted modules
+                foreach ($data['removedModules'][$lang] ?? [] as $module) {
+                    $id = $module['id'] ?? null;
+                    if ($id) {
+                        DB::table('translations')
+                            ->where('element_type', 'module')
+                            ->where('element_id', $id)
+                            ->where('lang', $lang)
+                            ->where('field_name', 'name')
+                            ->delete();
+
+                        Module::where('id_module', $id)->delete();
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update modules',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
+
 }

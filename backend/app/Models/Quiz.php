@@ -57,10 +57,4 @@ class Quiz extends Model
     {
         return $this->hasMany(ActiveQuiz::class, 'id_quiz', 'id_quiz');
     }
-
-    // A quiz can have many user answers
-    public function userAnswers(): HasMany
-    {
-        return $this->hasMany(UserQuizAnswer::class, 'id', 'id_quiz');
-    }
 }

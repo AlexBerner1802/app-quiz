@@ -21,65 +21,66 @@ class QuizController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            // requested language (single)
             $lang = strtolower($request->query('lang', 'en'));
+            $ownerId = (string) $request->query('owner_id');
 
-            // eager load modules/tags (using your column names)
-            $quizzes = Quiz::with(['modules:id_module,slug', 'tags:id_tag,slug'])->get();
+            // Load quizzes with relations
+            $quizzes = Quiz::with([
+                'modules:id_module,slug',
+                'tags:id_tag,slug',
+                'activeQuizzes' => fn($q) => $q->where('lang', $lang)
+            ])
+                ->where(function($q) use ($ownerId) {
+                    // Only include quizzes that are active OR owned by this owner
+                    $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1))
+                        ->orWhere(function($q2) use ($ownerId) {
+                            $q2->where('owner_id', $ownerId);
+                        });
+                })
+                ->get();
 
             if ($quizzes->isEmpty()) {
                 return response()->json([]);
             }
 
-            $quizIds = $quizzes->pluck($this->quizPk())->all();
-
-            // fetch translations only for the requested language
+            // Fetch translations
+            $quizIds = $quizzes->pluck('id_quiz')->all();
             $tRows = DB::table('translations')
                 ->where('element_type', 'quiz')
                 ->where('lang', $lang)
                 ->whereIn('element_id', $quizIds)
                 ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
                 ->get()
-                ->groupBy('element_id'); // grouped by quiz id
+                ->groupBy('element_id');
 
-            // active flags for this language
-            $actives = DB::table('active_quiz')
-                ->whereIn('id_quiz', $quizIds)
-                ->where('lang', $lang)
-                ->pluck('is_active', 'id_quiz'); // [id_quiz => is_active]
-
-            // map quizzes -> flattened structure for this lang
-            $mapped = $quizzes->map(function ($quiz) use ($tRows, $actives, $lang) {
-                $qid = $quiz->{$this->quizPk()};
+            // Map quizzes
+            $mapped = $quizzes->map(function ($quiz) use ($tRows, $lang) {
+                $qid = $quiz->id_quiz;
                 $tmap = collect($tRows->get($qid, []))->keyBy('field_name');
 
+                $activeRecord = $quiz->activeQuizzes->first();
+                $isActive = $activeRecord ? (bool)$activeRecord->is_active : false;
+
                 return [
-                    $this->quizPk()    => $qid,
-                    'lang'             => $lang,
-                    'title'            => optional($tmap->get('title'))->element_text ?? '',
-                    'description'      => optional($tmap->get('quiz_description'))->element_text ?? '',
-                    'cover_image_url'  => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
-                    'modules'          => collect($quiz->modules)
-                        ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])
-                        ->values(),
-                    'tags'             => collect($quiz->tags)
-                        ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])
-                        ->values(),
-                    'is_active'        => (bool)($actives[$qid] ?? 0),
-                    'created_at'       => $quiz->created_at,
-                    'updated_at'       => $quiz->updated_at,
-                    // include any other fields you need here (created_at, updated_at, etc.)
+                    'id_quiz'         => $qid,
+                    'lang'            => $lang,
+                    'title'           => optional($tmap->get('title'))->element_text ?? '',
+                    'description'     => optional($tmap->get('quiz_description'))->element_text ?? '',
+                    'cover_image_url' => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
+                    'modules'         => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])->values(),
+                    'tags'            => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])->values(),
+                    'is_active'       => $isActive,
+                    'owner_id'        => $quiz->owner_id,
+                    'created_at'      => $quiz->created_at,
+                    'updated_at'      => $quiz->updated_at,
                 ];
             });
 
-            // optional filter: only quizzes active in this language
-            if ($request->boolean('only_active')) {
-                $mapped = $mapped->filter(fn($q) => (bool)($q['is_active'] ?? false));
-            }
+            return response()->json($mapped->values()->all());
 
-            return response()->json($mapped->values());
         } catch (\Throwable $e) {
             return response()->json([
+                'request' => $request->all(),
                 'message' => 'Error mapping quizzes',
                 'error'   => $e->getMessage(),
             ], 500);
@@ -238,9 +239,23 @@ class QuizController extends Controller
     {
         $isNew = !$quiz;
         if ($isNew) {
+            if (is_string($request->input('translations'))) {
+                $request->merge([
+                    'translations' => json_decode($request->input('translations'), true) ?? [],
+                ]);
+            }
+
+            // Validate first
+            $request->validate([
+                'cover_image_url' => 'nullable|string',
+                'owner_id' => 'required|string',
+                'cover_image_file' => 'nullable|file|image|max:5120',
+                'translations' => 'required|array',
+            ]);
+
             $quiz = new Quiz();
             $quiz->cover_image_url = $request->input('cover_image_url') ?? null;
-            $quiz->owner_id = $request->input('owner_id');
+            $quiz->owner_id = (string) $request->input('owner_id');
             $quiz->save();
         }
 
