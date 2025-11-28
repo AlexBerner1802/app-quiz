@@ -30,7 +30,8 @@ class UserController extends Controller
             $newUser = User::create([
                 'name' => $content['name'],
                 'username' => $content['username'],
-                'azure_id' => $content['azure_id']],
+                'azure_id' => $content['azure_id'],
+                'is_dark_mode' => $content['theme'] === "dark"],
         );
             return $newUser;
         }

@@ -1,97 +1,69 @@
 import React from "react";
 import styled from "styled-components";
 import Tag from "./Tag";
-
+import { useTranslation } from "react-i18next";
 
 const TagInput = ({
 	                  lang,
-	                  tempTags = [],
 	                  tags = [],
 	                  inputValue = "",
 	                  onInputChange,
 	                  onKeyDown,
-	                  onAddTags,
 	                  onRemoveTag,
+	                  placeholder = "Type and press Enter or comma",
                   }) => {
+
 	return (
-		<>
+		<div>
 			<TagInputContainer onClick={() => document.getElementById(`input-${lang}`).focus()}>
-				{tempTags.length > 0 && tempTags.map(tag => (
-					<Tag
-						key={tag}
-						variant="primary"
-						size="m"
-						clickable
-					>
-						{tag}
-						<DeleteButton onClick={() => onRemoveTag(tag, true)}>×</DeleteButton>
-					</Tag>
-				))}
+				{tags.length > 0 &&
+					tags.map((tag, index) => {
+						// Ensure tag is always an object
+						const tagObj = typeof tag === "string" ? { id: null, name: tag } : tag;
+						return (
+							<Tag
+								key={tagObj.id ?? `new-${tagObj.name}-${index}`}
+								variant="primary"
+								size="m"
+								clickable
+								canDelete
+								onDelete={() => onRemoveTag(tagObj, true)}
+							>
+								{tagObj.name}
+							</Tag>
+						);
+					})}
 				<Input
 					id={`input-${lang}`}
 					value={inputValue}
-					onChange={e => onInputChange(e.target.value)}
+					onChange={(e) => onInputChange(e.target.value)}
 					onKeyDown={onKeyDown}
-					placeholder="Type and press Enter or comma"
+					placeholder={placeholder}
 				/>
 			</TagInputContainer>
-			<AddButton onClick={onAddTags}>Add Tags</AddButton>
-			<TagInputContainer style={{ marginTop: "8px" }}>
-				{tags.length > 0 && tags.map(tag => (
-					<Tag
-						key={tag.id ?? `new-${tag.name}`}
-						variant="primary"
-						size="m"
-						clickable
-					>
-						{tag.name}
-						<DeleteButton onClick={() => onRemoveTag(tag)}>×</DeleteButton>
-					</Tag>
-				))}
-			</TagInputContainer>
-		</>
+		</div>
 	);
 };
 
 export default TagInput;
 
-
-const TagInputContainer = styled.div`  
+const TagInputContainer = styled.div`
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--spacing-s);
-	padding: var(--spacing-s) var(--spacing);
+	gap: var(--spacing-xs);
+	padding: var(--spacing-s);
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-xs);
+	background-color: var(--color-input-background);
 	cursor: text;
 `;
 
-const DeleteButton = styled.button`  
-	background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 12px;
-  color: #555;
-  &:hover { color: #d00; }
-`;
-
-const Input = styled.input`  
+const Input = styled.input`
 	flex: 1;
 	border: none;
 	outline: none;
 	min-width: 120px;
 	font-size: 14px;
 	padding: 4px 0;
-`;
-
-const AddButton = styled.button`  
-	padding: 6px 12px;
-  margin-top: 6px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  &:hover { background: #0069d9; }
+	background-color: transparent;
 `;

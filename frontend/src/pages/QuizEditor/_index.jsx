@@ -64,8 +64,7 @@ export default function NewQuiz() {
 		[]
 	);
 
-	const initialLang = i18n.language || quizLanguages[0].code;
-
+	const initialLang = (i18n.language || quizLanguages[0].code).slice(0, 2);
 	const [currentLang, setCurrentLang] = useState(initialLang);
 
 	const [translations, setTranslations] = useState({
@@ -80,8 +79,11 @@ export default function NewQuiz() {
 		const init = async () => {
 			try {
 				const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-				setModules(allModules || []);
-				setTags(allTags || []);
+				setModules(allModules);
+				setTags(allTags);
+
+				//console.log(JSON.stringify(allModules));
+				//console.log(JSON.stringify(allTags));
 
 				if (!quizId) return;
 

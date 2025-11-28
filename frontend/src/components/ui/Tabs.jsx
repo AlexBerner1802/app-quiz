@@ -30,11 +30,6 @@ const TabButton = styled.div`
 `;
 
 const TabContentContainer = styled.div`
-	padding: var(--spacing-l);
-	border: 1px solid var(--color-border);
-    background-color: var(--color-background-muted);
-    border-radius: var(--border-radius-xs);
-	box-shadow: var(--box-shadow-s);
 `;
 
 

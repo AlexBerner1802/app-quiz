@@ -6,9 +6,10 @@ import { updateTags } from "../services/api";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import Button from "./ui/Button";
 import {useTranslation} from "react-i18next";
+import {Loader2} from "lucide-react";
 
 
-const TagsManager = ({ tags: initialTags, loading }) => {
+const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 
 	const { t } = useTranslation();
 
@@ -17,38 +18,37 @@ const TagsManager = ({ tags: initialTags, loading }) => {
 		[]
 	);
 
-	const [tags, setTags] = useState({});
 	const [inputs, setInputs] = useState({});
 	const [tempTags, setTempTags] = useState({});
+	const [isSaving, setIsSaving] = useState(false)
 	const [removedTags, setRemovedTags] = useState({});
 
-	// Initialize states once initialTags is loaded
 	useEffect(() => {
 		if (!loading && initialTags) {
-			const tagsState = {};
-			const inputsState = {};
 			const tempState = {};
+			const inputsState = {};
 			const removedState = {};
+
 			langs.forEach(lang => {
-				const items = initialTags[lang] || [];
-				tagsState[lang] = items.map(t => ({ id: t.id, name: t.name }));
+				const existing = initialTags[lang] || [];
+				tempState[lang] = existing.map(t => ({ id: t.id, name: t.name }));
 				inputsState[lang] = "";
-				tempState[lang] = [];
 				removedState[lang] = [];
 			});
-			setTags(tagsState);
-			setInputs(inputsState);
+
 			setTempTags(tempState);
+			setInputs(inputsState);
 			setRemovedTags(removedState);
 		}
 	}, [initialTags, loading, langs]);
 
+	// Add tag on input change (Enter or comma)
 	const handleInputChange = (lang, value) => {
 		if (value.includes(",")) {
 			const parts = value.split(",").map(t => t.trim()).filter(Boolean);
 			setTempTags(prev => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), ...parts.filter(t => !(prev[lang] || []).includes(t))],
+				[lang]: [...(prev[lang] || []), ...parts.map(name => ({ id: null, name }))]
 			}));
 			setInputs(prev => ({ ...prev, [lang]: "" }));
 		} else {
@@ -63,83 +63,52 @@ const TagsManager = ({ tags: initialTags, loading }) => {
 		}
 	};
 
-	const handleAddTags = lang => {
-		const newTagNames = [
-			...(tempTags[lang] || []),
-			...inputs[lang].split(",").map(t => t.trim()).filter(Boolean),
-		];
-
-		const newTagsObjects = newTagNames
-			.filter(name => !tags[lang].some(t => t.name === name))
-			.map(name => ({ id: null, name }));
-
-		setTags(prev => ({
+	const removeTag = (lang, tag) => {
+		setTempTags(prev => ({
 			...prev,
-			[lang]: [...(prev[lang] || []), ...newTagsObjects],
+			[lang]: (prev[lang] || []).filter(t => (t.name ?? t) !== (tag.name ?? tag)),
 		}));
 
-		setTempTags(prev => ({ ...prev, [lang]: [] }));
-		setInputs(prev => ({ ...prev, [lang]: "" }));
-	};
-
-	const removeTag = (lang, tag, fromTemp = false) => {
-		if (fromTemp) {
-			setTempTags(prev => ({
-				...prev,
-				[lang]: (prev[lang] || []).filter(t => t !== tag),
-			}));
-		} else {
-			setTags(prev => ({
-				...prev,
-				[lang]: (prev[lang] || []).filter(t => t.name !== tag.name),
-			}));
+		if (tag.id) {
 			setRemovedTags(prev => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), { id: tag.id || null, name: tag.name }],
+				[lang]: [...(prev[lang] || []), tag]
 			}));
 		}
 	};
 
 	const handleSaveAll = async () => {
-		const removedAny = Object.values(removedTags).some(arr => arr.length > 0);
-		if (removedAny) {
-			/* THIS IS IMPORTANT BECAUSE IT ERASE IN QUIZ TAGS , better to keep something Historique */
-			const confirmDelete = window.confirm(
-				"At least one tag was removed. Do you want to save the changes?"
-			);
-			if (!confirmDelete) return;
-		}
+		if (isSaving) return;
+		setIsSaving(true);
 
 		try {
 			const payload = { tags: {}, removedTags: {} };
 			langs.forEach(lang => {
-				payload.tags[lang] = tags[lang].map(t => ({ id: t.id, name: t.name }));
-				payload.removedTags[lang] = (removedTags[lang] || []).map(t => ({ id: t.id, name: t.name }));
+				payload.tags[lang] = tempTags[lang] || [];
+				payload.removedTags[lang] = removedTags[lang] || [];
 			});
 
-			// send payload directly
 			await updateTags(payload);
-
-			// clear temp state
-			const emptyState = langs.reduce((acc, lang) => ({ ...acc, [lang]: [] }), {});
-			const emptyInputs = langs.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {});
-			setTempTags(emptyState);
-			setInputs(emptyInputs);
-			setRemovedTags(emptyState);
-
 			alert("Tags updated successfully!");
 		} catch (err) {
 			console.error("Failed to save tags:", err);
-			alert(err.message);
+			alert(err.message || "An error occurred while saving.");
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
-	if (loading) {
-		return <p>Loading tags...</p>;
-	}
 
 	return (
 		<Container>
+			{
+				loading && (
+					<LoadingWrapper $fadingOut={!showLoader}>
+						<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"}/>
+					</LoadingWrapper>
+				)
+			}
+
 			<Content>
 				<ResponsiveMasonry
 					columnsCountBreakPoints={{ 600: 1, 1000: 2, 1800: 3 }}
@@ -152,13 +121,12 @@ const TagsManager = ({ tags: initialTags, loading }) => {
 								</Label>
 								<TagInput
 									lang={lang}
-									tempTags={tempTags[lang] || []}
-									tags={tags[lang] || []}
+									tags={tempTags[lang] || []}
 									inputValue={inputs[lang] || ""}
 									onInputChange={value => handleInputChange(lang, value)}
 									onKeyDown={e => handleKeyDown(e, lang)}
-									onAddTags={() => handleAddTags(lang)}
 									onRemoveTag={(tag, fromTemp) => removeTag(lang, tag, fromTemp)}
+									placeholder={t("common.type_and_press_enter_or_comma")}
 								/>
 							</LanguageBlock>
 						))}
@@ -166,16 +134,43 @@ const TagsManager = ({ tags: initialTags, loading }) => {
 				</ResponsiveMasonry>
 			</Content>
 
-			<SaveButton variant={"success"} onClick={handleSaveAll}>{t("common.save")}</SaveButton>
+			<SaveButton variant={"success"} onClick={handleSaveAll} disabled={isSaving}>
+				{t("common.save")}
+			</SaveButton>
 		</Container>
 	);
 };
 
 export default TagsManager;
 
+
+const LoadingWrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    inset: 0; // top:0; left:0; right:0; bottom:0;
+    background-color: var(--color-background, #fff);
+    color: var(--color-primary-bg, #2684ff);
+    opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+    transition: opacity 0.4s ease;
+    z-index: 100;
+
+    .spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+`;
+
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
+	position: relative;
 `;
 
 const Content = styled.div`
@@ -185,6 +180,7 @@ const Content = styled.div`
 const LanguageBlock = styled.div`
 	width: 100%;
     border: 1px solid var(--color-border);
+	box-shadow: var(--box-shadow-s);
     border-radius: var(--border-radius-xs);
 	background-color: var(--color-background-surface-1);
     padding: var(--spacing);

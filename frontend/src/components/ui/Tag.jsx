@@ -1,5 +1,6 @@
 import React from "react";
 import styled, { css } from "styled-components";
+import {X} from "lucide-react";
 
 const variants = {
 	primary: css`
@@ -105,20 +106,35 @@ const sizes = {
 	s: css`
         font-size: var(--font-size-xs);
         font-weight: 500;
-        padding: var(--spacing-2xs) var(--spacing-xs);
+		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-2xs) var(--spacing-2xs) var(--spacing-2xs) var(--spacing-xs)" : "var(--spacing-2xs) var(--spacing-xs)")};
         border-radius: var(--border-radius-2xs);
+		
+		& svg {
+			width: var(--font-size-xs);
+			height: var(--font-size-xs);
+		}
 	`,
 	m: css`
         font-size: var(--font-size-s);
         font-weight: 500;
-        padding: var(--spacing-xs) var(--spacing-s);
+        padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-s)" : "var(--spacing-xs) var(--spacing-s)")};
         border-radius: var(--border-radius-2xs);
+
+		& svg {
+			width: var(--font-size-s);
+			height: var(--font-size-s);
+		}
 	`,
 	l: css`
         font-size: var(--font-size);
         font-weight: 500;
-        padding: var(--spacing-s) var(--spacing);
-        border-radius: var(--border-radius-2xs);
+		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-s) var(--spacing-s) var(--spacing-s) var(--spacing)" : "var(--spacing-s) var(--spacing)")};
+		border-radius: var(--border-radius-2xs);
+
+		& svg {
+			width: var(--font-size);
+			height: var(--font-size);
+		}
 	`,
 };
 
@@ -127,14 +143,24 @@ export default function Tag({
 								variant = "primary",
 								size = "m",
 								clickable = false,
+								canDelete = false,
+								onDelete,
 								...props
 							}) {
 	return (
-		<StyledTag $variant={variant} $size={size} $clickable={clickable} {...props}>
+		<StyledTag $variant={variant} $size={size} $clickable={clickable} $canDelete={canDelete} {...props}>
 			{children}
+			{
+				canDelete && (
+					<DeleteButton $size={size} onClick={onDelete}>
+						<X />
+					</DeleteButton>
+				)
+			}
 		</StyledTag>
 	);
 }
+
 
 const StyledTag = styled.span`
     display: inline-flex;
@@ -160,4 +186,16 @@ const StyledTag = styled.span`
         opacity: 0.85;
       }
     `}
+`;
+
+const DeleteButton = styled.span`
+	display: flex;
+	align-items: center;
+	padding: var(--spacing-2xs);
+	border-radius: var(--border-radius-2xs);
+	transition: all .2s ease;
+	
+	&:hover {
+		background-color: var(--color-primary-bg);
+	}
 `;

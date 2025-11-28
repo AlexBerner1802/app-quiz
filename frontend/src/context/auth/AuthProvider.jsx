@@ -52,10 +52,17 @@ export function AuthProvider({ children }) {
 		const name = account.name;
 		const username = account.username;
 		const azure_id = account.localAccountId;
+		const theme = localStorage.getItem("theme");
+
 		const res = await fetch(`${apiUrl}/api/user`, {
 			method: "POST",
 			headers: { Accept: "application/json" },
-			body: JSON.stringify({name: name, username: username, azure_id: azure_id}),
+			body: JSON.stringify({
+				name,
+				username,
+				azure_id,
+				theme
+			}),
 		});
 
 		const themeRes = await fetch(`${apiUrl}/api/user/theme?azure_id=${azure_id}`);
@@ -81,7 +88,7 @@ export function AuthProvider({ children }) {
 				account: loginResponse.account,
 			});
 			setToken(tokenResponse.accessToken);
-			personalLogin(loginResponse);
+			await personalLogin(loginResponse);
 
 
 		} catch (err) {

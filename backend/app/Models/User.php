@@ -28,7 +28,8 @@ class User extends Authenticatable
         'username',
         'name',
         'user_role',
-        'azure_id'
+        'azure_id',
+        'is_dark_mode'
     ];
 
 }

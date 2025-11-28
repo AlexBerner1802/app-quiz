@@ -11,7 +11,7 @@ class Module extends Model
     protected $primaryKey = 'id_module';
     public $timestamps = true;
 
-    protected $fillable = ['slug'];
+    protected $fillable = ['slug', 'name', 'lang'];
 
     public function quiz(): BelongsToMany
     {

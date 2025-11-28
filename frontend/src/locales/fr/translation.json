@@ -152,7 +152,7 @@
 		},
 		"content": {
 			"tag_lang": "Étiquettes {{lang}}",
-			"modules_lang": "Étiquettes {{lang}}"
+			"module_lang": "Modules {{lang}}"
 		},
 		"homePage": "Accueil - Rafisa Quiz",
 		"createPage": "Création de quiz - Rafisa Quiz",

@@ -10,20 +10,18 @@ import ModulesManager from "../../components/ModulesManager";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/Tabs";
 import {getModules, getTags} from "../../services/api";
-import i18n from "i18next";
 
 // --- ContentPage ---
 export default function ContentPage() {
-	
+
 	const { t } = useTranslation();
-	const currentLang = i18n.language;
-	
+
 	const [loading, setLoading] = useState(true);
 	const [showLoader, setShowLoader] = useState(true);
 	const [modules, setModules] = useState([]);
 	const [tags, setTags] = useState([]);
-	
-	
+
+
 	useEffect(() => {
 		setLoading(true);
 
@@ -42,8 +40,8 @@ export default function ContentPage() {
 		});
 
 	}, []);
-	
-	
+
+
 	return (
 		<>
 			<FaviconTitle title={t("pages.ContentPage")} iconHref={faviconUrl} />
@@ -52,12 +50,12 @@ export default function ContentPage() {
 				<Content>
 					<Tabs defaultValue="tags">
 						<TabsList>
-							<TabsTrigger value="tags">Tags</TabsTrigger>
-							<TabsTrigger value="modules">Modules</TabsTrigger>
+							<TabsTrigger value="tags">{t("common.tags")}</TabsTrigger>
+							<TabsTrigger value="modules">{t("common.modules")}</TabsTrigger>
 						</TabsList>
 
 						<TabsContent value="tags">
-							{tags && <TagsManager tags={tags} loading={loading} />}
+							{tags && <TagsManager tags={tags} loading={loading} showLoader={showLoader}/>}
 						</TabsContent>
 
 						<TabsContent value="modules">

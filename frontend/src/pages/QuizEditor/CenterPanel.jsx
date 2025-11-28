@@ -32,7 +32,6 @@ export default function CenterPanel({
 									}) {
 
 	const {t} = useTranslation();
-	console.log(translation);
 
 	return (
 		<Wrapper
@@ -115,17 +114,19 @@ export default function CenterPanel({
 							changeText={t("quiz.hints.changeImage")}
 						/>
 
-						<CheckboxGroup
-							wrapperStyle={{ marginBottom: "var(--spacing-s)" }}
-							label={t("quiz.sections.module")}
-							options={(modules?.[currentLang] ?? []).map((m) => ({
-								id: m.id,
-								label: m.name,
-							}))}
-							value={translation.modules}
-							onChange={(ids) => updateTranslationField({ modules: ids })}
-							direction="row"
-						/>
+						{modules?.[currentLang]?.length > 0 && (
+							<CheckboxGroup
+								wrapperStyle={{ marginBottom: "var(--spacing-s)" }}
+								label={t("quiz.sections.module")}
+								options={modules[currentLang].map((m) => ({
+									id: m.id,
+									label: m.name,
+								}))}
+								value={translation.modules || []}
+								onChange={(ids) => updateTranslationField({ modules: ids })}
+								direction="row"
+							/>
+						)}
 
 						<TagSelect
 							wrapperStyle={{ marginBottom: "var(--spacing-s)" }}

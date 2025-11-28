@@ -1,37 +1,42 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
-import TagInput from "../components/ui/TagInput"; // same input can be reused
+import TagInput from "../components/ui/TagInput";
 import i18n from "i18next";
 import { updateModules } from "../services/api";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import Button from "./ui/Button";
+import { useTranslation } from "react-i18next";
+import { Loader2 } from "lucide-react";
 
-const ModulesManager = ({ modules: initialModules, loading }) => {
+const ModulesManager = ({ modules: initialModules, loading, showLoader }) => {
+	const { t } = useTranslation();
+
+
 	const langs = useMemo(
 		() => Object.keys(i18n.options.resources).map(c => c.toLowerCase()),
 		[]
 	);
 
-	const [modules, setModules] = useState({});
 	const [inputs, setInputs] = useState({});
 	const [tempModules, setTempModules] = useState({});
+	const [isSaving, setIsSaving] = useState(false);
 	const [removedModules, setRemovedModules] = useState({});
 
-	// Initialize state once initialModules is loaded
 	useEffect(() => {
 		if (!loading && initialModules) {
-			const modulesState = {};
-			const inputsState = {};
 			const tempState = {};
+			const inputsState = {};
 			const removedState = {};
+
 			langs.forEach(lang => {
-				const items = initialModules[lang] || [];
-				modulesState[lang] = items.map(m => ({ id: m.id, name: m.name }));
+				const existing = initialModules[lang] || [];
+				tempState[lang] = existing.map(m => ({ id: m.id, name: m.name }));
 				inputsState[lang] = "";
-				tempState[lang] = [];
-				removedState[lang] = [];
+				removedState[lang] = []; // initialize removed modules
 			});
-			setModules(modulesState);
-			setInputs(inputsState);
+
 			setTempModules(tempState);
+			setInputs(inputsState);
 			setRemovedModules(removedState);
 		}
 	}, [initialModules, loading, langs]);
@@ -41,7 +46,7 @@ const ModulesManager = ({ modules: initialModules, loading }) => {
 			const parts = value.split(",").map(t => t.trim()).filter(Boolean);
 			setTempModules(prev => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), ...parts.filter(t => !(prev[lang] || []).includes(t))],
+				[lang]: [...(prev[lang] || []), ...parts.map(name => ({ id: null, name }))]
 			}));
 			setInputs(prev => ({ ...prev, [lang]: "" }));
 		} else {
@@ -56,133 +61,126 @@ const ModulesManager = ({ modules: initialModules, loading }) => {
 		}
 	};
 
-	const handleAddModules = lang => {
-		const newModuleNames = [
-			...(tempModules[lang] || []),
-			...inputs[lang].split(",").map(t => t.trim()).filter(Boolean),
-		];
-
-		const newModulesObjects = newModuleNames
-			.filter(name => !modules[lang].some(t => t.name === name))
-			.map(name => ({ id: null, name }));
-
-		setModules(prev => ({
+	const removeModule = (lang, module) => {
+		setTempModules(prev => ({
 			...prev,
-			[lang]: [...(prev[lang] || []), ...newModulesObjects],
+			[lang]: (prev[lang] || []).filter(m => (m.name ?? m) !== (module.name ?? module))
 		}));
 
-		setTempModules(prev => ({ ...prev, [lang]: [] }));
-		setInputs(prev => ({ ...prev, [lang]: "" }));
-	};
-
-	const removeModule = (lang, module, fromTemp = false) => {
-		if (fromTemp) {
-			setTempModules(prev => ({
-				...prev,
-				[lang]: (prev[lang] || []).filter(t => t !== module),
-			}));
-		} else {
-			setModules(prev => ({
-				...prev,
-				[lang]: (prev[lang] || []).filter(t => t.name !== module.name),
-			}));
+		// Only track removed modules if it has an ID (existing module)
+		if (module.id) {
 			setRemovedModules(prev => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), { id: module.id || null, name: module.name }],
+				[lang]: [...(prev[lang] || []), module]
 			}));
 		}
 	};
 
 	const handleSaveAll = async () => {
-		const removedAny = Object.values(removedModules).some(arr => arr.length > 0);
-		if (removedAny) {
-			/* THIS IS IMPORTANT BECAUSE IT ERASE IN QUIZ TAGS , better to keep something Historique */
-			const confirmDelete = window.confirm(
-				"At least one module was removed. Do you want to save the changes?"
-			);
-			if (!confirmDelete) return;
-		}
+		if (isSaving) return;
+		setIsSaving(true);
 
 		try {
 			const payload = { modules: {}, removedModules: {} };
 			langs.forEach(lang => {
-				payload.modules[lang] = modules[lang].map(m => ({ id: m.id, name: m.name }));
-				payload.removedModules[lang] = (removedModules[lang] || []).map(m => ({ id: m.id, name: m.name }));
+				payload.modules[lang] = tempModules[lang] || [];
+				payload.removedModules[lang] = removedModules[lang] || [];
 			});
 
 			await updateModules(payload);
-
-			const emptyState = langs.reduce((acc, lang) => ({ ...acc, [lang]: [] }), {});
-			const emptyInputs = langs.reduce((acc, lang) => ({ ...acc, [lang]: "" }), {});
-			setTempModules(emptyState);
-			setInputs(emptyInputs);
-			setRemovedModules(emptyState);
-
 			alert("Modules updated successfully!");
 		} catch (err) {
 			console.error("Failed to save modules:", err);
-			alert(err.message);
+			alert(err.message || "An error occurred while saving.");
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
-	if (loading) return <p>Loading modules...</p>;
-
 	return (
 		<Container>
-			{langs.map(lang => (
-				<LanguageBlock key={lang}>
-					<Label>{lang.toUpperCase()} Modules</Label>
-					<TagInput
-						lang={lang}
-						tempTags={tempModules[lang] || []}
-						tags={modules[lang] || []}
-						inputValue={inputs[lang] || ""}
-						onInputChange={value => handleInputChange(lang, value)}
-						onKeyDown={e => handleKeyDown(e, lang)}
-						onAddTags={() => handleAddModules(lang)}
-						onRemoveTag={(tag, fromTemp) => removeModule(lang, tag, fromTemp)}
-					/>
-				</LanguageBlock>
-			))}
-			<SaveButton onClick={handleSaveAll}>Save All Modules</SaveButton>
+			{loading && (
+				<LoadingWrapper $fadingOut={!showLoader}>
+					<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"} />
+				</LoadingWrapper>
+			)}
+
+			<Content>
+				<ResponsiveMasonry columnsCountBreakPoints={{ 600: 1, 1000: 2, 1800: 3 }}>
+					<Masonry gutter="16px">
+						{langs.map(lang => (
+							<LanguageBlock key={lang}>
+								<Label>
+									{t("pages.content.module_lang", { lang: lang.toUpperCase() })}
+								</Label>
+								<TagInput
+									lang={lang}
+									tags={tempModules[lang] || []}
+									inputValue={inputs[lang] || ""}
+									onInputChange={value => handleInputChange(lang, value)}
+									onKeyDown={e => handleKeyDown(e, lang)}
+									onRemoveTag={tag => removeModule(lang, tag)}
+									placeholder={t("common.type_and_press_enter_or_comma")}
+								/>
+							</LanguageBlock>
+						))}
+					</Masonry>
+				</ResponsiveMasonry>
+			</Content>
+
+			<SaveButton variant="success" onClick={handleSaveAll} disabled={isSaving}>
+				{t("common.save")}
+			</SaveButton>
 		</Container>
 	);
+
 };
 
 export default ModulesManager;
 
-const Container = styled.div`
+const LoadingWrapper = styled.div`
+display: flex;
+justify-content: center;
+align-items: center;
+position: absolute;
+inset: 0;
+background-color: var(--color-background, #fff);
+color: var(--color-primary-bg, #2684ff);
+opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+transition: opacity 0.4s ease;
+z-index: 100;
+
+	.spin {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	100% {
+		transform: rotate(360deg);
+}
+}
+
+`;
+
+const Container = styled.div`    display: flex;
+    flex-direction: column;
+    position: relative;`;
+
+const Content = styled.div`    margin-bottom: var(--spacing);`;
+
+const LanguageBlock = styled.div`    width: 100%;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--box-shadow-s);
+    border-radius: var(--border-radius-xs);
+    background-color: var(--color-background-surface-1);
+    padding: var(--spacing);
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    width: 100%;
-`;
+    gap: var(--spacing-s);`;
 
-const LanguageBlock = styled.div`
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-`;
+const Label = styled.label`    font-weight: 500;
+    font-size: var(--font-size);
+    color: var(--color-text);`;
 
-const Label = styled.label`
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-`;
-
-const SaveButton = styled.button`
-  margin-top: 16px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  background-color: #4caf50;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  &:hover {
-    background-color: #45a049;
-  }
-`;
+const SaveButton = styled(Button)`    margin-left: auto;
+    width: fit-content;`;
