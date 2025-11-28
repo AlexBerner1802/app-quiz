@@ -58,6 +58,11 @@ export function AuthProvider({ children }) {
 			body: JSON.stringify({name: name, username: username, azure_id: azure_id}),
 		});
 
+		const themeRes = await fetch(`${apiUrl}/api/user/theme?azure_id=${azure_id}`);
+		const themeData = await themeRes.json();
+
+		localStorage.setItem("theme", themeData.theme);
+
 		console.log(await res.json())
 	}
 

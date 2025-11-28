@@ -26,6 +26,9 @@ Route::post('/tags', [TagController::class, 'store']);
 
 // Users
 Route::post('/user', [UserController::class, 'createUser']);
+Route::put('/user/theme', [UserController::class, 'updateTheme']);
+Route::get('/user/theme', [UserController::class, 'getTheme']);
+
 
 // Preflight
 Route::options('/{any}', function () {
