@@ -26,8 +26,8 @@ class QuizController extends Controller
 
             // Load quizzes with relations
             $quizzes = Quiz::with([
-                'modules:id_module,slug',
-                'tags:id_tag,slug',
+                'modules:id_module,name,slug',
+                'tags:id_tag,name,slug',
                 'activeQuizzes' => fn($q) => $q->where('lang', $lang)
             ])
                 ->where(function($q) use ($ownerId) {
@@ -67,8 +67,8 @@ class QuizController extends Controller
                     'title'           => optional($tmap->get('title'))->element_text ?? '',
                     'description'     => optional($tmap->get('quiz_description'))->element_text ?? '',
                     'cover_image_url' => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
-                    'modules'         => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])->values(),
-                    'tags'            => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])->values(),
+                    'modules'         => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])->values(),
+                    'tags'            => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
                     'is_active'       => $isActive,
                     'owner_id'        => $quiz->owner_id,
                     'created_at'      => $quiz->created_at,
@@ -92,7 +92,7 @@ class QuizController extends Controller
         try {
             $lang = strtolower($request->query('lang', 'en'));
 
-            $quiz = Quiz::with(['modules:id_module,slug', 'tags:id_tag,slug'])
+            $quiz = Quiz::with(['modules:id_module,name,slug', 'tags:id_tag,name,slug'])
                 ->find($id);
 
             if (!$quiz) {
@@ -189,11 +189,11 @@ class QuizController extends Controller
                 'is_active'        => (bool) $isActive,
 
                 'modules' => collect($quiz->modules)
-                    ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->slug])
+                    ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])
                     ->values(),
 
                 'tags' => collect($quiz->tags)
-                    ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->slug])
+                    ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])
                     ->values(),
 
                 'questions' => $questionBlocks,
