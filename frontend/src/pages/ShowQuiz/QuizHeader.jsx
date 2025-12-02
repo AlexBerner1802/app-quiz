@@ -1,18 +1,24 @@
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 
 
-export default function QuizHeader({ title }) {
-	const { t } = useTranslation();
+export default function QuizHeader({ title, onBack }) {
 	const navigate = useNavigate();
+
+	const handleBack = () => {
+		if (onBack) {
+			const shouldLeave = onBack();
+			if (!shouldLeave) return;
+		}
+		navigate(-1);
+	};
 
 	return (
 		<Header>
-			<Button onClick={() => navigate(-1)} variant="ghost">
+			<Button onClick={handleBack} variant="ghost">
 				<ChevronLeft size={30} />
 			</Button>
 
@@ -22,6 +28,7 @@ export default function QuizHeader({ title }) {
 		</Header>
 	);
 }
+
 
 
 const Header = styled.header`

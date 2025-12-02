@@ -86,6 +86,22 @@ export async function deleteQuiz(id) {
 	return res.data;
 }
 
+/**
+ * Submit quiz answers / attempt
+ * payload: { started_at, ended_at, time_taken, answers: [{question_id, answer_ids, answer_text}] }
+ */
+export async function submitQuizAttempt(quizId, payload) {
+	await ensureCsrf();
+	try {
+		console.log(payload)
+		const res = await api.post(`/api/quizzes/${quizId}/attempts`, payload);
+		return res.data;
+	} catch (err) {
+		console.error("Failed to submit quiz attempt:", err.response?.data || err.message);
+		throw new Error(err.response?.data?.message || "Failed to save quiz attempt");
+	}
+}
+
 
 // ---------------------------------------------------------
 //  MODULES / TAGS

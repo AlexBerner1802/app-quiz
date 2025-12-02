@@ -4,24 +4,30 @@ import QuizHeader from "./QuizHeader";
 import { useTranslation } from "react-i18next";
 import Tag from "../../components/ui/Tag";
 import Button from "../../components/ui/Button";
+import useBlockNavigation from "../../hooks/useBlockNavigation";
+import {submitQuizAttempt} from "../../services/api";
+import {useAuth} from "../../context/auth";
 
 export default function QuizViewer({ quiz }) {
-	const { t } = useTranslation();
+	const { user } = useAuth();
+	const { t, i18n } = useTranslation();
 	const [step, setStep] = useState("intro");
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [answersMap, setAnswersMap] = useState({});
 	const [timer, setTimer] = useState(0);
+	const [saving, setSaving] = useState(false);
+	const [savedResult, setSavedResult] = useState(null);
 
-	console.log(quiz)
+	const API_URL = import.meta?.env?.VITE_API_URL || "http://localhost:8000";
+
+	useBlockNavigation(step === "question", t("quiz.leave_warning"));
 
 	// Timer
 	useEffect(() => {
-		if (step !== "question" && step !== "end") return; // timer runs only in question mode
+		if (step !== "question") return;
 		const interval = setInterval(() => setTimer(t => t + 1), 1000);
-
-		return () => clearInterval(interval); // not stopping unless step changes
+		return () => clearInterval(interval);
 	}, [step]);
-
 
 	const handleStart = () => setStep("question");
 
@@ -34,78 +40,95 @@ export default function QuizViewer({ quiz }) {
 		});
 	};
 
-
 	const handleNext = () => {
 		if (currentIndex + 1 < quiz.questions.length) {
 			setCurrentIndex(currentIndex + 1);
 		} else {
-			setStep("end");
+			handleFinishQuiz();
 		}
 	};
 
 	const handlePrev = () => {
-		if (currentIndex > 0) {
-			setCurrentIndex(prev => prev - 1);
-		}
+		if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
 	};
 
 	const handleStop = () => {
+		if (step === "question" && !window.confirm(t("quiz.leaveWarning"))) return;
 		setStep("intro");
 		setCurrentIndex(0);
 		setAnswersMap({});
 		setTimer(0);
 	};
 
-	// Utility to format seconds -> mm:ss
+	const handleConfirmEnd = () => setStep("confirmEnd");
+
+	const handleFinishQuiz = async () => {
+		if (saving) return;
+		setSaving(true);
+
+		const payload = quiz.questions.map((q, index) => ({
+			id_question: q.id,
+			answer_ids: answersMap[index] || [],
+			answer_text: String(answersMap[index]?.[0] ?? ""),
+		}));
+
+		try {
+			const result = await submitQuizAttempt(quiz.id_quiz, {
+				started_at: new Date(Date.now() - timer * 1000).toISOString(),
+				ended_at: new Date().toISOString(),
+				time_taken: timer,
+				lang: i18n.language,
+				azure_id: user.localAccountId,
+				answers: payload
+			});
+			console.log(result)
+			setSavedResult(result);
+			setStep("review");
+		} catch (err) {
+			alert(t("quiz.save_error"));
+		} finally {
+			setSaving(false);
+		}
+	};
+
 	const formatTime = (seconds) => {
 		const m = Math.floor(seconds / 60).toString().padStart(2, "0");
 		const s = (seconds % 60).toString().padStart(2, "0");
 		return `${m}:${s}`;
 	};
 
-	if(!quiz) return null;
+	if (!quiz) return null;
 
-	// Current question
 	const question = quiz.questions[currentIndex];
-
 
 	return (
 		<Wrapper>
-			<QuizHeader title={quiz.title}/>
-
+			<QuizHeader title={quiz.title}
+						onBack={() => {
+							if (step === "question") {
+								return window.confirm(t("quiz.leave_warning"));
+							}
+							return true;
+						}}/>
 			<Content>
-
 				{step === "intro" && (
 					<IntroCard>
 						<Title>{quiz.title}</Title>
-
-						{quiz.cover_image_url && <Cover src={quiz.cover_image_url} alt={quiz.title} />}
-
+						{quiz.cover_image_url && <Cover src={API_URL + quiz.cover_image_url} alt={quiz.title} />}
 						<Description>{quiz.description}</Description>
-
-						{quiz.modules?.length > 0 || quiz.tags?.length > 0 ? (
+						{(quiz.modules?.length || quiz.tags?.length) > 0 && (
 							<TagsContainer>
-								{quiz.modules?.map((m, i) => (
-									<Tag key={`module-${i}`} size={"l"}>{m.name}</Tag>
-								))}
-								{quiz.tags?.map((t, i) => (
-									<Tag key={`tag-${i}`} variant="secondary" size={"l"}>{t.name}</Tag>
-								))}
+								{quiz.modules?.map((m, i) => <Tag key={i} size="l">{m.name}</Tag>)}
+								{quiz.tags?.map((t, i) => <Tag key={i} variant="secondary" size="l">{t.name}</Tag>)}
 							</TagsContainer>
-						) : null}
-
-						<Button onClick={handleStart}
-								size={"l"}
-								style={{ width: "fit-content" }}>
-							{t("quiz.start")}
-						</Button>
+						)}
+						<Button onClick={handleStart} size="l">{t("quiz.start")}</Button>
 					</IntroCard>
 				)}
 
 				{step === "question" && question && (
 					<QuestionCard>
 						<TimerDisplay>{t("quiz.timer")}: {formatTime(timer)}</TimerDisplay>
-
 						<Question>{currentIndex + 1}. {question.title}</Question>
 						{question.description && <QuestionDescription>{question.description}</QuestionDescription>}
 
@@ -114,30 +137,19 @@ export default function QuizViewer({ quiz }) {
 								const ansId = ans.id ?? ans.text;
 								const selected = answersMap[currentIndex]?.includes(ansId);
 								return (
-									<AnswerBox
-										key={ansId}
-										onClick={() => handleAnswer(ansId)}
-										selected={selected}
-									>
+									<AnswerBox key={ansId} selected={selected} onClick={() => handleAnswer(ansId)}>
 										{ans.text}
 									</AnswerBox>
-								)
+								);
 							})}
 						</AnswersGrid>
 
-
 						<ButtonsRow>
-							{currentIndex > 0 && (
-								<PrevButton onClick={handlePrev} variant={"secondary"}>
-									{t("quiz.prev")}
-								</PrevButton>
-							)}
-
+							{currentIndex > 0 && <PrevButton onClick={handlePrev} variant="secondary">{t("quiz.prev")}</PrevButton>}
 							<ContinueButton
 								variant="primary"
-								style={{ width: "fit-content" }}
 								disabled={!answersMap[currentIndex]}
-								onClick={handleNext}
+								onClick={currentIndex + 1 < quiz.questions.length ? handleNext : handleConfirmEnd}
 							>
 								{currentIndex + 1 < quiz.questions.length ? t("quiz.continue") : t("quiz.finish")}
 							</ContinueButton>
@@ -145,21 +157,63 @@ export default function QuizViewer({ quiz }) {
 					</QuestionCard>
 				)}
 
-				{step === "end" && (
+				{step === "confirmEnd" && (
 					<EndCard>
-						<p>{t("quiz.endMessage")}</p>
-						<Button onClick={handleStop}
-								size={"l"}
-								style={{ width: "fit-content" }}>
-							{t("quiz.stop")}
-						</Button>
-						<p>Time: {formatTime(timer)}</p>
+						<p>{t("quiz.confirmEndMessage")}</p>
+						<ButtonsRow>
+							<Button onClick={() => setStep("question")} variant="secondary">
+								{t("quiz.cancel")}
+							</Button>
+							<Button onClick={handleFinishQuiz} variant="primary" disabled={saving}>
+								{saving ? t("quiz.saving") : t("quiz.finish")}
+							</Button>
+						</ButtonsRow>
+					</EndCard>
+				)}
+
+				{step === "review" && savedResult && (
+					<EndCard>
+						<h3>{t("quiz.reviewTitle")}</h3>
+						<p>{t("quiz.score")}: {savedResult.score.toFixed(2)}</p>
+						<p>{t("quiz.timeTaken")}: {formatTime(savedResult.time_taken)}</p>
+
+						{savedResult.answers.map((a, i) => (
+							<QuestionCard key={i}>
+								<Question>{i + 1}. {a.question}</Question>
+								<AnswersGrid>
+									{quiz.questions[i].answers.map(ans => {
+										const isUserSelected = a.user_answer_ids.includes(ans.id);
+										const isCorrect = a.correct_answer_ids.includes(ans.id);
+										return (
+											<AnswerBox
+												key={ans.id}
+												selected={isUserSelected}
+												style={{
+													borderColor: isCorrect ? "green" : isUserSelected ? "red" : undefined,
+													backgroundColor: isCorrect ? "#e6ffed" : isUserSelected ? "#ffe6e6" : undefined
+												}}
+											>
+												{ans.text}
+												{isCorrect && " ✅"}
+												{isUserSelected && !isCorrect && " ❌"}
+											</AnswerBox>
+										)
+									})}
+								</AnswersGrid>
+								<p>Score for this question: {a.score.toFixed(2)}</p>
+							</QuestionCard>
+						))}
+
+						<Button onClick={handleStop} size="l">{t("quiz.close")}</Button>
 					</EndCard>
 				)}
 			</Content>
 		</Wrapper>
 	);
 }
+
+// Styled components same as your previous code
+
 
 
 const Wrapper = styled.div`
@@ -228,22 +282,24 @@ const QuestionDescription = styled.p`
 const AnswersGrid = styled.div`
   	display: flex;
 	flex-wrap: wrap;
-	justify-content: space-around;
 	margin-top: var(--spacing-l);
+    gap: var(--spacing-s);
 `;
 
 const AnswerBox = styled.div`
-	border-radius: var(--border-radius-xs);
-	font-size: var(--font-size-l);
-	padding: var(--spacing);
-	cursor: pointer;
+    border-radius: var(--border-radius-xs);
+    font-size: var(--font-size-l);
+    padding: var(--spacing);
+    cursor: pointer;
     border: ${({ selected }) => selected ? "1px solid var(--color-primary-bg)" : "1px solid var(--color-border)"};
     background-color: ${({ selected }) => selected ? "var(--color-primary-muted)" : "var(--color-background-surface-2)"};
-	color: ${({ selected }) => selected ? "var(--color-primary-bg)" : "var(--color-text)"};
-	transition: all 0.2s;
-	min-width: var(--spacing-7xl);
-	min-height: var(--spacing-5xl);
-	width: calc(25% - var(--spacing-s));
+    color: ${({ selected }) => selected ? "var(--color-primary-bg)" : "var(--color-text)"};
+    transition: all 0.2s;
+    min-width: var(--spacing-7xl);
+    min-height: var(--spacing-5xl);
+
+    flex: 0 0 calc(25% - var(--spacing-s)); /* fixed width for 4 per row */
+    box-sizing: border-box;
 `;
 
 const ButtonsRow = styled.div`

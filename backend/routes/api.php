@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\QuizAttemptController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
@@ -15,6 +16,7 @@ Route::get('/ping', function () {
 // Quizzes
 Route::apiResource('quizzes', QuizController::class)->only(['index','show','store','update','destroy']);
 Route::get('/quizzes/{id}/editor', [QuizController::class, 'editor']);
+Route::post('/quizzes/{quiz}/attempts', [QuizAttemptController::class, 'store']);
 
 // Modules
 Route::get('/modules', [ModuleController::class, 'index']);
