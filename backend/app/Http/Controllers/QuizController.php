@@ -92,8 +92,10 @@ class QuizController extends Controller
         try {
             $lang = strtolower($request->query('lang', 'en'));
 
-            $quiz = Quiz::with(['modules:id_module,name,slug', 'tags:id_tag,name,slug'])
-                ->find($id);
+            $quiz = Quiz::with([
+                'modules:id_module,slug,name',
+                'tags:id_tag,slug,name'
+            ])->find($id);
 
             if (!$quiz) {
                 return response()->json(['message' => "Quiz not found for ID $id"], 404);
@@ -189,11 +191,11 @@ class QuizController extends Controller
                 'is_active'        => (bool) $isActive,
 
                 'modules' => collect($quiz->modules)
-                    ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])
+                    ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name, 'slug' => $m->slug])
                     ->values(),
 
                 'tags' => collect($quiz->tags)
-                    ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])
+                    ->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name, 'slug' => $t->slug])
                     ->values(),
 
                 'questions' => $questionBlocks,
