@@ -12,6 +12,8 @@ export default function QuizViewer({ quiz }) {
 	const [answersMap, setAnswersMap] = useState({});
 	const [timer, setTimer] = useState(0);
 
+	console.log(quiz)
+
 	// Timer
 	useEffect(() => {
 		if (step !== "question" && step !== "end") return; // timer runs only in question mode
@@ -69,11 +71,7 @@ export default function QuizViewer({ quiz }) {
 
 	return (
 		<Wrapper>
-			<QuizHeader
-				title={quiz.title}
-				createdAt={quiz.created_at}
-				updatedAt={quiz.updated_at}
-			/>
+			<QuizHeader title={quiz.title}/>
 
 			<Content>
 
@@ -83,15 +81,15 @@ export default function QuizViewer({ quiz }) {
 
 						{quiz.cover_image_url && <Cover src={quiz.cover_image_url} alt={quiz.title} />}
 
-						<Description>{quiz.quiz_description}</Description>
+						<Description>{quiz.description}</Description>
 
 						{quiz.modules?.length > 0 || quiz.tags?.length > 0 ? (
 							<TagsContainer>
 								{quiz.modules?.map((m, i) => (
-									<Tag key={`module-${i}`} size={"l"}>{m.module_name}</Tag>
+									<Tag key={`module-${i}`} size={"l"}>{m.name}</Tag>
 								))}
 								{quiz.tags?.map((t, i) => (
-									<Tag key={`tag-${i}`} variant="secondary" size={"l"}>{t.tag_name}</Tag>
+									<Tag key={`tag-${i}`} variant="secondary" size={"l"}>{t.name}</Tag>
 								))}
 							</TagsContainer>
 						) : null}
@@ -108,12 +106,12 @@ export default function QuizViewer({ quiz }) {
 					<QuestionCard>
 						<TimerDisplay>{t("quiz.timer")}: {formatTime(timer)}</TimerDisplay>
 
-						<Question>{currentIndex + 1}. {question.question_title}</Question>
-						{question.question_description && <QuestionDescription>{question.question_description}</QuestionDescription>}
+						<Question>{currentIndex + 1}. {question.title}</Question>
+						{question.description && <QuestionDescription>{question.description}</QuestionDescription>}
 
 						<AnswersGrid>
 							{question.answers.map(ans => {
-								const ansId = ans.id ?? ans.answer_text;
+								const ansId = ans.id ?? ans.text;
 								const selected = answersMap[currentIndex]?.includes(ansId);
 								return (
 									<AnswerBox
@@ -121,7 +119,7 @@ export default function QuizViewer({ quiz }) {
 										onClick={() => handleAnswer(ansId)}
 										selected={selected}
 									>
-										{ans.answer_text}
+										{ans.text}
 									</AnswerBox>
 								)
 							})}

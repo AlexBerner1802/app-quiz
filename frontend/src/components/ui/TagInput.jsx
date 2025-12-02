@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import Tag from "./Tag";
-import { useTranslation } from "react-i18next";
 
 const TagInput = ({
 	                  lang,
