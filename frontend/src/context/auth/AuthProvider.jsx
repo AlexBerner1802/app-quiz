@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import * as msal from "@azure/msal-browser";
 import { AuthContext } from "./AuthContext";
+import api from "../../services/axiosClient";
 
 const redirectUri = import.meta.env.VITE_AZURE_REDIRECT_URI || window.location.origin;
-const apiUrl = (import.meta?.env?.VITE_API_URL || "http://localhost:8000");
 
 const pca = new msal.PublicClientApplication({
 	auth: {
@@ -51,27 +51,24 @@ export function AuthProvider({ children }) {
 		const account = azureRes.account;
 		const name = account.name;
 		const username = account.username;
-		const azure_id = account.localAccountId;
+		const id_owner = account.localAccountId;
 		const theme = localStorage.getItem("theme");
 
-		const res = await fetch(`${apiUrl}/api/user`, {
-			method: "POST",
-			headers: { Accept: "application/json" },
-			body: JSON.stringify({
+		try {
+			await api.post('/api/user', {
 				name,
 				username,
-				azure_id,
+				id_owner,
 				theme
-			}),
-		});
+			});
 
-		const themeRes = await fetch(`${apiUrl}/api/user/theme?azure_id=${azure_id}`);
-		const themeData = await themeRes.json();
-
-		localStorage.setItem("theme", themeData.theme);
-
-		console.log(await res.json())
-	}
+			// Fetch theme data
+			const themeRes = await api.get(`/api/user/theme`, { params: { id_owner } });
+			localStorage.setItem("theme", themeRes.data.theme);
+		} catch (err) {
+			console.error("Error logging in:", err);
+		}
+	};
 
 	const login = async () => {
 		if (!isReady) {
@@ -89,8 +86,6 @@ export function AuthProvider({ children }) {
 			});
 			setToken(tokenResponse.accessToken);
 			await personalLogin(loginResponse);
-
-
 		} catch (err) {
 			console.error("Login failed", err);
 		}

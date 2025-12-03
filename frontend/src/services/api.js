@@ -22,12 +22,12 @@ export async function ensureCsrf() {
 /**
  * Fetch list of quizzes, optionally filtered by lang or active status
  */
-export async function getQuizzes({ lang = "en", owner_id } = {}) {
+export async function getQuizzes({ lang = "en", id_owner } = {}) {
 	return api
 		.get("/api/quizzes", {
 			params: {
 				lang: lang.toLowerCase(),
-				owner_id,
+				id_owner,
 			},
 		})
 		.then(res => res.data)
@@ -63,7 +63,6 @@ export async function getQuizEditor(id) {
 	const res = await api.get(`/api/quizzes/${id}/editor`, {
 		params: { langs },
 	});
-
 	return res.data;
 }
 

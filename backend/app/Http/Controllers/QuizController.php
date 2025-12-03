@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
+use Throwable;
 
 
 class QuizController extends Controller
@@ -22,7 +24,7 @@ class QuizController extends Controller
     {
         try {
             $lang = strtolower($request->query('lang', 'en'));
-            $ownerId = (string) $request->query('owner_id');
+            $ownerId = (string) $request->query('id_owner');
 
             // Load quizzes with relations
             $quizzes = Quiz::with([
@@ -34,7 +36,7 @@ class QuizController extends Controller
                     // Only include quizzes that are active OR owned by this owner
                     $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1))
                         ->orWhere(function($q2) use ($ownerId) {
-                            $q2->where('owner_id', $ownerId);
+                            $q2->where('id_owner', $ownerId);
                         });
                 })
                 ->get();
@@ -70,7 +72,7 @@ class QuizController extends Controller
                     'modules'         => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])->values(),
                     'tags'            => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
                     'is_active'       => $isActive,
-                    'owner_id'        => $quiz->owner_id,
+                    'id_owner'        => $quiz->id_owner,
                     'created_at'      => $quiz->created_at,
                     'updated_at'      => $quiz->updated_at,
                 ];
@@ -78,7 +80,7 @@ class QuizController extends Controller
 
             return response()->json($mapped->values()->all());
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return response()->json([
                 'request' => $request->all(),
                 'message' => 'Error mapping quizzes',
@@ -92,10 +94,7 @@ class QuizController extends Controller
         try {
             $lang = strtolower($request->query('lang', 'en'));
 
-            $quiz = Quiz::with([
-                'modules:id_module,slug,name',
-                'tags:id_tag,slug,name'
-            ])->find($id);
+            $quiz = Quiz::with(['modules', 'tags'])->find($id);
 
             if (!$quiz) {
                 return response()->json(['message' => "Quiz not found for ID $id"], 404);
@@ -201,7 +200,7 @@ class QuizController extends Controller
                 'questions' => $questionBlocks,
             ]);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return response()->json([
                 'message' => 'Error loading quiz',
                 'error'   => $e->getMessage(),
@@ -225,18 +224,22 @@ class QuizController extends Controller
             ], 404);
         }
 
-        // Make sure quiz has an owner
-        if (!$quiz->owner_id || $quiz->owner_id != $request->input('owner_id')) {
+        $user = User::where('id_azure', $request->input('id_owner'))->first();
+        if (!$user || $quiz->id_owner != $user->id_user) {
             return response()->json([
                 'error_code' => 'unauthorized_quiz',
                 'message' => "Unauthorized: you are not the owner"
             ], 403);
         }
 
+
         $quiz = $this->saveQuiz($request, $quiz);
         return response()->json(['quiz' => $quiz], 200);
     }
 
+    /**
+     * @throws Throwable
+     */
     private function saveQuiz(Request $request, ?Quiz $quiz = null): ?Quiz
     {
         $isNew = !$quiz;
@@ -250,14 +253,19 @@ class QuizController extends Controller
             // Validate first
             $request->validate([
                 'cover_image_url' => 'nullable|string',
-                'owner_id' => 'required|string',
+                'id_owner' => 'required|string',
                 'cover_image_file' => 'nullable|file|image|max:5120',
                 'translations' => 'required|array',
             ]);
 
             $quiz = new Quiz();
             $quiz->cover_image_url = $request->input('cover_image_url') ?? null;
-            $quiz->owner_id = (string) $request->input('owner_id');
+
+            $user = User::where('id_azure', $request->input('id_owner'))->first();
+            if (!$user) {
+                throw new \Exception('Owner user not found');
+            }
+            $quiz->id_owner = $user->id_user;
             $quiz->save();
         }
 
@@ -325,10 +333,12 @@ class QuizController extends Controller
 
                 // --- Modules & tags per language ---
                 $moduleIds = collect($data['modules'] ?? [])->pluck('id')->filter()->all();
-                $quiz->modules()->sync($moduleIds);
+                $moduleSync = collect($moduleIds)->mapWithKeys(fn($id) => [$id => ['lang' => $lang]])->all();
+                $quiz->modules()->syncWithoutDetaching($moduleSync);
 
                 $tagIds = collect($data['tags'] ?? [])->pluck('id')->filter()->all();
-                $quiz->tags()->sync($tagIds);
+                $tagSync = collect($tagIds)->mapWithKeys(fn($id) => [$id => ['lang' => $lang]])->all();
+                $quiz->tags()->syncWithoutDetaching($tagSync);
 
                 // --- Questions & answers per language ---
                 $questions = $data['questions'] ?? [];
@@ -412,7 +422,7 @@ class QuizController extends Controller
             DB::commit();
             return $quiz;
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             logger($e);
             throw $e;
@@ -443,7 +453,11 @@ class QuizController extends Controller
         $langsQuery = $request->query('langs', 'en');
         $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
 
-        $quiz = Quiz::with(['modules:id_module', 'tags:id_tag'])->find($id);
+        $quiz = Quiz::with([
+            'modules:id_module,name,slug',
+            'tags:id_tag,name,slug'
+        ])->find($id);
+
         if (!$quiz) {
             return response()->json(['message' => "Quiz not found for ID $id"], 404);
         }
@@ -537,17 +551,21 @@ class QuizController extends Controller
                 ];
             })->filter(fn($q) => $q['title'] !== null || count($q['answers']) > 0)->values();
 
-            // Build modules array (language-specific, only if translation exists)
-            $modulesArray = collect($moduleIds)->map(function($id) use ($modulesTranslated) {
-                $label = $modulesTranslated->get($id, collect())->first()?->element_text;
-                return $label ? ['id' => $id, 'label' => $label] : null;
-            })->filter()->values();
+            $modulesArray = $quiz->modules
+                ->filter(fn($m) => $m->pivot->lang === $lang)
+                ->map(fn($m) => [
+                    'id' => $m->id_module,
+                    'name' => $m->name,
+                    'slug' => $m->slug,
+                ])->values();
 
-            // Build tags array (language-specific, only if translation exists)
-            $tagsArray = collect($tagIds)->map(function($id) use ($tagsTranslated) {
-                $label = $tagsTranslated->get($id, collect())->first()?->element_text;
-                return $label ? ['id' => $id, 'label' => $label] : null;
-            })->filter()->values();
+            $tagsArray = $quiz->tags
+                ->filter(fn($t) => $t->pivot->lang === $lang)
+                ->map(fn($t) => [
+                    'id' => $t->id_tag,
+                    'name' => $t->name,
+                    'slug' => $t->slug,
+                ])->values();
 
             $translations[] = [
                 'lang' => $lang,

@@ -31,12 +31,13 @@ const TagSelect = ({
 			(s) =>
 				s?.label &&
 				!value.some(
-					(t) => String(t?.id) === String(s?.id) || t.label.toLowerCase() === s.label.toLowerCase()
+					(t) =>
+						String(t?.id) === String(s?.id) || (t?.label?.toLowerCase() === s?.label?.toLowerCase())
 				)
 		)
 		.filter((s) =>
 			inputValue
-				? s.label.toLowerCase().includes(inputValue.toLowerCase())
+				? s?.label?.toLowerCase().includes(inputValue.toLowerCase())
 				: true
 		);
 

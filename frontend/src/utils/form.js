@@ -13,8 +13,8 @@ export function buildQuizFormData(payload = {}) {
 		fd.append("translations", JSON.stringify(payload.translations));
 	}
 
-	if (payload.owner_id) {
-		fd.append("owner_id", payload.owner_id);
+	if (payload.id_owner) {
+		fd.append("id_owner", payload.id_owner);
 	}
 
 	return fd;

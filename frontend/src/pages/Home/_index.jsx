@@ -49,7 +49,7 @@ export default function HomePage() {
 
 			getQuizzes({
 				lang: getLangCode(),
-				owner_id: user.localAccountId
+				id_owner: user.localAccountId
 			})
 				.then(data => {
 					console.log(data);
