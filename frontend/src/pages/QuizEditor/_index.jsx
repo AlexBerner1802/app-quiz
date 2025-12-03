@@ -44,8 +44,6 @@ export default function NewQuiz() {
 		[i18n, t]
 	);
 
-	console.log("user", user);
-
 	// Template for empty translation
 	const emptyDraft = useMemo(
 		() => ({
@@ -181,7 +179,7 @@ export default function NewQuiz() {
 
 			const payload = {
 				...quizRest,
-				owner_id: user.localAccountId,
+				id_owner: user.localAccountId,
 				translations: Object.fromEntries(
 					Object.entries(translationsToSend).map(([lang, t]) => [
 						lang,

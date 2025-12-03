@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -20,16 +21,21 @@ class User extends Authenticatable
      */
 
     protected $table = 'users';
-    protected $primaryKey = 'UUID';
+    protected $primaryKey = 'id_user';
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
         'username',
         'name',
-        'user_role',
-        'azure_id',
+        'id_role',
+        'id_owner',
         'is_dark_mode'
     ];
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Roles::class, 'id_role');
+    }
 
 }

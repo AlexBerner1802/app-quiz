@@ -19,7 +19,9 @@ export default function ShowQuiz() {
 	useEffect(() => {
 		let alive = true;
 
-		getQuiz(id, i18n.language)
+		const lang = i18n.language.split('-')[0];
+
+		getQuiz(id, lang)
 			.then(data => alive && setQuiz(data))
 			.catch(e => alive && setErr(e.message || String(e)))
 			.finally(() => {

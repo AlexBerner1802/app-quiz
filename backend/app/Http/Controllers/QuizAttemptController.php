@@ -18,7 +18,7 @@ class QuizAttemptController extends Controller
             'ended_at'   => 'required|date',
             'time_taken' => 'required|integer',
             'lang'       => 'required|string',
-            'azure_id'   => 'required|string',
+            'id_owner'   => 'required|string',
             'answers'    => 'required|array',
             'answers.*.id_question' => 'required|integer|exists:questions,id_question',
             'answers.*.answer_ids' => 'nullable|array',
@@ -26,7 +26,7 @@ class QuizAttemptController extends Controller
         ]);
 
         // Find the Laravel user using Azure ID
-        $user = User::where('azure_id', $data['azure_id'])->first();
+        $user = User::where('id_azure', $data['id_owner'])->first();
 
         if (!$user) {
             return response()->json([
@@ -50,24 +50,32 @@ class QuizAttemptController extends Controller
             $totalScore = 0;
             $results = [];
 
-            foreach ($data['answers'] as $answer) {
-                $question = $quiz->questions()->with('answers')->find($answer['id_question']);
+            $lang = $data['lang'];
 
-                // IDs of correct answers for this question
+            foreach ($data['answers'] as $answer) {
+                $question = $quiz->questions()->find($answer['id_question']);
+
+                if (!$question) continue;
+
+                // Fetch translation for this question
+                $tQuestion = DB::table('translations')
+                    ->where('element_type', 'question')
+                    ->where('element_id', $question->id_question)
+                    ->where('lang', $lang)
+                    ->where('field_name', 'question_title')
+                    ->value('element_text');
+
+                // Correct answers
                 $correctAnswerIds = $question->answers->filter(fn($a) => $a->is_correct)->pluck('id_answer')->toArray();
                 $userAnswerIds = $answer['answer_ids'] ?? [];
 
-                // Calculate partial score
                 $numCorrectSelected = count(array_intersect($userAnswerIds, $correctAnswerIds));
                 $numWrongSelected   = count(array_diff($userAnswerIds, $correctAnswerIds));
                 $numCorrectTotal    = count($correctAnswerIds);
 
-                // Formula: (# correct selected - # wrong selected) / total correct
-                // Minimum score is 0
                 $questionScore = max(($numCorrectSelected - $numWrongSelected) / max($numCorrectTotal, 1), 0);
                 $totalScore += $questionScore;
 
-                // Save user's answers
                 $attempt->answers()->create([
                     'id_question' => $answer['id_question'],
                     'answer_ids'  => $userAnswerIds,
@@ -75,7 +83,7 @@ class QuizAttemptController extends Controller
                 ]);
 
                 $results[] = [
-                    'question' => $question->title,
+                    'question' => $tQuestion ?? '[Missing translation]',
                     'user_answer_ids' => $userAnswerIds,
                     'correct_answer_ids' => $correctAnswerIds,
                     'score' => $questionScore,

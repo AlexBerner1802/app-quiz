@@ -134,10 +134,10 @@ export default function CenterPanel({
 							placeholder={t("quiz.sections.tagAdd")}
 							prefixAdd="Ajouter"
 							allowNew
-							value={translation.tags}
+							value={(translation.tags ?? []).map(t => ({ id: t.id, label: t.name }))}
 							onChange={(arr) =>
 								updateTranslationField({
-									tags: arr,
+									tags: arr.map(t => ({ id: t.id, name: t.label, slug: t.slug || '' })),
 								})
 							}
 							width="100%"

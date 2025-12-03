@@ -28,17 +28,15 @@ export const ThemeProvider = ({ children }) => {
 	useEffect(() => {
 		document.body.classList.toggle("dark-mode", theme === "dark");
 		localStorage.setItem("theme", theme);
-
-		// Sync theme to Laravel only if logged in
 		if (user?.localAccountId) {
 			axios.put(`${apiUrl}/api/user/theme`, {
-				azure_id: user.localAccountId,
+				id_user: user.localAccountId,
 				is_dark_mode: theme === "dark"
 			}).catch(err => {
 				console.error("Failed to sync theme:", err);
 			});
 		}
-	}, [theme, user]);
+	}, [theme]);
 
 	const toggleTheme = () =>
 		setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
