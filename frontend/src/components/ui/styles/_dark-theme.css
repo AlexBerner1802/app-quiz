@@ -82,7 +82,8 @@ body.dark-mode {
     --color-background-surface-5: var(--gray-500);     /* Highest elevation if needed */
 
     --color-background-overlay: oklch(0.21 0.034 264.665 / 0.8);   /* expand of --gray-900 */
-
+    --color-background-overlay-text: var(--slate-50);
+    --color-background-overlay-text-muted: var(--slate-300);
 
     /* ---------------- Inputs / Form Controls ---------------- */
 

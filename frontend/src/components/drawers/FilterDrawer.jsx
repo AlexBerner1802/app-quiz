@@ -130,7 +130,6 @@ export const FilterDrawer = ({
 	);
 };
 
-/* --- STYLES --- */
 
 const Container = styled.div`
     display: flex;

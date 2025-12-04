@@ -9,6 +9,8 @@ import ReviewStep from "./steps/ReviewStep";
 import useBlockNavigation from "../../hooks/useBlockNavigation";
 import { submitQuizAttempt } from "../../services/api";
 import { useAuth } from "../../context/auth";
+import { AlarmClock } from "lucide-react";
+import {formatTime} from "../../utils/dateUtils";
 
 export default function QuizViewer({ quiz }) {
 	const { user } = useAuth();
@@ -81,6 +83,7 @@ export default function QuizViewer({ quiz }) {
 		}
 	};
 
+
 	if (!quiz) return null;
 
 	return (
@@ -88,7 +91,13 @@ export default function QuizViewer({ quiz }) {
 			<QuizHeader title={quiz.title} onBack={() => {
 				if (step === "question") return window.confirm(t("quiz.leave_warning"));
 				return true;
-			}} />
+			}}>
+				<TimerDisplay>
+					<TimerLabel>Time remaining</TimerLabel>
+					<TimerDisplay>{formatTime(timer)}</TimerDisplay>
+				</TimerDisplay>
+				<AlarmClock size={38} color={"var(--color-text-muted)"} />
+			</QuizHeader>
 
 			<Content>
 				{step === "intro" && (
@@ -106,6 +115,7 @@ export default function QuizViewer({ quiz }) {
 						onAnswer={handleAnswer}
 						onNext={handleNext}
 						onPrev={handlePrev}
+						onJump={(i) => setCurrentIndex(i)}   // ← Add this
 						timer={timer}
 					/>
 				)}
@@ -136,6 +146,7 @@ export default function QuizViewer({ quiz }) {
 	);
 }
 
+
 const Wrapper = styled.div`
     display: flex;
     flex-direction: column;
@@ -144,8 +155,21 @@ const Wrapper = styled.div`
 
 const Content = styled.div`
 	display: flex;
-	padding: var(--spacing-2xl); 
-	//flex: 1;
+	flex: 1;
 	width: 100%;
-	margin: 0 auto;
+`;
+
+const TimerDisplay = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	font-size: var(--font-size-2xl); 
+	font-weight: 600;
+	color: var(--color-text); 
+	gap: var(--spacing-xs);
+`;
+
+const TimerLabel = styled.p`
+	font-size: var(--font-size-s); 
+	color: var(--color-text-muted); 
 `;

@@ -1,11 +1,9 @@
-import React from "react";
-import styled from "styled-components";
-import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import Button from "../../components/ui/Button";
+import { ChevronLeft } from "lucide-react";
+import styled from "styled-components";
 
-
-export default function QuizHeader({ title, onBack }) {
+export default function QuizHeader({ title, onBack, children }) {
 	const navigate = useNavigate();
 
 	const handleBack = () => {
@@ -24,23 +22,34 @@ export default function QuizHeader({ title, onBack }) {
 
 			<HeaderTop>
 				<h1>{title}</h1>
+				{children && <HeaderExtra>{children}</HeaderExtra>}
 			</HeaderTop>
 		</Header>
 	);
 }
 
-
-
 const Header = styled.header`
-    display: flex;
-    gap: var(--spacing);
+	display: flex;
+	gap: var(--spacing);
 	background-color: var(--color-background);
 	padding: var(--spacing);
-	border: 1px solid var(--color-border);
+	border-bottom: 1px solid var(--color-border);
 	align-items: center;
+	z-index: 1;
 `;
 
 const HeaderTop = styled.div`
-    display: grid;
-    gap: var(--spacing-2xs);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	gap: var(--spacing-2xs);
+	padding-right: var(--spacing);
+`;
+
+const HeaderExtra = styled.div`
+	margin-top: var(--spacing-xs);
+	display: flex;
+	align-items: center;
+	gap: var(--spacing);
 `;

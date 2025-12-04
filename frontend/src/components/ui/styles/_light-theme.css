@@ -82,6 +82,8 @@
     --color-background-surface-5: var(--slate-400);     /* Highest elevation if needed */
 
     --color-background-overlay: oklch(0.21 0.034 264.665 / 0.7);   /* expand of --gray-900 */
+    --color-background-overlay-text: var(--slate-50);
+    --color-background-overlay-text-muted: var(--slate-300);
 
 
     /* ---------------- Inputs / Form Controls ---------------- */
