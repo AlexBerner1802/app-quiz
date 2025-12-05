@@ -1,9 +1,8 @@
 // src/pages/results/_index.jsx
 import React, { useMemo, useState } from "react";
-import { Award } from "lucide-react";
+import {Award } from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../../context/auth";
 import Header from "../../components/layout/Header";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
@@ -12,116 +11,38 @@ import LeaderboardSearchBar from "../../components/leaderboard/LeaderboardSearch
 import LeaderboardTable from "../../components/leaderboard/LeaderboardTable";
 import ToggleThemeSwitch
  from "../../components/ui/ToggleThemeSwitch.jsx";
+
 const mockEntries = [
-	{
-		id: 1,
-		rank: 1,
-		userName: "Alice",
-		score: 19,
-		timeSeconds: 71,
-		attempts: 2,
-		quizName: "HTTP / API",
-	},
-	{
-		id: 2,
-		rank: 2,
-		userName: "Bob",
-		score: 18,
-		timeSeconds: 85,
-		attempts: 1,
-		quizName: "Sécurité",
-	},
-	{
-		id: 3,
-		rank: 3,
-		userName: "Charlie",
-		score: 17,
-		timeSeconds: 90,
-		attempts: 3,
-		quizName: "Auth",
-	},
-	{
-		id: 4,
-		rank: 4,
-		userName: "Denis",
-		score: 15,
-		timeSeconds: 120,
-		attempts: 1,
-		quizName: "HTTP / API",
-	},
-	{
-		id: 5,
-		rank: 5,
-		userName: "Eva",
-		score: 12,
-		timeSeconds: 150,
-		attempts: 2,
-		quizName: "Sécurité",
-	},
-    {
-		id: 6,
-		rank: 6,
-		userName: "John",
-		score: 10,
-		timeSeconds: 155,
-		attempts: 5,
-		quizName: "Sécurité",
-	},
-    {
-		id: 7,
-		rank: 7,
-		userName: "Globert",
-		score: 5,
-		timeSeconds: 170,
-		attempts: 3,
-		quizName: "HTTP / API",
-	},
-    {
-		id: 8,
-		rank: 8,
-		userName: "Tim",
-		score: 4,
-		timeSeconds: 200,
-		attempts: 3,
-		quizName: "Auth",
-	},
-    {
-		id: 9,
-		rank: 9,
-		userName: "Marie",
-		score: 2,
-		timeSeconds: 234,
-		attempts: 6,
-		quizName: "HTTP / API",
-	},
-    {
-		id: 10,
-		rank: 10,
-		userName: "Karine",
-		score: 1,
-		timeSeconds: 500,
-		attempts: 33,
-		quizName: "Auth",
-	},
-    {
-		id: 11,
-		rank: 11,
-		userName: "Martine",
-		score: 0,
-		timeSeconds: 538,
-		attempts: 12,
-		quizName: "HTTP / API",
-	},
+	{ id: 1, rank: 1, user_name: "Alice", score: 19, time_seconds: 71, quizzes_done: 2, attempts: 3 },
+	{ id: 2, rank: 2, user_name: "Bob", score: 18, time_seconds: 85, quizzes_done: 1, attempts: 1 },
+	{ id: 3, rank: 3, user_name: "Charlie", score: 17, time_seconds: 90, quizzes_done: 3, attempts: 4 },
+	{ id: 4, rank: 4, user_name: "Denis", score: 15, time_seconds: 120, quizzes_done: 1, attempts: 2 },
+	{ id: 5, rank: 5, user_name: "Eva", score: 12, time_seconds: 150, quizzes_done: 2, attempts: 2 },
+	{ id: 6, rank: 6, user_name: "John", score: 10, time_seconds: 155, quizzes_done: 5, attempts: 7 },
+	{ id: 7, rank: 7, user_name: "Globert", score: 5, time_seconds: 170, quizzes_done: 3, attempts: 3 },
+	{ id: 8, rank: 8, user_name: "Tim", score: 4, time_seconds: 200, quizzes_done: 3, attempts: 4 },
+	{ id: 9, rank: 9, user_name: "Marie", score: 2, time_seconds: 234, quizzes_done: 6, attempts: 8 },
+	{ id: 10, rank: 10, user_name: "Karine", score: 1, time_seconds: 500, quizzes_done: 33, attempts: 35 },
+	{ id: 11, rank: 11, user_name: "Martine", score: 0, time_seconds: 538, quizzes_done: 12, attempts: 15 },
 ];
 
 export default function ResultsPage() {
 	const { t } = useTranslation();
-	const { user } = useAuth();
 
 	const [entries] = useState(mockEntries);
 	const [searchText, setSearchText] = useState("");
 	const [filter, setFilter] = useState("default");
-	const [sortByRankAsc, setSortByRankAsc] = useState(true);
+	const [sortColumn, setSortColumn] = useState("rank");
+	const [sortAsc, setSortAsc] = useState(true);
+
+	const columns = [
+		{ key: "rank", label: t("leaderboard.rank"), align: "center" },
+		{ key: "user_name", label: t("leaderboard.name"), align: "left" },
+		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right" },
+		{ key: "score", label: t("leaderboard.score"), align: "right" },
+		{ key: "time_seconds", label: t("leaderboard.time"), align: "right" },
+		{ key: "attempts", label: t("leaderboard.attempts"), align: "right" },
+	];
 
 	const podiumEntries = useMemo(() => {
 		return [...entries].sort((a, b) => a.rank - b.rank).slice(0, 3);
@@ -132,25 +53,35 @@ export default function ResultsPage() {
 
 		let list = [...entries];
 
-		list.sort((a, b) =>
-			sortByRankAsc ? a.rank - b.rank : b.rank - a.rank
-		);
+		// Sort dynamically by sortColumn
+		list.sort((a, b) => {
+			const valA = a[sortColumn];
+			const valB = b[sortColumn];
 
-		if (!text) {
-			return list.filter((entry) => entry.rank > 3);
+			if (valA == null) return 1;
+			if (valB == null) return -1;
+
+			if (typeof valA === "string") {
+				return sortAsc
+					? valA.localeCompare(valB)
+					: valB.localeCompare(valA);
+			}
+
+			return sortAsc ? valA - valB : valB - valA;
+		});
+
+		// Filter by search text
+		if (text) {
+			list = list.filter((entry) =>
+				entry.user_name.toLowerCase().includes(text)
+			);
 		}
 
-		return list.filter((entry) => {
-			const name = entry.userName.toLowerCase();
-			const quiz = (entry.quizName || "").toLowerCase();
-			return name.includes(text) || quiz.includes(text);
-		});
-	}, [entries, searchText, sortByRankAsc]);
+		return list;
+	}, [entries, searchText, sortColumn, sortAsc]);
 
 	const pageTitle =
 		t("pages.results.globalLeaderboard") || "Global leaderboard";
-
-	const handleToggleSort = () => setSortByRankAsc((prev) => !prev);
 
 	return (
 		<>
@@ -158,14 +89,13 @@ export default function ResultsPage() {
 
 			<Main>
                 <ToggleThemeSwitch/>
+
 				<Header
 					title={pageTitle}
 					icon={<Award size={20} />}
-					withBorder={false}
 				/>
 
 				<Content>
-                    <SubTitle>{t("leaderboard.subtitle")}</SubTitle>
 					<AnimatedBlock>
 						<PodiumWrapper>
 							<LeaderboardPodium entries={podiumEntries} />
@@ -184,10 +114,16 @@ export default function ResultsPage() {
 					</AnimatedBlock>
 					<AnimatedBlock style={{ animationDelay: "0.15s" }}>
 						<LeaderboardTable
+							columns={columns}
 							entries={tableEntries}
 							loading={false}
-							sortByRankAsc={sortByRankAsc}
-							onToggleSort={handleToggleSort}
+							sortColumn={sortColumn}
+							sortAsc={sortAsc}
+							onSortChange={(column, asc) => {
+								setSortColumn(column);
+								setSortAsc(asc);
+							}}
+							sortableColumns={["rank","user_name","score","quizzes_done","time_seconds","attempts"]}
 						/>
 					</AnimatedBlock>
 				</Content>
@@ -234,11 +170,4 @@ const AnimatedBlock = styled.div`
 const PodiumWrapper = styled.div`
 	display: flex;
 	justify-content: center;
-`;
-
-const SubTitle = styled.h2`
-    font-size: 28px;
-    font-weight: 500;
-    text-align: center;
-    color:var(--color-text);
 `;

@@ -3,67 +3,79 @@ import styled from "styled-components";
 import { ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-function formatTime(seconds) {
-	if (seconds == null || isNaN(seconds)) return "_time_";
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
 export default function LeaderboardTable({
-	entries = [],
-	loading,
-	sortByRankAsc,
-	onToggleSort,
-}) {
+											 columns= [],
+											 entries = [],
+											 loading,
+											 sortColumn,
+											 sortAsc,
+											 onSortChange,
+											 sortableColumns = [], // e.g. ["rank", "user_name", "score", "quizzes_done", "time_seconds", "attempts"]
+										 }) {
 	const { t } = useTranslation();
+
+	const handleHeaderClick = (column) => {
+		if (!sortableColumns.includes(column)) return;
+
+		if (sortColumn === column) {
+			onSortChange(column, !sortAsc); // toggle direction
+		} else {
+			onSortChange(column, true); // default ascending
+		}
+	};
+
+	const formatTime = (seconds) => {
+		if (seconds == null || isNaN(seconds)) return "_time_";
+		const m = Math.floor(seconds / 60);
+		const s = seconds % 60;
+		return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+	};
 
 	return (
 		<TableContainer>
 			<HeaderRow>
-				<HeaderCell style={{ width: 80 }}>
-					{t("leaderboard.rank")}
-				</HeaderCell>
-				<HeaderCell>{t("leaderboard.name")}</HeaderCell>
-                <HeaderCell>{t("leaderboard.quiz")}</HeaderCell>
-				<HeaderCell>{t("leaderboard.score")}</HeaderCell>
-				<HeaderCell>{t("leaderboard.time")}</HeaderCell>
-				<HeaderCell>{t("leaderboard.attempts")}</HeaderCell>
-				<HeaderCell
-					$icon
-					onClick={onToggleSort}
-					title={t("leaderboard.sortByRank")}
-				>
-					<ArrowUpDown
-						size={18}
-						style={{
-							transform: sortByRankAsc ? "rotate(0deg)" : "rotate(180deg)",
-						}}
-					/>
-				</HeaderCell>
+				{columns.map((col) => (
+					<HeaderCell
+						key={col.key}
+						$icon={sortableColumns.includes(col.key)}
+						$align={col.align}
+						onClick={() => handleHeaderClick(col.key)}
+						title={
+							sortColumn === col.key
+								? `${col.label} (${sortAsc ? "asc" : "desc"})`
+								: col.label
+						}
+					>
+						{col.label}
+						{sortableColumns.includes(col.key) && (
+							<ArrowUpDown
+								size={16}
+								style={{
+									transform:
+										sortColumn === col.key && !sortAsc
+											? "rotate(180deg)"
+											: "rotate(0deg)",
+									marginLeft: 4,
+								}}
+							/>
+						)}
+					</HeaderCell>
+				))}
 			</HeaderRow>
 
 			<Body>
-				{loading && (
-					<EmptyRow>{t("leaderboard.loading")}</EmptyRow>
-				)}
-
+				{loading && <EmptyRow>{t("leaderboard.loading")}</EmptyRow>}
 				{!loading && entries.length === 0 && (
-					<EmptyRow>
-						{t("leaderboard.empty")}
-					</EmptyRow>
+					<EmptyRow>{t("leaderboard.empty")}</EmptyRow>
 				)}
-
 				{!loading &&
 					entries.map((entry) => (
-						<DataRow key={entry.id ?? `${entry.rank}-${entry.userName}`}>
-							<Cell>{entry.rank}</Cell>
-							<Cell>{entry.userName}</Cell>
-                            <Cell>{entry.quizName}</Cell>
-							<Cell>{entry.score}</Cell>
-							<Cell>{formatTime(entry.timeSeconds)}</Cell>
-							<Cell>{entry.attempts}</Cell>
-							<Cell />
+						<DataRow key={entry.id ?? entry.user_name}>
+							{columns.map((col) => (
+								<Cell key={col.key} $align={col.align}>
+									{col.key === "time_seconds" ? formatTime(entry[col.key]) : entry[col.key]}
+								</Cell>
+							))}
 						</DataRow>
 					))}
 			</Body>
@@ -89,11 +101,14 @@ const HeaderRow = styled.div`
 `;
 
 const HeaderCell = styled.div`
-	display: flex;
-	align-items: center;
-	color: var(--color-text);
-	cursor: ${({ $icon }) => ($icon ? "pointer" : "default")};
-	justify-content: ${({ $icon }) => ($icon ? "flex-end" : "flex-start")};
+    display: flex;
+    align-items: center;
+    color: var(--color-text);
+    cursor: ${({ $icon }) => ($icon ? "pointer" : "default")};
+    justify-content: ${({ $align }) =>
+            $align === "right" ? "flex-end" :
+                    $align === "center" ? "center" :
+                            "flex-start"};
 `;
 
 const Body = styled.div`
@@ -115,8 +130,12 @@ const DataRow = styled.div`
 `;
 
 const Cell = styled.div`
-	display: flex;
-	align-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: ${({ $align }) =>
+            $align === "right" ? "flex-end" :
+                    $align === "center" ? "center" :
+                            "flex-start"};
 `;
 
 const EmptyRow = styled.div`

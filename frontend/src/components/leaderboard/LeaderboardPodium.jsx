@@ -1,12 +1,32 @@
-import React from "react";
-import styled from "styled-components";
-import { Timer, Star, Trophy, PartyPopper, Award } from "lucide-react";
+import React, {useEffect, useState} from "react";
+import styled, { keyframes } from "styled-components";
+import { Crown } from "lucide-react";
+import {applyScoreMultiplier} from "../../utils/score";
 
-function formatTime(seconds) {
-	if (seconds == null || isNaN(seconds)) return "_time_";
-	const m = Math.floor(seconds / 60);
-	const s = seconds % 60;
-	return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+function AnimatedScore({ finalScore }) {
+	const [score, setScore] = useState(0);
+
+	useEffect(() => {
+		let start = 0;
+		const duration = 2000; // animation duration in ms
+		const increment = finalScore / (duration / 16); // approx 60fps
+		let animationFrame;
+
+		const animate = () => {
+			start += increment;
+			if (start < finalScore) {
+				setScore(Math.floor(start));
+				animationFrame = requestAnimationFrame(animate);
+			} else {
+				setScore(finalScore);
+			}
+		};
+
+		animationFrame = requestAnimationFrame(animate);
+		return () => cancelAnimationFrame(animationFrame);
+	}, [finalScore]);
+
+	return <Score>{score}</Score>;
 }
 
 export default function LeaderboardPodium({ entries = [] }) {
@@ -14,135 +34,158 @@ export default function LeaderboardPodium({ entries = [] }) {
 	const second = entries.find((e) => e.rank === 2);
 	const third = entries.find((e) => e.rank === 3);
 
+	const podiums = [
+		{ position: 2, entry: second },
+		{ position: 1, entry: first },
+		{ position: 3, entry: third },
+	];
+
+	const crownColors = {
+		1: "#FFD700",
+		2: "#C0C0C0",
+		3: "#CD7F32",
+	};
+
 	return (
-		<PodiumGrid>
-			<CardWrapper>
-				<PodiumCard $position="silver">
-                    <QuizName>Quiz : <strong>{second?.quizName || "_quiz_"}</strong></QuizName>
-					<Rank><PartyPopper size="35"/> #2</Rank>
-					<Name>{second?.userName || "_name_"}</Name>
+		<PodiumContainer>
+			{podiums.map((p) => (
+				<PodiumColumn key={p.position} $position={p.position}>
+					<PodiumCard $position={p.position}>
+						{/* Crown */}
+						<CustomCrown color={crownColors[p.position]} size={60} />
 
-					<StatsRow>
-						<span><Timer size="15"/> {second ? formatTime(second.timeSeconds) : "_"}</span>
-						<Separator>·</Separator>
-						<span><Star size="15"/> {second?.score ?? "_"}</span>
-						<Separator>·</Separator>
-						<Attempts><strong>{second?.attempts ?? "_"}</strong> essais</Attempts>
-					</StatsRow>
-				</PodiumCard>
-			</CardWrapper>
+						{/* Avatar */}
+						<Avatar $position={p.position}/>
 
-			<CardWrapper>
-				<PodiumCard $position="gold">
-                    <QuizName>Quiz : <strong>{first?.quizName || "_quiz_"}</strong></QuizName>
-					<Rank><Trophy size="35"/> #1</Rank>
-					<Name>{first?.userName || "_name_"}</Name>
+						{/* Name */}
+						<Name>{p.entry?.user_name ?? "_name_"}</Name>
 
-					<StatsRow>
-						<span><Timer size="15"/> {first ? formatTime(first.timeSeconds) : "_"}</span>
-						<Separator>·</Separator>
-						<span><Star size="15"/> {first?.score ?? "_"}</span>
-						<Separator>·</Separator>
-						<Attempts><strong>{first?.attempts ?? "_"}</strong> essais</Attempts>
-					</StatsRow>
-				</PodiumCard>
-			</CardWrapper>
+						{/* Score */}
+						<AnimatedScore finalScore={applyScoreMultiplier(p.entry?.score) ?? 0} />
+					</PodiumCard>
 
-			<CardWrapper>
-				<PodiumCard $position="bronze">
-                    <QuizName>Quiz : <strong>{third?.quizName || "_quiz_"}</strong></QuizName>
-					<Rank><Award size="35"/> #3</Rank>
-					<Name>{third?.userName || "_name_"}</Name>
-
-					<StatsRow>
-						<span><Timer size="15"/> {third ? formatTime(third.timeSeconds) : "_"}</span>
-						<Separator>·</Separator>
-						<span><Star size="15"/> {third?.score ?? "_"}</span>
-						<Separator>·</Separator>
-						<Attempts><strong>{third?.attempts ?? "_"}</strong> essais</Attempts>
-					</StatsRow>
-				</PodiumCard>
-			</CardWrapper>
-		</PodiumGrid>
+					{/* Podium base with glowing number */}
+					<PodiumBase $position={p.position}>
+						<PodiumNumber $position={p.position}>{p.position}</PodiumNumber>
+					</PodiumBase>
+				</PodiumColumn>
+			))}
+		</PodiumContainer>
 	);
 }
 
 const COLORS = {
-	gold: {
-		bg: "rgba(255, 215, 0, 0.7)",
-		border: "2px solid rgba(255,215,0,0.9)",
-	},
-	silver: {
-		bg: "rgba(192, 192, 192, 0.7)",
-		border: "2px solid rgba(220,220,220,0.9)",
-	},
-	bronze: {
-		bg: "rgba(205, 127, 50, 0.7)",
-		border: "2px solid rgba(205,127,50,0.9)",
-	},
+	gold: "#FFD700",
+	silver: "#C0C0C0",
+	bronze: "#CD7F32",
 };
 
-const PodiumGrid = styled.div`
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: var(--spacing-l);
-	width: 100%;
-	max-width: 900px;
+const PodiumContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 24px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 0 var(--spacing-xl);
 `;
 
-const CardWrapper = styled.div`
-	display: flex;
-	justify-content: center;
+const PodiumColumn = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
 `;
+
+const podiumHeights = { 1: 220, 2: 170, 3: 140 };
 
 const PodiumCard = styled.div`
-	width: 100%;
-	max-width: 260px;
-	height: 150px;
-	padding: 16px;
-
-	border-radius: var(--border-radius);
-
-	background-color: ${({ $position }) => COLORS[$position].bg};
-	border: ${({ $position }) => COLORS[$position].border};
-
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	text-align: center;
-	color: var(--color-text-alt);
+    width: 100%;
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-s);
+    z-index: 10;
+	margin-bottom: var(--spacing-l);
 `;
 
-const Rank = styled.div`
-	font-size: 32px;
-	font-weight: 700;
-	margin-bottom: 4px;
+const CustomCrown = styled(Crown)`
+    transform: rotate(10deg);
+	position: relative;
+	left: 10px;
+`;
+
+const glowAvatar = (color) => keyframes`
+  0%, 100% { box-shadow: 0 0 8px ${color}, 0 0 16px ${color}; }
+  50% { box-shadow: 0 0 16px ${color}, 0 0 32px ${color}; }
+`;
+
+const Avatar = styled.div`
+    width: 140px;
+    height: 140px;
+    border-radius: var(--border-radius-2xl);
+    background: rgba(255,255,255,0.2);
+    border: 4px solid ${({ $position }) =>
+            $position === 1 ? COLORS.gold :
+                    $position === 2 ? COLORS.silver : COLORS.bronze};
+    animation: ${({ $position }) => glowAvatar(
+            $position === 1 ? COLORS.gold :
+                    $position === 2 ? COLORS.silver : COLORS.bronze
+    )} 1.5s ease-in-out infinite;
+	margin-top: var(--spacing);
+`;
+
+const glow = keyframes`
+    0%, 100% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #fff; }
+    50% { text-shadow: 0 0 8px #fff, 0 0 16px #fff, 0 0 24px #fff; }
+`;
+
+const PodiumBase = styled.div`
+    width: 100%;
+    height: ${({ $position }) => podiumHeights[$position]}px;
+    background: var(--color-background-surface-2);
+    border-radius: var(--border-radius);
+    border: 4px solid
+    	${({ $position }) =>
+            $position === 1
+                    ? COLORS.gold
+                    : $position === 2
+                            ? COLORS.silver
+                            : COLORS.bronze};
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+`;
+
+const PodiumNumber = styled.div`
+    font-size: var(--font-size-7xl);
+    font-weight: 600;
+    color: ${({ $position }) =>
+            $position === 1 ? COLORS.gold :
+                    $position === 2 ? COLORS.silver :
+                            COLORS.bronze};
+    //text-shadow: 0 0 6px #fff, 0 0 12px #fff;
+    //animation: ${glow} 1.5s ease-in-out infinite;
 `;
 
 const Name = styled.div`
-	font-size: 15px;
-	font-weight: 600;
-	margin-bottom: 4px;
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    margin-top: var(--spacing-l);
+    font-family: "Orbitron", sans-serif;
 `;
 
-const StatsRow = styled.div`
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 13px;
-`;
-
-const Separator = styled.span`
-	color: var(--color-text-muted);
-`;
-
-const Attempts = styled.span`
-	color: var(--color-text);
-`;
-
-const QuizName = styled.div`
-    font-size: 18px;
+const Score = styled.div`
+    display: flex;
+    align-items: center;
+    font-size: var(--font-size-6xl);
+    font-weight: 600;
+    color: var(--color-primary-bg);
+    font-family: "Orbitron", sans-serif;
+    transform: rotate(2deg);
+	margin-bottom: var(--spacing-s);
 `;
