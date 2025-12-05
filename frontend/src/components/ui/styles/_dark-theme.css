@@ -70,7 +70,7 @@ body.dark-mode {
     --color-background-alt: var(--gray-700);           /* Alternate section backgrounds */
     --color-text: var(--gray-50);                      /* Primary text color */
     --color-text-muted: var(--gray-400);               /* Secondary / muted text */
-    --color-text-alt: var(--gray-100);                 /* Alternate text for emphasis */
+    --color-text-alt: var(--gray-200);                 /* Alternate text for emphasis */
 
 
     /* ---------------- Surfaces / Elevation ---------------- */
@@ -153,3 +153,4 @@ body.dark-mode.page-newquiz {
     --quiz-placeholder: var(--gray-500);
     --color-input: var(--gray-400);
 }
+

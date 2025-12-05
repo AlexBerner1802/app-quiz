@@ -177,5 +177,5 @@ export async function updateTags(payload) {
 			err.message
 		);
 	}
+	
 }
-
