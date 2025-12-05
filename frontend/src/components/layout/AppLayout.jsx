@@ -1,6 +1,6 @@
 // src/components/layout/AppLayout.jsx
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
 import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical, Layers } from "lucide-react";
 import { useTranslation } from "react-i18next";

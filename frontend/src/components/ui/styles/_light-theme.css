@@ -155,3 +155,8 @@ body.page-newquiz {
   --quiz-placeholder: var(--gray-500);
   --color-input: var(--gray-900);
 }
+
+body.pageleaderboard{
+      --leaderboard-bg: var(--slate-100);
+      --leaderboard-border: var(--slate-300);
+}

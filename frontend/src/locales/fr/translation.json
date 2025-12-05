@@ -150,6 +150,9 @@
 			"microsoftAlt": "Connexion Microsoft",
 			"error": "Échec du login"
 		},
+		"results": {
+			"globalLeaderboard": "Classement global"
+		},
 		"content": {
 			"tag_lang": "Étiquettes {{lang}}",
 			"module_lang": "Modules {{lang}}"
@@ -182,5 +185,22 @@
 	"errors": {
 		"quiz_not_found": "Quiz non trouvé",
 		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifié ce quiz"
+	},
+	"leaderboard": {
+		"subtitle":"Classement des meilleurs scores tous quiz confondus",
+		"searchPlaceholder":"Recherche",
+		"sortByRank":"Trier par rang",
+		"filter": "Filtrer",
+		"filterDefault": "Leaderboard",
+		"filterUsers": "Utilisateurs",
+		"filterQuiz": "Quiz",
+		"rank" : "Rang",
+		"name":"Nom",
+		"quiz":"Quiz",
+		"score":"Score",
+		"time":"Temps",
+		"attempts":"Essais",
+		"empty":"Aucun résultat",
+		"loadinG":"Chargement..."	
 	}
 }
