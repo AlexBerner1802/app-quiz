@@ -15,9 +15,9 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage/*
-!/public/storage/quiz-cards/
-!/public/storage/quiz-cards/**
+/backend/public/storage/*
+!/backend/public/storage/quiz-cards/
+!/backend/public/storage/quiz-cards/**
 /storage/*.key
 /storage/pail
 /vendor

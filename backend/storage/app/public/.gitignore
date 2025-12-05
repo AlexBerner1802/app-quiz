@@ -1,2 +1,4 @@
 *
 !.gitignore
+!/quiz-cards/
+!/quiz-cards/**
