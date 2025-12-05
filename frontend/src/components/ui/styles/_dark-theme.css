@@ -19,7 +19,7 @@ body.dark-mode {
     --color-secondary-muted-text: var(--indigo-700);
 
     /* Success */
-    --color-success-text: var(--brand-success-50);
+    --color-success-text: var(--brand-success-700);
     --color-success-bg: var(--brand-success-500);
     --color-success-bg-hover: var(--brand-success-600);
     --color-success-bg-active: var(--brand-success-700);
@@ -27,7 +27,7 @@ body.dark-mode {
     --color-success-muted-text: var(--brand-success-700);
 
     /* Error */
-    --color-error-text: var(--brand-error-50);
+    --color-error-text: var(--brand-error-700);
     --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
     --color-error-bg-active: var(--brand-error-700);
@@ -35,7 +35,7 @@ body.dark-mode {
     --color-error-muted-text: var(--brand-error-700);
 
     /* Warning */
-    --color-warning-text: var(--brand-warning-50);
+    --color-warning-text: var(--brand-warning-700);
     --color-warning-bg: var(--brand-warning-500);
     --color-warning-bg-hover: var(--brand-warning-600);
     --color-warning-bg-active: var(--brand-warning-700);
@@ -43,7 +43,7 @@ body.dark-mode {
     --color-warning-muted-text: var(--brand-warning-700);
 
     /* Notification */
-    --color-notification-text: var(--brand-notification-50);
+    --color-notification-text: var(--brand-notification-700);
     --color-notification-bg: var(--brand-notification-500);
     --color-notification-bg-hover: var(--brand-notification-600);
     --color-notification-bg-active: var(--brand-notification-700);

@@ -18,13 +18,42 @@ export default function ParticlesBackground({
 	const [engineLoaded, setEngineLoaded] = useState(false);
 	const [particleColor, setParticleColor] = useState(fallback);
 
+	function resolveColor(value) {
+		const root = document.documentElement;
+		try {
+			const cssVal = getComputedStyle(root).getPropertyValue(value).trim();
+			if (cssVal.startsWith("oklch")) {
+				const parsed = culori.parse(cssVal);
+				if (parsed) return culori.formatRgb(parsed);
+			}
+			return cssVal || value;
+		} catch {
+			return value;
+		}
+	}
+
+	const resolvedColors = useMemo(() => {
+		if (!colors) return null;
+		return colors.map(c => resolveColor(c));
+	}, [colors]);
+
+
+
 	// Load engine + official presets
 	useEffect(() => {
 		initParticlesEngine(async (engine) => {
 			await loadSlim(engine);
+
+			// Load official preset
 			if (presetLoaders[preset]) {
 				await presetLoaders[preset](engine);
 			}
+
+			// Register custom presets
+			Object.entries(customPresets).forEach(([name, options]) => {
+				engine.addPreset(name, options);
+			});
+
 			setEngineLoaded(true);
 		});
 	}, [preset]);
@@ -37,33 +66,48 @@ export default function ParticlesBackground({
 			const cssVal = getComputedStyle(root).getPropertyValue(cssVar).trim();
 			if (cssVal) {
 				if (cssVal.startsWith("oklch")) {
-					const match = cssVal.match(/oklch\(([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/);
-					if (match) {
-						const [_, l, c, h] = match.map(Number);
-						val = culori.formatRgb(culori.oklch({ l, c, h }));
+					// Convert OKLCH to RGB
+					const parsed = culori.parse(cssVal);  // culori.parse understands "oklch(...)"
+					if (parsed) {
+						val = culori.formatRgb(parsed);  // returns "rgb(r,g,b)"
 					}
 				} else {
 					val = cssVal;
 				}
 			}
-		} catch {}
+		} catch (e) {
+			console.warn("Failed to parse CSS variable for particles:", e);
+		}
 		setParticleColor(val);
 	}, [theme, cssVar]);
 
+
 	const options = useMemo(() => {
-		// Start with custom preset if exists
-		let baseOptions = customPresets[preset]
-			? { ...customPresets[preset] }
-			: {
-				preset,
+		if (customPresets[preset]) {
+			const base = customPresets[preset];
+			return {
+				...base,
 				fullScreen: { enable: !!fullScreen, zIndex: 0 },
 				background: { color: background || "transparent" },
 				particles: {
-					...(colors || particleColor ? { color: { value: colors || particleColor } } : {}),
+					...base.particles,
+					...(resolvedColors || particleColor
+						? { color: { value: resolvedColors || particleColor } }
+						: {}),
 				},
 			};
+		}
 
-		// Extra tweaks for certain presets
+		// fallback for official presets
+		let baseOptions = {
+			preset,
+			fullScreen: { enable: !!fullScreen, zIndex: 0 },
+			background: { color: background || "transparent" },
+			particles: {
+				...(colors || particleColor ? { color: { value: colors || particleColor } } : {}),
+			},
+		};
+
 		if (preset === "links") {
 			baseOptions.particles.links = {
 				enable: true,
@@ -72,25 +116,12 @@ export default function ParticlesBackground({
 				opacity: 0.5,
 				width: 1,
 			};
-			baseOptions.particles.move = {
-				enable: true,
-				speed: 2,
-				outModes: { default: "bounce" },
-			};
-		}
-
-		if (preset === "confetti") {
-			baseOptions.emitters = [
-				{
-					position: { x: 50, y: 100 },
-					rate: { quantity: 10, delay: 0.2 }, // repeat every 0.2s
-					size: { width: 0, height: 0 },
-				},
-			];
+			baseOptions.particles.move = { enable: true, speed: 2, outModes: { default: "bounce" } };
 		}
 
 		return baseOptions;
 	}, [preset, colors, particleColor, background, fullScreen]);
+
 
 	return (
 		<Wrap $fullScreen={fullScreen}>

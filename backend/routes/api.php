@@ -16,7 +16,8 @@ Route::get('/ping', function () {
 // Quizzes
 Route::apiResource('quizzes', QuizController::class)->only(['index','show','store','update','destroy']);
 Route::get('/quizzes/{id}/editor', [QuizController::class, 'editor']);
-Route::post('/quizzes/{quiz}/attempts', [QuizAttemptController::class, 'store']);
+Route::post('/quizzes/{quiz}/attempts/start', [QuizAttemptController::class, 'start']);
+Route::post('/quizzes/{quiz}/attempts/{attempt}/finish', [QuizAttemptController::class, 'finish']);
 
 // Modules
 Route::get('/modules', [ModuleController::class, 'index']);

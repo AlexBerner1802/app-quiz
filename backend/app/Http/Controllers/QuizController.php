@@ -111,6 +111,7 @@ class QuizController extends Controller
                 return response()->json(['message' => 'Quiz is inactive'], 403);
             }
 
+            // Translation for quiz
             $tQuiz = DB::table('translations')
                 ->where('element_type', 'quiz')
                 ->where('lang', $lang)
@@ -123,17 +124,14 @@ class QuizController extends Controller
             $desc        = optional($tQuiz->get('quiz_description'))->element_text ?? '';
             $coverImage  = optional($tQuiz->get('cover_image_url'))->element_text ?? $quiz->cover_image_url;
 
+            // Fetch questions & answers
             $questions = DB::table('questions')
                 ->where('id_quiz', $qid)
                 ->where('lang', $lang)
                 ->orderBy('order')
                 ->get();
 
-            if ($questions->isEmpty()) {
-                $qIds = [];
-            } else {
-                $qIds = $questions->pluck('id_question')->all();
-            }
+            $qIds = $questions->isEmpty() ? [] : $questions->pluck('id_question')->all();
 
             $answers = DB::table('answers')
                 ->whereIn('id_question', $qIds ?: [-1])
@@ -181,6 +179,18 @@ class QuizController extends Controller
                 ];
             })->values();
 
+            // Fetch owner info including role
+            $owner = DB::table('users')
+                ->join('roles', 'users.id_role', '=', 'roles.id_role')
+                ->where('users.id_user', $quiz->id_owner)
+                ->select([
+                    'users.username',
+                    'users.name',
+                    'users.avatar',
+                    'roles.name as role'
+                ])
+                ->first();
+
             return response()->json([
                 $this->quizPk()    => $qid,
                 'lang'             => $lang,
@@ -188,6 +198,9 @@ class QuizController extends Controller
                 'description'      => $desc,
                 'cover_image_url'  => $coverImage,
                 'is_active'        => (bool) $isActive,
+                'created_at'      => $quiz->created_at,
+                'updated_at'      => $quiz->updated_at,
+                'owner'            => $owner,
 
                 'modules' => collect($quiz->modules)
                     ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name, 'slug' => $m->slug])

@@ -24,6 +24,22 @@ export function createTimestamp(time, edited) {
 	return type + result(seconds, "seconde");
 }
 
+
+export function formatDate(isoString) {
+	if (!isoString) return "";
+	const date = new Date(isoString);
+
+	const pad = (n) => n.toString().padStart(2, "0");
+
+	const day = pad(date.getDate());
+	const month = pad(date.getMonth() + 1); // months are 0-indexed
+	const year = date.getFullYear();
+	const hours = pad(date.getHours());
+	const minutes = pad(date.getMinutes());
+
+	return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
 export function formatTime(seconds) {
 	const hrs = Math.floor(seconds / 3600);
 	const mins = Math.floor((seconds % 3600) / 60);

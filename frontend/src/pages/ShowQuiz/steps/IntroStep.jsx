@@ -4,6 +4,7 @@ import Button from "../../../components/ui/Button";
 import Tag from "../../../components/ui/Tag";
 import {useTranslation} from "react-i18next";
 import ParticlesBackground from "../../../components/particules/ParticlesBackground";
+import {formatDate} from "../../../utils/dateUtils";
 
 
 export default function IntroStep({ quiz, onStart }) {
@@ -21,9 +22,9 @@ export default function IntroStep({ quiz, onStart }) {
 				<CoverContainer>
 					<Cover src={quiz.cover_image_url} alt={quiz.title} />
 					<OwnerLine>
-						<span className="owner">Nom Owner</span>
+						<span className="owner">{quiz.owner.name}</span>
 						<span className="dot" />
-						<span className="updated">Last update: 12.04.2026 18:30</span>
+						<span className="updated">Last update: {formatDate(quiz.updated_at || quiz.created_at)}</span>
 					</OwnerLine>
 				</CoverContainer>
 

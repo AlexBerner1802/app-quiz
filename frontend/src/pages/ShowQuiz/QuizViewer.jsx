@@ -7,21 +7,25 @@ import QuestionStep from "./steps/QuestionStep";
 import ConfirmEndStep from "./steps/ConfirmEndStep";
 import ReviewStep from "./steps/ReviewStep";
 import useBlockNavigation from "../../hooks/useBlockNavigation";
-import { submitQuizAttempt } from "../../services/api";
+import {finishQuizAttempt, startQuizAttempt} from "../../services/api";
 import { useAuth } from "../../context/auth";
 import { AlarmClock } from "lucide-react";
 import {formatTime} from "../../utils/dateUtils";
+import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 
 export default function QuizViewer({ quiz }) {
 	const { user } = useAuth();
 	const { t, i18n } = useTranslation();
 
+	const [attemptId, setAttemptId] = useState(null);
 	const [step, setStep] = useState("intro");
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [answersMap, setAnswersMap] = useState({});
 	const [timer, setTimer] = useState(0);
 	const [saving, setSaving] = useState(false);
 	const [savedResult, setSavedResult] = useState(null);
+
+	const lang = i18n.language.split('-')[0];
 
 	useBlockNavigation(step === "question", t("quiz.leave_warning"));
 
@@ -53,9 +57,17 @@ export default function QuizViewer({ quiz }) {
 		if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
 	};
 
+	const handleStartQuiz = async () => {
+		const startResult = await startQuizAttempt(quiz.id_quiz, lang, user.localAccountId);
+		setAttemptId(startResult.attempt_id);
+		setStep("question");
+	}
+
 	const handleFinishQuiz = async () => {
 		if (saving) return;
 		setSaving(true);
+
+		console.log("the quiz", quiz);
 
 		const payload = quiz.questions.map((q, index) => ({
 			id_question: q.id,
@@ -63,17 +75,14 @@ export default function QuizViewer({ quiz }) {
 			answer_text: String(answersMap[index]?.[0] ?? ""),
 		}));
 
-		const lang = i18n.language.split('-')[0];
-
 		try {
-			const result = await submitQuizAttempt(quiz.id_quiz, {
-				started_at: new Date(Date.now() - timer * 1000).toISOString(),
+			const result = await finishQuizAttempt(quiz.id_quiz, attemptId, {
 				ended_at: new Date().toISOString(),
 				time_taken: timer,
-				lang: lang,
-				id_owner: user.localAccountId,
+				lang,
 				answers: payload
 			});
+
 			setSavedResult(result);
 			setStep("review");
 		} catch (err) {
@@ -92,18 +101,23 @@ export default function QuizViewer({ quiz }) {
 				if (step === "question") return window.confirm(t("quiz.leave_warning"));
 				return true;
 			}}>
+				<ToggleThemeSwitch />
 				<TimerDisplay>
 					<TimerLabel>Time remaining</TimerLabel>
 					<TimerDisplay>{formatTime(timer)}</TimerDisplay>
 				</TimerDisplay>
-				<AlarmClock size={38} color={"var(--color-text-muted)"} />
+				<CustomAlarmClock
+					size={38}
+					color={"var(--color-text-muted)"}
+					$active={step === "question"}
+				/>
 			</QuizHeader>
 
 			<Content>
 				{step === "intro" && (
 					<IntroStep
 						quiz={quiz}
-						onStart={() => setStep("question")}
+						onStart={handleStartQuiz}
 					/>
 				)}
 
@@ -115,7 +129,7 @@ export default function QuizViewer({ quiz }) {
 						onAnswer={handleAnswer}
 						onNext={handleNext}
 						onPrev={handlePrev}
-						onJump={(i) => setCurrentIndex(i)}   // ← Add this
+						onJump={(i) => setCurrentIndex(i)}
 						timer={timer}
 					/>
 				)}
@@ -157,6 +171,7 @@ const Content = styled.div`
 	display: flex;
 	flex: 1;
 	width: 100%;
+    overflow: hidden;
 `;
 
 const TimerDisplay = styled.div`
@@ -167,6 +182,16 @@ const TimerDisplay = styled.div`
 	font-weight: 600;
 	color: var(--color-text); 
 	gap: var(--spacing-xs);
+`;
+
+const CustomAlarmClock = styled(AlarmClock)`
+    animation: ${({ $active }) => $active ? "wiggle 1.2s ease-in-out infinite" : "none"};
+
+    @keyframes wiggle {
+        0%   { transform: rotate(20deg); }
+        50%  { transform: rotate(-20deg); }
+        100% { transform: rotate(20deg); }
+    }
 `;
 
 const TimerLabel = styled.p`

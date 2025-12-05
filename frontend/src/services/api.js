@@ -89,6 +89,19 @@ export async function deleteQuiz(id) {
  * Submit quiz answers / attempt
  * payload: { started_at, ended_at, time_taken, answers: [{question_id, answer_ids, answer_text}] }
  */
+export async function startQuizAttempt(quizId, lang, userId) {
+	await ensureCsrf();
+	const res = await api.post(`/api/quizzes/${quizId}/attempts/start`, { lang, id_owner: userId });
+	return res.data; // contains attempt_id
+}
+
+export async function finishQuizAttempt(quizId, attemptId, payload) {
+	await ensureCsrf();
+	const res = await api.post(`/api/quizzes/${quizId}/attempts/${attemptId}/finish`, payload);
+	return res.data;
+}
+
+
 export async function submitQuizAttempt(quizId, payload) {
 	await ensureCsrf();
 	try {

@@ -11,61 +11,59 @@ use Illuminate\Support\Facades\DB;
 
 class QuizAttemptController extends Controller
 {
-    public function store(Request $request, Quiz $quiz)
+    public function start(Request $request, Quiz $quiz)
     {
         $data = $request->validate([
-            'started_at' => 'required|date',
-            'ended_at'   => 'required|date',
-            'time_taken' => 'required|integer',
-            'lang'       => 'required|string',
-            'id_owner'   => 'required|string',
-            'answers'    => 'required|array',
-            'answers.*.id_question' => 'required|integer|exists:questions,id_question',
-            'answers.*.answer_ids' => 'nullable|array',
-            'answers.*.answer_text' => 'nullable',
+            'id_owner' => 'required|string',
+            'lang'     => 'required|string',
         ]);
 
-        // Find the Laravel user using Azure ID
         $user = User::where('id_azure', $data['id_owner'])->first();
 
         if (!$user) {
-            return response()->json([
-                'message' => 'User not found for provided Azure ID'
-            ], 404);
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $attempt = QuizAttempt::create([
+            'id_quiz'    => $quiz->id_quiz,
+            'id_user'    => $user->id_user,
+            'started_at' => now(),
+            'lang'       => $data['lang'],
+            'status'     => 'in_progress',
+        ]);
+
+        return response()->json([
+            'message' => 'Attempt started',
+            'attempt_id' => $attempt->id_attempt,
+            'started_at' => $attempt->started_at,
+        ], 201);
+    }
+
+    public function finish(Request $request, Quiz $quiz, QuizAttempt $attempt)
+    {
+        $data = $request->validate([
+            'ended_at'   => 'required|date',
+            'time_taken' => 'required|integer',
+            'answers'    => 'required|array',
+            'lang'       => 'required|string',
+        ]);
+
+        if ($attempt->id_quiz !== $quiz->id_quiz) {
+            return response()->json(['message' => 'Attempt does not belong to quiz'], 400);
         }
 
         DB::beginTransaction();
 
         try {
-            // Create the main quiz attempt
-            $attempt = QuizAttempt::create([
-                'id_quiz'    => $quiz->id_quiz,
-                'id_user'    => $user->id_user,
-                'started_at' => Carbon::parse($data['started_at']),
-                'ended_at'   => Carbon::parse($data['ended_at']),
-                'time_taken' => $data['time_taken'],
-                'lang'       => $data['lang'],
-            ]);
-
             $totalScore = 0;
+            $bestPossibleScore = 0;
             $results = [];
-
             $lang = $data['lang'];
 
             foreach ($data['answers'] as $answer) {
-                $question = $quiz->questions()->find($answer['id_question']);
-
+                $question = $quiz->questions()->with('answers')->find($answer['id_question']);
                 if (!$question) continue;
 
-                // Fetch translation for this question
-                $tQuestion = DB::table('translations')
-                    ->where('element_type', 'question')
-                    ->where('element_id', $question->id_question)
-                    ->where('lang', $lang)
-                    ->where('field_name', 'question_title')
-                    ->value('element_text');
-
-                // Correct answers
                 $correctAnswerIds = $question->answers->filter(fn($a) => $a->is_correct)->pluck('id_answer')->toArray();
                 $userAnswerIds = $answer['answer_ids'] ?? [];
 
@@ -75,49 +73,77 @@ class QuizAttemptController extends Controller
 
                 $questionScore = max(($numCorrectSelected - $numWrongSelected) / max($numCorrectTotal, 1), 0);
                 $totalScore += $questionScore;
+                $bestPossibleScore += 1;
 
+                // Save attempt answers
                 $attempt->answers()->create([
                     'id_question' => $answer['id_question'],
                     'answer_ids'  => $userAnswerIds,
                     'answer_text' => $answer['answer_text'] ?? null,
                 ]);
 
+                // Fetch translations for answers from DB
+                $answerTranslations = DB::table('translations')
+                    ->where('element_type', 'answer')
+                    ->where('lang', $lang)
+                    ->whereIn('element_id', $question->answers->pluck('id_answer'))
+                    ->where('field_name', 'answer_text')
+                    ->pluck('element_text', 'element_id')
+                    ->toArray();
+
+                $answersResult = $question->answers->map(function ($a) use ($userAnswerIds, $correctAnswerIds, $answerTranslations) {
+                    return array_merge([
+                        'id' => $a->id_answer,
+                        'text' => $a->text,
+                        'translation' => $answerTranslations[$a->id_answer] ?? null,
+                    ], in_array($a->id_answer, $userAnswerIds) ? [
+                        'is_correct' => in_array($a->id_answer, $correctAnswerIds),
+                    ] : []);
+                });
+
+                $tQuestion = DB::table('translations')
+                    ->where('element_type', 'question')
+                    ->where('element_id', $question->id_question)
+                    ->where('lang', $lang)
+                    ->where('field_name', 'question_title')
+                    ->value('element_text');
+
                 $results[] = [
                     'question' => $tQuestion ?? '[Missing translation]',
                     'user_answer_ids' => $userAnswerIds,
-                    'correct_answer_ids' => $correctAnswerIds,
+                    'answers' => $answersResult,
                     'score' => $questionScore,
                 ];
             }
 
-            // Adjust score by time_taken if desired
-            // $finalScore = $totalScore / max($attempt->time_taken, 1);
             $finalScore = $totalScore;
 
-            // Save total score in quiz_attempts table
-            $attempt->score = round($finalScore, 2);
-            $attempt->save();
+            $attempt->update([
+                'ended_at' => Carbon::parse($data['ended_at']),
+                'time_taken' => $data['time_taken'],
+                'score' => round($finalScore, 2),
+                'status' => 'completed',
+            ]);
 
             DB::commit();
 
-            $totalQuestions = count($data['answers']);
-
             return response()->json([
-                'message' => 'Quiz attempt saved successfully',
+                'message' => 'Quiz attempt completed',
                 'score' => round($finalScore, 2),
-                'total_questions' => $totalQuestions,
+                'best_possible_score' => $bestPossibleScore,
                 'time_taken' => $attempt->time_taken,
                 'answers' => $results,
-            ], 201);
-
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
-                'message' => 'Failed to save quiz attempt',
-                'error' => $e->getMessage()
+                'message' => 'Failed to complete attempt',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
+
+
 
 
 }

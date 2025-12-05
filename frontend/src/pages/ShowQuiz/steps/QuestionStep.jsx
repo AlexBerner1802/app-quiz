@@ -19,6 +19,11 @@ export default function QuestionStep({
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const question = quiz.questions[currentIndex];
 
+	const lastAnsweredIndex = Math.max(
+		-1,
+		...quiz.questions.map((_, i) => (answersMap[i]?.length > 0 ? i : -1))
+	);
+
 	return (
 		<Wrapper>
 
@@ -28,18 +33,28 @@ export default function QuestionStep({
 				</SidebarHeader>
 
 				<SidebarList>
-					{quiz?.questions && quiz.questions.map((q, i) => (
-						<SidebarItem
-							key={i}
-							$active={i === currentIndex}
-							onClick={() => {
-								onJump(i);
-							}}
-						>
-							{t("common.question")}{` ${i + 1}`}
-						</SidebarItem>
-					))}
+					{quiz.questions.map((q, i) => {
+						const answered = answersMap[i]?.length > 0;
+
+						return (
+							<SidebarStepItem key={i} $active={i === currentIndex} onClick={() => onJump(i)}>
+								<StepIcon $active={i === currentIndex} $answered={answered}>
+									{answered ? "✓" : ""}
+								</StepIcon>
+
+								<StepLabel onClick={() => onJump(i)}>
+									{t("common.question")} {i + 1}
+								</StepLabel>
+
+								{/* Only color the line if the next circle is checked */}
+								{i < quiz.questions.length - 1 && (
+									<StepLine $completed={i < lastAnsweredIndex} />
+								)}
+							</SidebarStepItem>
+						);
+					})}
 				</SidebarList>
+
 			</Sidebar>
 
 			<QuestionCard>
@@ -49,26 +64,28 @@ export default function QuestionStep({
 				</SidebarToggle>
 
 				<QuestionContent>
-					<SubTitle>{t("common.question")} {currentIndex + 1} of {quiz.questions.length}</SubTitle>
+					<QuestionItem>
+						<SubTitle>{t("common.question")} {currentIndex + 1} of {quiz.questions.length}</SubTitle>
 
-					<Question>{question.title}</Question>
-					{question.description && <QuestionDescription>{question.description}</QuestionDescription>}
+						<Question>{question.title}</Question>
+						{question.description && <QuestionDescription>{question.description}</QuestionDescription>}
 
-					<AnswersGrid>
-						{question.answers.map(ans => {
-							const ansId = ans.id ?? ans.text;
-							const selected = answersMap[currentIndex]?.includes(ansId);
-							return (
-								<AnswerBox
-									key={ansId}
-									selected={selected}
-									onClick={() => onAnswer(ansId)}
-								>
-									{ans.text}
-								</AnswerBox>
-							);
-						})}
-					</AnswersGrid>
+						<AnswersGrid>
+							{question.answers.map(ans => {
+								const ansId = ans.id ?? ans.text;
+								const selected = answersMap[currentIndex]?.includes(ansId);
+								return (
+									<AnswerBox
+										key={ansId}
+										selected={selected}
+										onClick={() => onAnswer(ansId)}
+									>
+										{ans.text}
+									</AnswerBox>
+								);
+							})}
+						</AnswersGrid>
+					</QuestionItem>
 				</QuestionContent>
 
 				<FixedBottomRow>
@@ -89,7 +106,7 @@ export default function QuestionStep({
 
 					<ContinueButton
 						variant="primary"
-						disabled={!answersMap[currentIndex]?.length}
+						//disabled={!answersMap[currentIndex]?.length}
 						onClick={onNext}
 					>
 						{currentIndex + 1 < quiz.questions.length ? t("common.next") : t("common.finish")}
@@ -108,30 +125,32 @@ const Wrapper = styled.div`
     display: flex;
     width: 100%;
     height: 100%;
+	overflow: hidden;
 `;
 
 const Sidebar = styled.div`
+	border-right: 1px solid var(--color-border);
+    padding: ${({ $open }) => ($open ? "var(--spacing-l)" : "0")};
     width: ${({ $open }) => ($open ? "var(--spacing-8xl)" : "0")};
-    overflow: hidden;
-    transition: width 0.3s ease, padding 0.3s ease;
-    border-right: 1px solid var(--color-border);
-    background-color: var(--color-background-surface-1);
+    overflow-y: auto; 
+    overflow-x: hidden;
+    transition: width .3s, padding .3s;
     display: flex;
     flex-direction: column;
-    padding: ${({ $open }) => ($open ? "var(--spacing-l)" : "0")};
-    box-sizing: border-box;
 `;
 
 const SidebarHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing);
+    margin-bottom: var(--spacing-l);
+    padding: var(--spacing-2xs) 0;
 
     h3 {
         margin: 0;
         font-size: var(--font-size-xl);
         color: var(--color-text);
+		font-weight: 700;
     }
 `;
 
@@ -141,19 +160,71 @@ const SidebarList = styled.div`
     gap: var(--spacing-s);
 `;
 
-const SidebarItem = styled.div`
-    padding: var(--spacing);
-    border-radius: var(--border-radius-xs);
-    background: ${({ $active }) =>
-	$active ? "var(--color-primary-muted)" : "var(--color-background-surface-3)" };
-    border: 2px solid ${({ $active }) =>
-	$active ? "var(--color-primary-bg)" : "var(--color-border)"};
-    cursor: pointer;
-    font-weight: 600;
+const StepLabel = styled.div`
+	font-size: var(--font-size);
+	color: var(--color-text);
+    transition: 0.2s;
+`;
 
-    &:hover {
-        background: var(--color-background-surface-1);
-    }
+const SidebarStepItem = styled.div`
+  position: relative;
+  padding-left: 40px;
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+
+  background: ${({ $active }) =>
+	$active ? "var(--color-primary-muted)" : "transparent"};
+
+  border-radius: var(--border-radius-xs);
+  transition: 0.2s;
+
+	&:hover {
+		background: var(--color-background-surface-2);
+
+        ${StepLabel} {
+            color: var(--color-primary-bg);
+        }
+	}
+`;
+
+const StepIcon = styled.div`
+	position: absolute;
+	left: 10px;
+	width: 22px;
+	height: 22px;
+
+  	border-radius: 50%;
+		border: 2px solid
+			${({ $answered, $active }) =>
+			$active
+				? "var(--color-primary-bg)"
+				: $answered
+					? "var(--color-primary-bg)"
+					: "var(--color-border)"};
+
+  	background: ${({ $answered }) =>
+		$answered ? "var(--color-primary-bg)" : "transparent"};
+
+	color: white;
+	font-size: 14px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+`;
+
+const StepLine = styled.div`
+    position: absolute;
+    left: 20px;
+    top: 32px;
+    width: 2px;
+    height: 24px;
+    background: ${({ $completed }) =>
+            $completed ? "var(--color-primary-bg)" : "var(--color-border)"};
+    transition: background 0.3s;
+	z-index: 1;
 `;
 
 const SidebarToggle = styled(Button)`
@@ -162,25 +233,31 @@ const SidebarToggle = styled(Button)`
 	left : var(--spacing);
 `;
 
-
 const QuestionCard = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
-	align-items: center;
-    gap: var(--spacing-s);
-    transition: width 0.3s ease;
-	position: relative;
+    position: relative;
 `;
 
 const QuestionContent = styled.div`
+	display: flex;
+    flex-direction: column;
+	width: 100%;
+    height: 100%;
+	align-items: flex-start;
+    overflow-y: auto;
+`;
+
+const QuestionItem = styled.div`
 	display: flex; 
 	flex-direction: column;
 	width: 100%;
 	gap: var(--spacing-s);
 	align-items: flex-start;
-	max-width: var(--spacing-12xl);
-    padding: var(--spacing-2xl);
+	max-width: var(--spacing-12xl);    
+	padding: var(--spacing-2xl);
+    margin: 0 auto;
 `;
 
 const SubTitle = styled.p`
@@ -226,7 +303,6 @@ const AnswerBox = styled.div`
 `;
 
 const FixedBottomRow = styled.div`
-    position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
