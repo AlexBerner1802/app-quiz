@@ -164,7 +164,10 @@
 		"resultsPage": "Résultats - Rafisa Quiz",
 		"searchPage": "Recherche - Rafisa Quiz",
 		"loginPage": "Connexion - Rafisa Quiz",
-		"accountPage": "Compte - Rafisa Quiz"
+		"accountPage": "Compte - Rafisa Quiz",
+		"leaderboardPage": "Classement - Rafisa Quiz",
+		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz"
+
 	},
 	"modals": {
 		"logout": {
@@ -184,7 +187,7 @@
 	},
 	"errors": {
 		"quiz_not_found": "Quiz non trouvé",
-		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifié ce quiz"
+		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
 	"leaderboard": {
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
@@ -196,11 +199,19 @@
 		"filterQuiz": "Quiz",
 		"rank" : "Rang",
 		"name":"Nom",
+		"quizzes_done":"Quiz terminés",
 		"quiz":"Quiz",
 		"score":"Score",
 		"time":"Temps",
 		"attempts":"Essais",
 		"empty":"Aucun résultat",
-		"loadinG":"Chargement..."	
+		"loading":"Chargement...",
+		"quizResultsFor":"Résultats pour ",
+		"quizOverview":"Résultats par quiz",
+		"backToGlobal":"Retour au classement global",
+		"backToQuizzes":"Retour au classement par quiz",
+		"sortByQuiz":"Trier par quiz",
+		"sortByOwner":"Trier par propriétaire",
+		"clickForDetails":"Cliquez pour le classement complet"
 	}
 }

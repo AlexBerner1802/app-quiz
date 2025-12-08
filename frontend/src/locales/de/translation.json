@@ -147,7 +147,10 @@
 		"resultsPage": "Ergebnisse - Rafisa Quiz",
 		"searchPage": "Forschung - Rafisa Quiz",
 		"loginPage": "Verbindung - Rafisa Quiz",
-		"accountPage": "Konto - Rafisa Quiz"
+		"accountPage": "Konto - Rafisa Quiz",
+		"leaderboardPage": "Rang - Rafisa Quiz",
+		"quizLeaderboardPage":"Rangliste nach Quiz - Rafisa Quiz"
+
   },
   	"modals": {
     	"logout": {
@@ -164,5 +167,30 @@
 			"stay": "Bleiben",
 			"leave": "Verlassen"
 		}
+	},
+	"leaderboard": {
+		"subtitle":"Rangliste der besten Ergebnisse aus allen Quizzen",
+		"searchPlaceholder":"Forschung",
+		"sortByRank":"Nach Rang sortieren",
+		"filter": "Filter",
+		"filterDefault": "Bestenliste",
+		"filterUsers": "Benutzer",
+		"filterQuiz": "Quiz",
+		"rank" : "Rang",
+		"name":"Name",
+		"quizzes_done":"Abgeschlossene Quizze",
+		"quiz":"Quiz",
+		"score":"Punktzahl",
+		"time":"Zeit",
+		"attempts":"Versuche",
+		"empty":"Keine Ergebnisse",
+		"loading":"Laden...",
+		"quizResultsFor":"Ergebnisse für ",
+		"quizOverview":"Ergebnisse nach Quiz",
+		"backToGlobal":"Zurück zur Gesamtrangliste",
+		"backToQuizzes":"Zurück zur Quiz-Rangliste",
+		"sortByQuiz":"Nach Quiz sortieren",
+		"sortByOwner":"Nach Eigentümer sortieren",
+		"clickForDetails":"Hier klicken für die vollständige Rangliste"	
 	}
 }

@@ -147,7 +147,10 @@
 		"resultsPage": "Results - Rafisa Quiz",
 		"searchPage": "Search - Rafisa Quiz",
 		"loginPage": "Login - Rafisa Quiz",
-		"accountPage": "Account - Rafisa Quiz"
+		"accountPage": "Account - Rafisa Quiz",
+		"leaderboardPage": "Leaaderboard - Rafisa Quiz",
+		"quizLeaderboardPage":"Leaderboard per quiz - Rafisa Quiz"
+
 	},
 	"modals": {
 		"logout": {
@@ -164,5 +167,30 @@
 			"stay": "Stay",
 			"leave": "Leave"
 		}
+	},
+	"leaderboard": {
+		"subtitle":"Ranking of the best scores across all quizzes",
+		"searchPlaceholder":"Search",
+		"sortByRank":"Filter by rank",
+		"filter": "Filter",
+		"filterDefault": "Leaderboard",
+		"filterUsers": "Users",
+		"filterQuiz": "Quiz",
+		"rank" : "Rank",
+		"name":"Name",
+		"quizzes_done":"Quiz done",
+		"quiz":"Quiz",
+		"score":"Score",
+		"time":"Time",
+		"attempts":"Attempts",
+		"empty":"No results",
+		"loading":"Loading...",
+		"quizResultsFor":"Results for ",
+		"quizOverview":"Results per quiz",
+		"backToGlobal":"Back to global leaderboard",
+		"backToQuizzes":"Back to per quiz leaderboard",
+		"sortByQuiz":"Sort by quiz",
+		"sortByOwner":"Sort by owner",
+		"clickForDetails":"Click for the full leaderboard"	
 	}
 }

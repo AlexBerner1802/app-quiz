@@ -156,7 +156,7 @@ body.page-newquiz {
   --color-input: var(--gray-900);
 }
 
-body.pageleaderboard{
-      --leaderboard-bg: var(--slate-100);
-      --leaderboard-border: var(--slate-300);
+body.page-leaderboardperquiz{
+      --leaderboard-bg: var(--indigo-200);
+      --leaderboard-bg-alt: var(--indigo-300);
 }

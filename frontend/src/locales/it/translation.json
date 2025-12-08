@@ -146,7 +146,10 @@
 			"resultsPage": "Risultati - Rafisa Quiz",
 			"searchPage": "Ricerca - Rafisa Quiz",
 			"loginPage": "Connessione - Rafisa Quiz",
-			"accountPage": "Account - Rafisa Quiz"
+			"accountPage": "Account - Rafisa Quiz",
+			"leaderboardPage": "Classifica - Rafisa Quiz",
+			"quizLeaderboardPage":"Classifica per quiz - Rafisa Quiz"
+
 	},
 	"modals": {
 		"logout": {
@@ -163,5 +166,30 @@
 		"stay": "Rimani",
 		"leave": "Esci"
 		}
+	},
+	"leaderboard": {
+		"subtitle":"Classifica dei punteggi migliori in tutti i quiz",
+		"searchPlaceholder":"Ricerca",
+		"sortByRank":"Ordina per grado",
+		"filter": "Filtro",
+		"filterDefault": "Classifica",
+		"filterUsers": "Utenti",
+		"filterQuiz": "Quiz",
+		"rank" : "Rango",
+		"name":"Nome",
+		"quizzes_done":"Quiz completati",
+		"quiz":"Quiz",
+		"score":"Punto",
+		"time":"Tempo",
+		"attempts":"Prove",
+		"empty":"Nessun risultato",
+		"loading":"Caricamento...",
+		"quizResultsFor":"Risultati per ",
+		"quizOverview":"Risultati per quiz",
+		"backToGlobal":"Torna alla classifica generale",
+		"backToQuizzes":"Torna alla classifica dei quiz",
+		"sortByQuiz":"Ordina per quiz",
+		"sortByOwner":"Ordina per proprietario",
+		"clickForDetails":"Clicca per la classifica completa"	
 	}
-	}
+}

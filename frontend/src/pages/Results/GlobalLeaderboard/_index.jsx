@@ -3,14 +3,14 @@ import React, { useMemo, useState } from "react";
 import {Award } from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
-import Header from "../../components/layout/Header";
-import FaviconTitle from "../../components/layout/Icon.jsx";
-import faviconUrl from "../../assets/images/favicon.ico?url";
-import LeaderboardPodium from "../../components/leaderboard/LeaderboardPodium";
-import LeaderboardSearchBar from "../../components/leaderboard/LeaderboardSearchBar";
-import LeaderboardTable from "../../components/leaderboard/LeaderboardTable";
-import ToggleThemeSwitch
- from "../../components/ui/ToggleThemeSwitch.jsx";
+import Header from "../../../components/layout/Header.jsx";
+import FaviconTitle from "../../../components/layout/Icon.jsx";
+import faviconUrl from "../../../assets/images/favicon.ico?url";
+import LeaderboardPodium from "../../../components/leaderboard/LeaderboardPodium.jsx";
+import LeaderboardSearchBar from "../../../components/leaderboard/LeaderboardSearchBar.jsx";
+import LeaderboardTable from "../../../components/leaderboard/LeaderboardTable.jsx";
+import ToggleThemeSwitch from "../../../components/ui/ToggleThemeSwitch.jsx";
+import { useNavigate } from "react-router-dom";
 
 const mockEntries = [
 	{ id: 1, rank: 1, user_name: "Alice", score: 19, time_seconds: 71, quizzes_done: 2, attempts: 3 },
@@ -28,10 +28,11 @@ const mockEntries = [
 
 export default function ResultsPage() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 
 	const [entries] = useState(mockEntries);
 	const [searchText, setSearchText] = useState("");
-	const [filter, setFilter] = useState("default");
+	const [filter, setFilter] = useState("global");
 	const [sortColumn, setSortColumn] = useState("rank");
 	const [sortAsc, setSortAsc] = useState(true);
 
@@ -81,7 +82,7 @@ export default function ResultsPage() {
 	}, [entries, searchText, sortColumn, sortAsc]);
 
 	const pageTitle =
-		t("pages.results.globalLeaderboard") || "Global leaderboard";
+		t("pages.leaderboardPage") || "Global leaderboard";
 
 	return (
 		<>
@@ -91,7 +92,7 @@ export default function ResultsPage() {
                 <ToggleThemeSwitch/>
 
 				<Header
-					title={pageTitle}
+					title={t("leaderboard.subtitle")}
 					icon={<Award size={20} />}
 				/>
 
@@ -108,7 +109,15 @@ export default function ResultsPage() {
 								value={searchText}
 								filter={filter}
 								onChange={setSearchText}
-								onFilterChange={setFilter}
+								onFilterChange={(newFilter) => {
+									setFilter(newFilter);
+
+									if (newFilter === "quiz") {
+										navigate("/results/quizzes");
+									} else if (newFilter === "user") {
+										navigate("/users");
+									}
+								}}
 							/>
 						</SearchBarWrapper>
 					</AnimatedBlock>
