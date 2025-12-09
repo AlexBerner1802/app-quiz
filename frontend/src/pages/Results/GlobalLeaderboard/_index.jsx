@@ -1,6 +1,6 @@
 // src/pages/results/_index.jsx
 import React, { useMemo, useState } from "react";
-import {Award } from "lucide-react";
+import {Award, Search} from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
 import Header from "../../../components/layout/Header.jsx";
@@ -11,6 +11,8 @@ import LeaderboardSearchBar from "../../../components/leaderboard/LeaderboardSea
 import LeaderboardTable from "../../../components/leaderboard/LeaderboardTable.jsx";
 import ToggleThemeSwitch from "../../../components/ui/ToggleThemeSwitch.jsx";
 import { useNavigate } from "react-router-dom";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../../components/ui/Tabs";
+import Input from "../../../components/ui/Input";
 
 const mockEntries = [
 	{ id: 1, rank: 1, user_name: "Alice", score: 19, time_seconds: 71, quizzes_done: 2, attempts: 3 },
@@ -89,11 +91,12 @@ export default function ResultsPage() {
 			<FaviconTitle title={pageTitle} iconHref={faviconUrl} />
 
 			<Main>
-                <ToggleThemeSwitch/>
-
 				<Header
 					title={t("leaderboard.subtitle")}
 					icon={<Award size={20} />}
+					actions={
+						<ToggleThemeSwitch/>
+					}
 				/>
 
 				<Content>
@@ -104,36 +107,46 @@ export default function ResultsPage() {
 					</AnimatedBlock>
 
 					<AnimatedBlock style={{ animationDelay: "0.1s" }}>
-						<SearchBarWrapper>
-							<LeaderboardSearchBar
-								value={searchText}
-								filter={filter}
-								onChange={setSearchText}
-								onFilterChange={(newFilter) => {
-									setFilter(newFilter);
-
-									if (newFilter === "quiz") {
-										navigate("/results/quizzes");
-									} else if (newFilter === "user") {
-										navigate("/users");
-									}
-								}}
-							/>
-						</SearchBarWrapper>
 					</AnimatedBlock>
-					<AnimatedBlock style={{ animationDelay: "0.15s" }}>
-						<LeaderboardTable
-							columns={columns}
-							entries={tableEntries}
-							loading={false}
-							sortColumn={sortColumn}
-							sortAsc={sortAsc}
-							onSortChange={(column, asc) => {
-								setSortColumn(column);
-								setSortAsc(asc);
-							}}
-							sortableColumns={["rank","user_name","score","quizzes_done","time_seconds","attempts"]}
-						/>
+					<AnimatedBlock style={{ animationDelay: "0.25s" }}>
+						<Tabs defaultValue="leaderboard">
+							<HeaderGrid>
+								<TabsList>
+									<TabsTrigger value="leaderboard">{t("leaderboard.leaderboard")}</TabsTrigger>
+									<TabsTrigger value="quizzes">{t("leaderboard.quizzes")}</TabsTrigger>
+								</TabsList>
+								<SearchBarWrapper>
+									<Input
+										icon={<Search size={20} color={"var(--color-text-muted)"} />}
+										placeholder={
+											t("leaderboard.searchPlaceholder")}
+										value={searchText}
+										onChange={(e) => setSearchText(e.target.value)}
+										size="m"
+										width="100%"
+									/>
+								</SearchBarWrapper>
+							</HeaderGrid>
+
+							<TabsContent value="leaderboard">
+								<LeaderboardTable
+									columns={columns}
+									entries={tableEntries}
+									loading={false}
+									sortColumn={sortColumn}
+									sortAsc={sortAsc}
+									onSortChange={(column, asc) => {
+										setSortColumn(column);
+										setSortAsc(asc);
+									}}
+									sortableColumns={["rank","user_name","score","quizzes_done","time_seconds","attempts"]}
+								/>
+							</TabsContent>
+
+							<TabsContent value={"quizzes"}>
+
+							</TabsContent>
+						</Tabs>
 					</AnimatedBlock>
 				</Content>
 			</Main>
@@ -163,17 +176,25 @@ const fadeIn = keyframes`
 	to { opacity: 1; transform: translateY(0); }
 `;
 
-const SearchBarWrapper = styled.div`
-	display: flex;
-	justify-content: center;
-	position: relative;
-	z-index: 50;
-`;
-
 const AnimatedBlock = styled.div`
 	opacity: 0;
 	width: 100%;
 	animation: ${fadeIn} 0.4s ease forwards;
+`;
+
+const HeaderGrid = styled.div`
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: var(--spacing-s);
+`;
+
+const SearchBarWrapper = styled.div`
+	display: flex;
+	justify-content: center;
+	position: relative;
+	margin-bottom: var(--spacing-s);
+	flex: 1;
 `;
 
 const PodiumWrapper = styled.div`

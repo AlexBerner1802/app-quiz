@@ -55,7 +55,7 @@ export default function LeaderboardTable({
 										sortColumn === col.key && !sortAsc
 											? "rotate(180deg)"
 											: "rotate(0deg)",
-									marginLeft: 4,
+									marginLeft: "var(--spacing-s)",
 								}}
 							/>
 						)}
@@ -85,19 +85,20 @@ export default function LeaderboardTable({
 
 const TableContainer = styled.div`
 	width: 100%;
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-s);
 	background-color: var(--color-background-alt);
 	overflow: hidden;
 `;
 
 const HeaderRow = styled.div`
 	display: grid;
-	grid-template-columns: 80px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
-	padding: 10px 16px;
+	grid-template-columns: 100px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
+	padding: var(--spacing-s);
 	background-color: var(--color-background-alt);
 	font-weight: 600;
-	font-size: var(--font-size-s);
+	font-size: var(--font-size);
     color: var(--color-text);
+	line-height: var(--spacing-xl);
 `;
 
 const HeaderCell = styled.div`
@@ -118,15 +119,16 @@ const Body = styled.div`
 
 const DataRow = styled.div`
 	display: grid;
-	grid-template-columns: 80px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
-	padding: 8px 16px;
+	grid-template-columns: 100px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
 	background-color: var(--color-background-surface-4);
-	font-size: var(--font-size-s);
+	padding: var(--spacing-s);
+	font-size: var(--font-size);
+	color: var(--color-text);
+	line-height: var(--spacing-xl);
 
 	&:nth-child(even) {
-		background-color: var(--color-background-surface-5);
+		background-color: var(--color-background-surface-3);
 	}
-    color: var(--color-text);
 `;
 
 const Cell = styled.div`
@@ -139,7 +141,7 @@ const Cell = styled.div`
 `;
 
 const EmptyRow = styled.div`
-	padding: 16px;
+	padding: var(--spacing);
 	text-align: center;
 	color: var(--color-text-muted);
 	font-size: var(--font-size-s);
