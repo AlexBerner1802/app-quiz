@@ -175,7 +175,6 @@
 		"filter": "Filter",
 		"filterDefault": "Leaderboard",
 		"filterUsers": "Users",
-		"filterQuiz": "Quiz",
 		"rank" : "Rank",
 		"name":"Name",
 		"quizzes_done":"Quiz done",

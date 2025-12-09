@@ -8,24 +8,27 @@ import Button from "../ui/Button";
 import { DrawerHeader, DrawerFooter } from "../../context/drawer/DrawerProvider";
 import LeaderboardTable from "../leaderboard/LeaderboardTable.jsx";
 
-export const QuizResultsDrawer = ({ closeDrawer, quiz }) => {
+export const QuizResultsDrawer = ({ closeDrawer, quiz, hideHeader = false }) => {
 	const { t } = useTranslation();
 
 	const [searchText, setSearchText] = useState("");
-
 	const [sortColumn, setSortColumn] = useState("rank");
 	const [sortAsc, setSortAsc] = useState(true);
 
 	if (!quiz) {
 		return (
 			<Container>
-				<DrawerHeader
-					title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
-					onClose={closeDrawer}
-					icon={<Trophy size={20} />}
-				/>
+				{!hideHeader && (
+					<DrawerHeader
+						title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
+						onClose={closeDrawer}
+						icon={<Trophy size={20} />}
+					/>
+				)}
 				<Content>
-					<EmptyState>{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}</EmptyState>
+					<EmptyState>
+						{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}
+					</EmptyState>
 				</Content>
 				<DrawerFooter>
 					<Button variant="ghost" onClick={closeDrawer}>
@@ -58,7 +61,7 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz }) => {
 			);
 		}
 
-        list.sort((a, b) => {
+		list.sort((a, b) => {
 			const valA = a[sortColumn];
 			const valB = b[sortColumn];
 
@@ -82,42 +85,43 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz }) => {
 
 	return (
 		<Container>
-			<DrawerHeader
-				title={quiz.title}
-				onClose={closeDrawer}
-				icon={<Trophy size={20} />}
-				subtitle={
-					t("leaderboard.quizByOwner", {
-						owner: quiz.owner,
-						count: totalParticipants,
-					}) ||
-					`${quiz.owner} • ${totalParticipants} participants`
-				}
-			/>
+			{!hideHeader && (
+				<DrawerHeader
+					title={quiz.title}
+					onClose={closeDrawer}
+					icon={<Trophy size={20} />}
+					subtitle={
+						t("leaderboard.quizByOwner", {
+							owner: quiz.owner,
+							count: totalParticipants,
+						}) ||
+						`${quiz.owner} • ${totalParticipants} participants`
+					}
+				/>
+			)}
 
 			<Content>
 				<InfoRow>
 					<InfoChip>
-						<span>{t("leaderboard.owner") ?? "Owner"}</span>
+						<span>{t("leaderboard.owner")}</span>
 						<strong>{quiz.owner}</strong>
 					</InfoChip>
 					<InfoChip>
-						<span>{t("leaderboard.participants") ?? "Participants"}</span>
+						<span>{t("leaderboard.participants")}</span>
 						<strong>{totalParticipants}</strong>
 					</InfoChip>
 				</InfoRow>
 
 				<SearchRow>
-					<SearchLabel>{t("leaderboard.searchUser") ?? "Rechercher un utilisateur"}</SearchLabel>
+					<SearchLabel>{t("leaderboard.searchPlaceholder")}</SearchLabel>
 					<SearchInput
 						type="text"
-						placeholder={t("leaderboard.searchUserPlaceholder") ?? "Nom, score, temps..."}
+						placeholder={t("leaderboard.searchSpecificData")}
 						value={searchText}
 						onChange={(e) => setSearchText(e.target.value)}
 					/>
 					<HelpText>
-						{t("leaderboard.searchUserHelp") ??
-							"Par défaut, seul le top 10 est affiché. La recherche explore tous les participants."}
+						{t("leaderboard.searchUserHelp")}
 					</HelpText>
 				</SearchRow>
 
@@ -145,12 +149,13 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz }) => {
 
 			<DrawerFooter style={{ justifyContent: "flex-end" }}>
 				<Button variant="ghost" onClick={closeDrawer}>
-					{t("common.close") ?? "Fermer"}
+					{t("actions.back")}
 				</Button>
 			</DrawerFooter>
 		</Container>
 	);
 };
+
 
 const Container = styled.div`
 	display: flex;

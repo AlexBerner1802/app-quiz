@@ -76,7 +76,7 @@ class UserController extends Controller
 
     public function getTheme(Request $request): JsonResponse
     {
-        $user = User::where('id_owner', $request->id_owner)->first();
+        $user = User::where('id_user', $request->id_owner)->first();
 
         if (!$user) {
             return response()->json([

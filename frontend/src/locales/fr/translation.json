@@ -196,7 +196,6 @@
 		"filter": "Filtrer",
 		"filterDefault": "Leaderboard",
 		"filterUsers": "Utilisateurs",
-		"filterQuiz": "Quiz",
 		"rank" : "Rang",
 		"name":"Nom",
 		"quizzes_done":"Quiz terminés",
@@ -212,6 +211,10 @@
 		"backToQuizzes":"Retour au classement par quiz",
 		"sortByQuiz":"Trier par quiz",
 		"sortByOwner":"Trier par propriétaire",
-		"clickForDetails":"Cliquez pour le classement complet"
+		"clickForDetails":"Cliquez pour le classement complet",
+		"searchSpecificData": "Nom, score, temps...",
+		"searchUserHelp":"Seul le top 10 est affiché, utilisez la barre de recherche pour trouver votre résultat.",
+		"owner":"Propriétaire",
+		"participants":"Participants"
 	}
 }

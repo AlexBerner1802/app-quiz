@@ -3,13 +3,13 @@ import styled, { keyframes } from "styled-components";
 import { Crown } from "lucide-react";
 import {applyScoreMultiplier} from "../../utils/score";
 
-function AnimatedScore({ finalScore }) {
+function AnimatedScore({ finalScore, scale }) {
 	const [score, setScore] = useState(0);
 
 	useEffect(() => {
 		let start = 0;
-		const duration = 2000; // animation duration in ms
-		const increment = finalScore / (duration / 16); // approx 60fps
+		const duration = 2000;
+		const increment = finalScore / (duration / 16);
 		let animationFrame;
 
 		const animate = () => {
@@ -26,10 +26,11 @@ function AnimatedScore({ finalScore }) {
 		return () => cancelAnimationFrame(animationFrame);
 	}, [finalScore]);
 
-	return <Score>{score}</Score>;
+	return <Score $scale={scale}>{score}</Score>;
 }
 
-export default function LeaderboardPodium({ entries = [] }) {
+export default function LeaderboardPodium({ entries = [], size = 1 }) {
+
 	const first = entries.find((e) => e.rank === 1);
 	const second = entries.find((e) => e.rank === 2);
 	const third = entries.find((e) => e.rank === 3);
@@ -47,26 +48,36 @@ export default function LeaderboardPodium({ entries = [] }) {
 	};
 
 	return (
-		<PodiumContainer>
+		<PodiumContainer $scale={size}>
 			{podiums.map((p) => (
-				<PodiumColumn key={p.position} $position={p.position}>
-					<PodiumCard $position={p.position}>
+				<PodiumColumn key={p.position} $position={p.position} $scale={size}>
+					<PodiumCard $position={p.position} $scale={size}>
+						
 						{/* Crown */}
-						<CustomCrown color={crownColors[p.position]} size={60} />
+						<CustomCrown
+							color={crownColors[p.position]}
+							size={60 * size}
+							$scale={size}
+						/>
 
 						{/* Avatar */}
-						<Avatar $position={p.position}/>
+						<Avatar $position={p.position} $scale={size} />
 
 						{/* Name */}
-						<Name>{p.entry?.user_name ?? "_name_"}</Name>
+						<Name $scale={size}>{p.entry?.user_name ?? "_name_"}</Name>
 
 						{/* Score */}
-						<AnimatedScore finalScore={applyScoreMultiplier(p.entry?.score) ?? 0} />
+						<AnimatedScore
+							scale={size}
+							finalScore={applyScoreMultiplier(p.entry?.score) ?? 0}
+						/>
 					</PodiumCard>
 
-					{/* Podium base with glowing number */}
-					<PodiumBase $position={p.position}>
-						<PodiumNumber $position={p.position}>{p.position}</PodiumNumber>
+					{/* Base */}
+					<PodiumBase $position={p.position} $scale={size}>
+						<PodiumNumber $position={p.position} $scale={size}>
+							{p.position}
+						</PodiumNumber>
 					</PodiumBase>
 				</PodiumColumn>
 			))}
@@ -84,10 +95,10 @@ const PodiumContainer = styled.div`
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 24px;
+    gap: ${({ $scale }) => 24 * $scale}px;
     width: 100%;
-    max-width: 1200px;
-    padding: 0 0 var(--spacing-xl);
+    max-width: ${({ $scale }) => 1200 * $scale}px;
+    padding: 0 0 ${({ $scale }) => 32 * $scale}px;
 `;
 
 const PodiumColumn = styled.div`
@@ -107,15 +118,15 @@ const PodiumCard = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-s);
+    gap: ${({ $scale }) => 8 * $scale}px;
     z-index: 10;
-	margin-bottom: var(--spacing-l);
+	margin-bottom: ${({ $scale }) => 24 * $scale}px;
 `;
 
 const CustomCrown = styled(Crown)`
     transform: rotate(10deg);
 	position: relative;
-	left: 10px;
+	left: ${({ $scale }) => 10 * $scale}px;
 `;
 
 const glowAvatar = (color) => keyframes`
@@ -124,37 +135,41 @@ const glowAvatar = (color) => keyframes`
 `;
 
 const Avatar = styled.div`
-    width: 140px;
-    height: 140px;
-    border-radius: var(--border-radius-2xl);
+    width: ${({ $scale }) => 140 * $scale}px;
+    height: ${({ $scale }) => 140 * $scale}px;
+    border-radius: ${({ $scale }) => 20 * $scale}px;
     background: rgba(255,255,255,0.2);
-    border: 4px solid ${({ $position }) =>
-            $position === 1 ? COLORS.gold :
-                    $position === 2 ? COLORS.silver : COLORS.bronze};
-    animation: ${({ $position }) => glowAvatar(
-            $position === 1 ? COLORS.gold :
-                    $position === 2 ? COLORS.silver : COLORS.bronze
-    )} 1.5s ease-in-out infinite;
-	margin-top: var(--spacing);
-`;
-
-const glow = keyframes`
-    0%, 100% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #fff; }
-    50% { text-shadow: 0 0 8px #fff, 0 0 16px #fff, 0 0 24px #fff; }
+    border: ${({ $scale }) => 4 * $scale}px solid
+        ${({ $position }) =>
+            $position === 1
+                ? COLORS.gold
+                : $position === 2
+                ? COLORS.silver
+                : COLORS.bronze};
+    animation: ${({ $position }) =>
+            glowAvatar(
+                $position === 1
+                    ? COLORS.gold
+                    : $position === 2
+                    ? COLORS.silver
+                    : COLORS.bronze
+            )}
+        1.5s ease-in-out infinite;
+	margin-top: ${({ $scale }) => 16 * $scale}px;
 `;
 
 const PodiumBase = styled.div`
     width: 100%;
-    height: ${({ $position }) => podiumHeights[$position]}px;
+    height: ${({ $position, $scale }) => podiumHeights[$position] * $scale}px;
     background: var(--color-background-surface-2);
-    border-radius: var(--border-radius);
-    border: 4px solid
-    	${({ $position }) =>
+    border-radius: ${({ $scale }) => 12 * $scale}px;
+    border: ${({ $scale }) => 4 * $scale}px solid
+        ${({ $position }) =>
             $position === 1
-                    ? COLORS.gold
-                    : $position === 2
-                            ? COLORS.silver
-                            : COLORS.bronze};
+                ? COLORS.gold
+                : $position === 2
+                ? COLORS.silver
+                : COLORS.bronze};
     position: relative;
     display: flex;
     justify-content: center;
@@ -162,30 +177,30 @@ const PodiumBase = styled.div`
 `;
 
 const PodiumNumber = styled.div`
-    font-size: var(--font-size-7xl);
+    font-size: ${({ $scale }) => 56 * $scale}px;
     font-weight: 600;
     color: ${({ $position }) =>
-            $position === 1 ? COLORS.gold :
-                    $position === 2 ? COLORS.silver :
-                            COLORS.bronze};
-    //text-shadow: 0 0 6px #fff, 0 0 12px #fff;
-    //animation: ${glow} 1.5s ease-in-out infinite;
+            $position === 1
+                ? COLORS.gold
+                : $position === 2
+                ? COLORS.silver
+                : COLORS.bronze};
 `;
 
 const Name = styled.div`
-    font-size: var(--font-size-2xl);
+    font-size: ${({ $scale }) => 24 * $scale}px;
     font-weight: 800;
-    margin-top: var(--spacing-l);
+    margin-top: ${({ $scale }) => 24 * $scale}px;
     font-family: "Orbitron", sans-serif;
 `;
 
 const Score = styled.div`
     display: flex;
     align-items: center;
-    font-size: var(--font-size-6xl);
+    font-size: ${({ $scale }) => 48 * $scale}px;
     font-weight: 600;
     color: var(--color-primary-bg);
     font-family: "Orbitron", sans-serif;
     transform: rotate(2deg);
-	margin-bottom: var(--spacing-s);
+	margin-bottom: ${({ $scale }) => 12 * $scale}px;
 `;

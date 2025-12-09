@@ -49,7 +49,7 @@ export default function LeaderboardSearchBar({
 							onClick={() => handleSelect("quiz")}
 							$active={filter === "quiz"}
 						>
-							{t("leaderboard.filterQuiz")}
+							{t("leaderboard.quiz")}
 						</MenuItem>
 					</Menu>
 				)}
