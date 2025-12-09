@@ -87,6 +87,7 @@ const TableContainer = styled.div`
 	width: 100%;
 	border-radius: var(--border-radius-s);
 	background-color: var(--color-background-alt);
+    box-shadow: var(--box-shadow-l);
 	overflow: hidden;
 `;
 

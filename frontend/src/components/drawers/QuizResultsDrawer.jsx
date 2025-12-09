@@ -91,7 +91,7 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz, hideHeader = false }) => 
 					onClose={closeDrawer}
 					icon={<Trophy size={20} />}
 					subtitle={
-						t("leaderboard.quizByOwner", {
+						t("leaderboard.title", {
 							owner: quiz.owner,
 							count: totalParticipants,
 						}) ||
@@ -168,7 +168,7 @@ const Content = styled.div`
 	padding: var(--spacing);
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-m);
+	gap: var(--spacing);
 	overflow-y: auto;
 `;
 
@@ -184,7 +184,7 @@ const InfoChip = styled.div`
 	padding: 0.35rem 0.75rem;
 	border-radius: 999px;
 	background: var(--color-background-surface-4);
-	border: 1px solid var(--color-border-subtle, rgba(255,255,255,0.16));
+	border: 1px solid var(--color-border, rgba(255,255,255,0.16));
 	font-size: 0.75rem;
 	color: var(--color-text-muted);
 
@@ -212,7 +212,7 @@ const SearchLabel = styled.label`
 const SearchInput = styled.input`
 	width: 100%;
 	border-radius: var(--border-radius);
-	border: 1px solid var(--color-border-subtle);
+	border: 1px solid var(--color-border);
 	background: var(--color-background-surface-4);
 	padding: 0.45rem 0.7rem;
 	color: var(--color-text);

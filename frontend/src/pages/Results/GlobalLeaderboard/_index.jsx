@@ -1,20 +1,18 @@
 // src/pages/results/_index.jsx
 import React, { useMemo, useState } from "react";
-import { Award, Search, Trophy } from "lucide-react";
+import { Award, Search } from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
 import Header from "../../../components/layout/Header.jsx";
 import FaviconTitle from "../../../components/layout/Icon.jsx";
 import faviconUrl from "../../../assets/images/favicon.ico?url";
 import LeaderboardPodium from "../../../components/leaderboard/LeaderboardPodium.jsx";
-import { LeaderboardPodiumSmall } from "../../../components/leaderboard/LeaderboardPodiumChild.jsx";
-import LeaderboardSearchBar from "../../../components/leaderboard/LeaderboardSearchBar.jsx";
 import LeaderboardTable from "../../../components/leaderboard/LeaderboardTable.jsx";
 import ToggleThemeSwitch from "../../../components/ui/ToggleThemeSwitch.jsx";
-import { useNavigate } from "react-router-dom";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../../components/ui/Tabs";
 import Input from "../../../components/ui/Input";
-import { QuizResultsDrawer } from "../../../components/drawers/QuizResultsDrawer.jsx";
+import {useDrawer} from "../../../context/drawer";
+
 
 const mockEntries = [
 	{ id: 1, rank: 1, user_name: "Alice", score: 19, time_seconds: 71, quizzes_done: 2, attempts: 3 },
@@ -98,28 +96,19 @@ const mockQuizzes = [
 		],
 	},
 ];
+
+
 export default function ResultsPage() {
 	const { t } = useTranslation();
-	const navigate = useNavigate();
+	const { openDrawer } = useDrawer();
 
 	const [entries] = useState(mockEntries);
 	const [quizEntries] = useState(mockQuizzes);
 	const [searchText, setSearchText] = useState("");
-	const [filter, setFilter] = useState("global");
 	const [sortColumn, setSortColumn] = useState("rank");
 	const [sortAsc, setSortAsc] = useState(true);
-	const [selectedQuiz, setSelectedQuiz] = useState(null);
-	const [sortMode, setSortMode] = useState("quiz");
-	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-	const handleQuizClick = (quiz) => {
-		setSelectedQuiz(quiz);
-		setIsDrawerOpen(true);
-	};
 
-	const handleCloseDrawer = () => {
-		setIsDrawerOpen(false);
-		setSelectedQuiz(null);
-	};
+
 	const columns = [
 		{ key: "rank", label: t("leaderboard.rank"), align: "center" },
 		{ key: "user_name", label: t("leaderboard.name"), align: "left" },
@@ -130,6 +119,9 @@ export default function ResultsPage() {
 	];
 
 
+	const handleQuizClick = (quiz) => {
+		openDrawer("quizResult", { quiz });
+	};
 
 	const podiumEntries = useMemo(() => {
 		return [...entries].sort((a, b) => a.rank - b.rank).slice(0, 3);
@@ -167,18 +159,8 @@ export default function ResultsPage() {
 		return list;
 	}, [entries, searchText, sortColumn, sortAsc]);
 
-	// Tab quiz
-	const podiumQuiz = useMemo(() => {
-		if (!selectedQuiz?.results) return [];
-		return [...selectedQuiz.results]
-			.sort((a, b) => a.rank - b.rank)
-			.slice(0, 3);
-	}, [selectedQuiz]);
-
-
-
 	const filteredQuizzes = useMemo(() => {
-		let list = [...mockQuizzes];
+		let list = [...quizEntries];
 	
 		const text = searchText.trim().toLowerCase();
 		if (text) {
@@ -189,22 +171,14 @@ export default function ResultsPage() {
 				);
 			});
 		}
-	
-		if (sortMode === "owner") {
-			list.sort((a, b) => {
-				const byOwner = a.owner.localeCompare(b.owner);
-				if (byOwner !== 0) return byOwner;
-				return a.title.localeCompare(b.title);
-			});
-		} else {
-			list.sort((a, b) => a.title.localeCompare(b.title));
-		}
+
+		list.sort((a, b) => a.title.localeCompare(b.title));
 	
 		return list;
-		}, [searchText, sortMode]);
+	}, [quizEntries, searchText]);
 
-	const pageTitle =
-		t("pages.leaderboardPage") || "Global leaderboard";
+	const pageTitle = t("pages.leaderboardPage") || "Global leaderboard";
+
 
 	return (
 		<>
@@ -212,7 +186,7 @@ export default function ResultsPage() {
 
 			<Main>
 				<Header
-					title={t("leaderboard.subtitle")}
+					title={t("leaderboard.title")}
 					icon={<Award size={20} />}
 					actions={
 						<ToggleThemeSwitch/>
@@ -226,14 +200,12 @@ export default function ResultsPage() {
 						</PodiumWrapper>
 					</AnimatedBlock>
 
-					<AnimatedBlock style={{ animationDelay: "0.1s" }}>
-					</AnimatedBlock>
 					<AnimatedBlock style={{ animationDelay: "0.25s" }}>
 						<Tabs defaultValue="leaderboard">
 							<HeaderGrid>
 								<TabsList>
-									<TabsTrigger value="leaderboard">{t("leaderboard.filterDefault")}</TabsTrigger>
-									<TabsTrigger value="quizzes">{t("leaderboard.quiz")}</TabsTrigger>
+									<TabsTrigger style={{ minWidth: "var(--spacing-5xl)"}} value="leaderboard">{t("leaderboard.filterDefault")}</TabsTrigger>
+									<TabsTrigger style={{ minWidth: "var(--spacing-5xl)"}} value="quizzes">{t("leaderboard.quiz")}</TabsTrigger>
 								</TabsList>
 								<SearchBarWrapper>
 									<Input
@@ -265,7 +237,7 @@ export default function ResultsPage() {
 
 							<TabsContent value={"quizzes"}>
 									<QuizGrid>
-										{filteredQuizzes.map((quiz) => (
+										{filteredQuizzes?.length > 0 && filteredQuizzes.map((quiz) => (
 											<QuizCard
 												key={quiz.id}
 												onClick={() => handleQuizClick(quiz)}
@@ -305,35 +277,7 @@ export default function ResultsPage() {
 						</Tabs>
 					</AnimatedBlock>
 				</Content>
-				{isDrawerOpen && selectedQuiz && (
-					<DrawerOverlay>
-						<DrawerPanel>
 
-							<DrawerHeader
-								title={selectedQuiz.title}
-								onClose={handleCloseDrawer}
-								icon={<Trophy size={20} />}
-								subtitle={
-									t("leaderboard.quizByOwner", {
-										owner: selectedQuiz.owner,
-										count: selectedQuiz.results.length,
-									}) ||
-									`${selectedQuiz.owner} • ${selectedQuiz.results.length} participants`
-								}
-							/>
-
-							<MiniPodiumWrapper>
-								<LeaderboardPodium entries={podiumQuiz} size={0.6} />
-							</MiniPodiumWrapper>
-
-							<QuizResultsDrawer
-								quiz={selectedQuiz}
-								closeDrawer={handleCloseDrawer}
-								hideHeader={true}
-							/>
-						</DrawerPanel>
-					</DrawerOverlay>
-				)}
 			</Main>
 		</>
 	);
@@ -352,7 +296,7 @@ const Content = styled.section`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	padding: var(--spacing);
+	padding: var(--spacing-xl);
 	gap: var(--spacing-l);
 `;
 
@@ -370,7 +314,10 @@ const AnimatedBlock = styled.div`
 const HeaderGrid = styled.div`
 	display: flex;
 	align-items: center;
-	width: 100%;
+	flex-direction: column;
+	width: 60%;
+	max-width: var(--spacing-12xl);
+	margin: 0 auto;
 	gap: var(--spacing-s);
 `;
 
@@ -378,7 +325,8 @@ const SearchBarWrapper = styled.div`
 	display: flex;
 	justify-content: center;
 	position: relative;
-	margin-bottom: var(--spacing-s);
+	margin-bottom: var(--spacing);
+    width: 100%;
 	flex: 1;
 `;
 
@@ -388,23 +336,23 @@ const PodiumWrapper = styled.div`
 `;
 
 const QuizGrid = styled.div`
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-	gap: var(--spacing-l);
+    display: grid;
+	margin-top: var(--spacing-l);
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing);
+    width: 100%;
 `;
 
 const QuizCard = styled.button`
 	display: flex;
 	flex-direction: column;
-	width: 105%;
-	height: 180px;
-	max-height: 180px;
+	width: 100%;
 
 	border-radius: var(--border-radius-l, 18px);
 	padding: var(--spacing-s);
 	background: var(--color-background-surface-4);
 	border: 1px solid var(--color-border);
-	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--box-shadow-l);
 	cursor: pointer;
 	transition: transform 0.15s ease, box-shadow 0.15s ease,
 		border-color 0.15s ease, background 0.15s ease;
@@ -416,7 +364,7 @@ const QuizCard = styled.button`
 		background: radial-gradient(
 			circle at top left,
 			rgba(79, 70, 229, 0.16),
-			var(--color-surface, rgba(0, 0, 0, 0.3))
+			var(--color-background-surface-1, rgba(0, 0, 0, 0.3))
 		);
 	}
 `;
@@ -474,65 +422,4 @@ const CardFooterHint = styled.div`
 	text-align: right;
 	opacity: 0.7;
 	color: var(--color-text);
-`;
-
-const DrawerHeader = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 16px;
-	border-bottom: 1px solid var(--color-border);
-	background: var(--color-background-surface-1);
-	position: sticky;
-	top: 0;
-	z-index: 20;
-`;
-
-const DrawerTitle = styled.h3`
-	font-size: 1.2rem;
-	font-weight: 600;
-	color: var(--color-text);
-	margin: 0;
-`;
-
-const CloseButton = styled.button`
-	background: none;
-	border: none;
-	font-size: 1.6rem;
-	color: var(--color-text);
-	cursor: pointer;
-	padding: 0 8px;
-	line-height: 1;
-	transition: opacity 0.15s ease;
-	
-	&:hover {
-		opacity: 0.6;
-	}
-`;
-
-const DrawerOverlay = styled.div`
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.45);
-	display: flex;
-	justify-content: flex-end;
-	z-index: 999;
-`;
-
-const DrawerPanel = styled.div`
-	width: min(480px, 100%);
-	height: 100%;
-	background: var(--color-background);
-	box-shadow: -8px 0 20px rgba(0, 0, 0, 0.35);
-	display: flex;
-	flex-direction: column;
-`;
-
-const DrawerPodiumWrapper = styled.div`
-	
-`;
-
-const MiniPodiumWrapper = styled.div`
-    margin-top: 32px;
-    transform-origin: top center;
 `;

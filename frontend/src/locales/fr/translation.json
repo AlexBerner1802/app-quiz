@@ -190,6 +190,7 @@
 		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
 	"leaderboard": {
+		"title":"Leaderboard",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
 		"searchPlaceholder":"Recherche",
 		"sortByRank":"Trier par rang",
