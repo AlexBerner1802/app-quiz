@@ -189,6 +189,10 @@
 		"backToQuizzes":"Torna alla classifica dei quiz",
 		"sortByQuiz":"Ordina per quiz",
 		"sortByOwner":"Ordina per proprietario",
-		"clickForDetails":"Clicca per la classifica completa"	
+		"clickForDetails":"Clicca per la classifica completa",
+		"searchSpecificData": "nome, punteggio, tempo...",
+		"searchUserHelp":"Vengono visualizzati solo i primi 10; usa la barra di ricerca per trovare il risultato che cerchi.",
+		"owner":"Proprietario",
+		"participants":"Partecipanti"	
 	}
 }

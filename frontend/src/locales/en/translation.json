@@ -190,6 +190,10 @@
 		"backToQuizzes":"Back to per quiz leaderboard",
 		"sortByQuiz":"Sort by quiz",
 		"sortByOwner":"Sort by owner",
-		"clickForDetails":"Click for the full leaderboard"	
+		"clickForDetails":"Click for the full leaderboard",
+		"searchSpecificData": "Name, score, time...",
+		"searchUserHelp":"Only the top 10 is displayed, use the search bar to find your result.",
+		"owner":"Owner",
+		"participants":"Participants"	
 	}
 }

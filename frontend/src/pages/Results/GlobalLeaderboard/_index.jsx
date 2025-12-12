@@ -1,4 +1,4 @@
-// src/pages/results/_index.jsx
+// src/pages/results/GlobalLeaderboard/_index.jsx
 import React, { useMemo, useState } from "react";
 import { Award, Search } from "lucide-react";
 import styled, { keyframes } from "styled-components";
@@ -39,6 +39,8 @@ const mockQuizzes = [
 			{ id: 3, rank: 3, user_name: "Charlie", score: 18, time_seconds: 90, attempts: 3 },
 			{ id: 4, rank: 4, user_name: "Denis", score: 15, time_seconds: 120, attempts: 2 },
 			{ id: 11, rank: 5, user_name: "Globert", score: 10, time_seconds: 144, attempts: 3 },
+			{ id: 5, rank: 6, user_name: "Eva", score: 8, time_seconds: 200, attempts: 1 },
+			{ id: 6, rank: 7, user_name: "John", score: 2, time_seconds: 201, attempts: 2 },
 		],
 	},
 	{

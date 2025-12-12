@@ -190,6 +190,10 @@
 		"backToQuizzes":"Zurück zur Quiz-Rangliste",
 		"sortByQuiz":"Nach Quiz sortieren",
 		"sortByOwner":"Nach Eigentümer sortieren",
-		"clickForDetails":"Hier klicken für die vollständige Rangliste"	
+		"clickForDetails":"Hier klicken für die vollständige Rangliste",
+		"searchSpecificData": "Name, Punktzahl, Zeit...",
+		"searchUserHelp":"Es werden nur die Top 10 angezeigt; verwenden Sie die Suchleiste, um Ihr Ergebnis zu finden.",
+		"owner":"Eigentümer",
+		"participants":"Teilnehmer"	
 	}
 }
