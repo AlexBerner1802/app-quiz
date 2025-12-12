@@ -217,5 +217,17 @@
 		"searchUserHelp":"Seul le top 10 est affiché, utilisez la barre de recherche pour trouver votre résultat.",
 		"owner":"Propriétaire",
 		"participants":"Participants"
+	},
+	"profile":{
+		"title": "Compte",
+		"stats": "STATISTIQUES",
+		"totalAttempts": "Essais totaux",
+		"true": "Vrai",
+		"false": "Faux",
+		"totalPoints": "Points totaux",
+		"totalTime": "Temps total",
+		"results": "Mes résultats",
+		"openResults": "Ouvrir",
+		"best": "Meilleur score"
 	}
 }

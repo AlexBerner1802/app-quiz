@@ -195,7 +195,7 @@ export default function QuizLeaderboardPage() {
 											</tr>
 										</thead>
 										<tbody>
-											{quiz.results.slice(0, 5).map((row) => (
+											{results.slice(0, 5).map((row) => (
 												<tr key={row.id}>
 													<td>{row.rank}</td>
 													<td>{row.user_name}</td>

@@ -33,22 +33,26 @@ export default function AppLayout({ children }) {
 		}
 	};
 
+	const avatarText =
+		user && (user.username || user.name || user.localAccountId)
+			? (user.username?.slice(0, 2) || "AB").toUpperCase()
+			: "AB";
+
 	const itemsTop = useMemo(() => ([
 		{ key: "quiz",    title: t("nav.quiz"),    icon: <FlaskConical size={24} />, to: "/home" },
 		{ key: "results", title: t("nav.results"), icon: <Award size={24} />,        to: "/results" },
 		{ key: "search",  title: t("nav.search"),  icon: <Search size={24} />,       to: "/search" },
 	]), [t]);
 
-	const itemsBottom = useMemo(() => ([
-		{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
-		{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
-		{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
-	]), [t]);
+	const myProfilePath = user?.id_user ? `/profile/${user.id_user}` : "/profile";
 
-	const avatarText =
-		user && (user.username || user.name || user.localAccountId)
-			? (user.username?.slice(0, 2) || "AB").toUpperCase()
-			: "AB";
+	const itemsBottom = useMemo(() => ([
+	{ key: "profile",  title: t("nav.profile"), icon: <AvatarCircle text={avatarText} src={user?.avatar} />, to: myProfilePath },
+	{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
+	{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
+	{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
+	]), [t, myProfilePath, avatarText, user?.avatar]);
+
 
 	return (
 		<>
@@ -143,4 +147,14 @@ const ConfirmButton = styled.button`
     &:hover {
         background: #dc2626;
     }
+`;
+
+const AvatarCircle = styled.div`
+	width: 32; 
+	height: 32;
+	borderRadius: "50%";
+    display: "flex";
+	alignItems: "center"; 
+	justifyContent: "center";
+    fontWeight: 700;
 `;

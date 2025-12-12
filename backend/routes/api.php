@@ -6,6 +6,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -36,6 +37,10 @@ Route::get('/user/theme', [UserController::class, 'getTheme']);
 
 // Leaderboard
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+Route::get('/users/{id_user}/profile', [ProfileController::class, 'show']);
+Route::get('/users/{id_user}/quizzes/{id_quiz}/results', [ProfileController::class, 'quizResults']);
+Route::get('/quizzes/{id_quiz}/leaderboard', [QuizLeaderboardController::class, 'show']);
 
 // Preflight
 Route::options('/{any}', function () {
