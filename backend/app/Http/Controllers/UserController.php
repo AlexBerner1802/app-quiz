@@ -88,4 +88,43 @@ class UserController extends Controller
             'theme' => $user->is_dark_mode ? 1 : 0
         ]);
     }
+
+    public function me(\Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        $id_azure = (string) $request->query('id_azure', '');
+
+        if ($id_azure === '') {
+            return response()->json(['message' => 'Missing id_azure'], 400);
+        }
+
+        $u = DB::table('users as u')
+            ->leftJoin('roles as r', 'r.id_role', '=', 'u.id_role')
+            ->where('u.id_azure', $id_azure)
+            ->select([
+                'u.id_user',
+                'u.id_azure',
+                'u.id_role',
+                'u.avatar',
+                'u.username',
+                'u.name',
+                'u.is_dark_mode',
+                DB::raw('COALESCE(r.name, "") as role_name')
+            ])
+            ->first();
+
+        if (!$u) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        return response()->json([
+            'id_user' => (int) $u->id_user,
+            'id_azure' => $u->id_azure,
+            'id_role' => (int) $u->id_role,
+            'roleName' => $u->role_name,
+            'avatar' => $u->avatar,
+            'username' => $u->username,
+            'name' => $u->name,
+            'is_dark_mode' => (bool) $u->is_dark_mode,
+        ]);
+    }
 }

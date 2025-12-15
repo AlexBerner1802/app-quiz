@@ -6,7 +6,7 @@ import styled from "styled-components";
 import {useTranslation} from "react-i18next";
 
 
-export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], itemsBottom = [], avatarText }) {
+export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], itemsBottom = [], avatarText, profileTo }) {
 
 	const {t} = useTranslation();
 
@@ -62,7 +62,15 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 				{itemsBottom.map(renderItem)}
 				{avatarText ? (
 					<TooltipWrapper>
-						<Avatar>{avatarText}</Avatar>
+						{profileTo ? (
+						<StyledLink to={profileTo}>
+							<IconButton title={t("pages.accountPage")} type="button">
+							<Avatar>{avatarText}</Avatar>
+							</IconButton>
+						</StyledLink>
+						) : (
+						<Avatar style={{ opacity: 0.6 }}>{avatarText}</Avatar>
+						)}
 						<Tooltip className="tooltip">{t("pages.accountPage")}</Tooltip>
 					</TooltipWrapper>
 				) : null}

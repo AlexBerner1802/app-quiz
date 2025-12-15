@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { Trophy } from "lucide-react";
@@ -7,158 +7,234 @@ import Button from "../ui/Button";
 import { DrawerHeader, DrawerFooter } from "../../context/drawer/DrawerProvider";
 import LeaderboardTable from "../leaderboard/LeaderboardTable.jsx";
 
-export const QuizResultsDrawer = ({ closeDrawer, quiz, hideHeader = false }) => {
-  const { t } = useTranslation();
-
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const [searchText, setSearchText] = useState("");
-  const [sortColumn, setSortColumn] = useState("rank");
-  const [sortAsc, setSortAsc] = useState(true);
-
-  useEffect(() => {
-    if (!quiz?.id) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/quizzes/${quiz.id}/leaderboard`);
-        if (!res.ok) throw new Error("Failed to load leaderboard");
-        const data = await res.json();
-
-        setResults(Array.isArray(data.results) ? data.results : []);
-      } catch (e) {
-        console.error(e);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [quiz?.id]);
-
-  if (!quiz) {
-    return (
-      <Container>
-        {!hideHeader && (
-          <DrawerHeader
-            title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
-            onClose={closeDrawer}
-            icon={<Trophy size={20} />}
-          />
-        )}
-        <Content>
-          <EmptyState>{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}</EmptyState>
-        </Content>
-        <DrawerFooter>
-          <Button variant="ghost" onClick={closeDrawer}>
-            {t("common.close") ?? "Fermer"}
-          </Button>
-        </DrawerFooter>
-      </Container>
-    );
+function formatTime(sec) {
+  const s = Math.max(0, Math.floor(sec || 0));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    const mm = m % 60;
+    return `${h}h ${String(mm).padStart(2, "0")}m`;
   }
+  return `${m}m ${String(r).padStart(2, "0")}s`;
+}
 
-  const columns = [
-    { key: "rank", label: t("leaderboard.rank"), align: "center" },
-    { key: "user_name", label: t("leaderboard.name"), align: "left" },
-    { key: "score", label: t("leaderboard.score"), align: "right" },
-    { key: "time_seconds", label: t("leaderboard.time"), align: "right" },
-    { key: "attempts", label: t("leaderboard.attempts"), align: "right" },
-  ];
+export const QuizResultsDrawer = ({ closeDrawer, quiz, id_user, hideHeader = false }) => {
+	const { t } = useTranslation();
 
-  const entries = useMemo(() => {
-    let list = Array.isArray(results) ? [...results] : [];
+	const [loading, setLoading] = useState(false);
 
-    const text = searchText.trim().toLowerCase();
-    if (text) {
-      list = list.filter((row) =>
-        Object.values(row).some((v) => String(v).toLowerCase().includes(text))
-      );
-    }
+	const [results, setResults] = useState([]);
 
-    list.sort((a, b) => {
-      const valA = a?.[sortColumn];
-      const valB = b?.[sortColumn];
+	const [searchText, setSearchText] = useState("");
+	const [sortColumn, setSortColumn] = useState("rank");
+	const [sortAsc, setSortAsc] = useState(true);
 
-      if (valA == null) return 1;
-      if (valB == null) return -1;
+	const isGlobalMode = Array.isArray(quiz?.results);
 
-      if (typeof valA === "string") {
-        return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      }
-      return sortAsc ? valA - valB : valB - valA;
-    });
+	useEffect(() => {
+		if (!quiz?.id) {
+		setResults([]);
+		setLoading(false);
+		return;
+		}
 
-    return text ? list : list.slice(0, 10);
-  }, [results, searchText, sortColumn, sortAsc]);
+		if (isGlobalMode) {
+		setResults(quiz.results);
+		setLoading(false);
+		return;
+		}
 
-  const totalParticipants = Array.isArray(results) ? results.length : 0;
+		if (!id_user) {
+		setResults([]);
+		setLoading(false);
+		return;
+		}
 
-  return (
-    <Container>
-      {!hideHeader && (
-        <DrawerHeader
-          title={quiz.title ?? (t("leaderboard.quizResults") ?? "Résultats du quiz")}
-          onClose={closeDrawer}
-          icon={<Trophy size={20} />}
-          subtitle={
-            t("leaderboard.title", { owner: quiz.owner ?? "", count: totalParticipants }) ||
-            `${quiz.owner ?? ""} • ${totalParticipants} participants`
-          }
-        />
-      )}
+		(async () => {
+		try {
+			setLoading(true);
+			const res = await fetch(
+			`${import.meta.env.VITE_API_URL}/api/users/${id_user}/quizzes/${quiz.id}/results?lang=fr`
+			);
+			if (!res.ok) throw new Error("Failed to load quiz results");
+			const data = await res.json();
 
-      <Content>
-        <InfoRow>
-          <InfoChip>
-            <span>{t("leaderboard.participants")}</span>
-            <strong>{totalParticipants}</strong>
-          </InfoChip>
-        </InfoRow>
+			const attempts = Array.isArray(data.attempts) ? data.attempts : [];
 
-        <SearchRow>
-          <SearchLabel>{t("leaderboard.searchPlaceholder")}</SearchLabel>
-          <SearchInput
-            type="text"
-            placeholder={t("leaderboard.searchSpecificData")}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-          <HelpText>{t("leaderboard.searchUserHelp")}</HelpText>
-        </SearchRow>
+			const sorted = [...attempts].sort((a, b) => {
+			const sa = Number(a.score ?? 0);
+			const sb = Number(b.score ?? 0);
+			if (sb !== sa) return sb - sa;
 
-        <TableWrapper>
-          <LeaderboardTable
-            columns={columns}
-            entries={entries}
-            loading={loading}
-            sortColumn={sortColumn}
-            sortAsc={sortAsc}
-            onSortChange={(col, asc) => {
-              setSortColumn(col);
-              setSortAsc(asc);
-            }}
-            sortableColumns={["rank", "user_name", "score", "time_seconds", "attempts"]}
-          />
-        </TableWrapper>
+			const ta = Number(a.time_taken ?? 0);
+			const tb = Number(b.time_taken ?? 0);
+			return ta - tb;
+			});
 
-        {!loading && totalParticipants === 0 && (
-          <EmptyState>{t("leaderboard.noResults") ?? "Aucun résultat trouvé."}</EmptyState>
-        )}
-      </Content>
+			const mapped = sorted.map((a, idx) => ({
+			rank: idx + 1,
+			score: Number(a.score ?? 0),
+			time_seconds: Number(a.time_taken ?? 0),
+			_raw: a,
+			}));
 
-      <DrawerFooter style={{ justifyContent: "flex-end" }}>
-        <Button variant="ghost" onClick={closeDrawer}>
-          {t("actions.back") ?? "Retour"}
-        </Button>
-      </DrawerFooter>
-    </Container>
-  );
+			setResults(mapped);
+		} catch (e) {
+			console.error(e);
+			setResults([]);
+		} finally {
+			setLoading(false);
+		}
+		})();
+	}, [quiz?.id, id_user, isGlobalMode, quiz?.results]);
+
+	if (!quiz) {
+		return (
+		<Container>
+			{!hideHeader && (
+			<DrawerHeader
+				title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
+				onClose={closeDrawer}
+				icon={<Trophy size={20} />}
+			/>
+			)}
+			<Content>
+			<EmptyState>{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}</EmptyState>
+			</Content>
+			<DrawerFooter>
+			<Button variant="ghost" onClick={closeDrawer}>
+				{t("common.close")}
+			</Button>
+			</DrawerFooter>
+		</Container>
+		);
+	}
+
+  	const columns = isGlobalMode
+		? [
+			{ key: "rank", label: t("leaderboard.rank"), align: "center" },
+			{ key: "user_name", label: t("leaderboard.name"), align: "left" },
+			{ key: "score", label: t("leaderboard.score"), align: "right" },
+			{ key: "time_seconds", label: t("leaderboard.time"), align: "right" },
+			{ key: "attempts", label: t("leaderboard.attempts"), align: "right" },
+		]
+		: [
+			{ key: "rank", label: t("leaderboard.rank") ?? "Rang", align: "center" },
+			{ key: "score", label: t("leaderboard.score") ?? "Score", align: "right" },
+			{ key: "time_seconds", label: t("leaderboard.time") ?? "Temps", align: "right" },
+		];
+
+	const entries = useMemo(() => {
+		let list = Array.isArray(results) ? [...results] : [];
+
+		const text = searchText.trim().toLowerCase();
+		if (text) {
+		list = list.filter((row) => {
+			const rank = String(row.rank ?? "");
+			const score = String(row.score ?? "");
+			const time = String(row.time_seconds ?? "");
+			const timeFmt = formatTime(row.time_seconds ?? 0).toLowerCase();
+
+			if (isGlobalMode) {
+			const name = String(row.user_name ?? "").toLowerCase();
+			const attempts = String(row.attempts ?? "");
+			return (
+				rank.includes(text) ||
+				score.includes(text) ||
+				time.includes(text) ||
+				timeFmt.includes(text) ||
+				name.includes(text) ||
+				attempts.includes(text)
+			);
+			}
+
+			return rank.includes(text) || score.includes(text) || time.includes(text) || timeFmt.includes(text);
+		});
+		}
+
+		list.sort((a, b) => {
+		const valA = a?.[sortColumn];
+		const valB = b?.[sortColumn];
+
+		if (valA == null) return 1;
+		if (valB == null) return -1;
+
+		if (typeof valA === "string") {
+			return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+		}
+		return sortAsc ? valA - valB : valB - valA;
+		});
+
+		if (isGlobalMode && !text) return list.slice(0, 10);
+		return list;
+	}, [results, searchText, sortColumn, sortAsc, isGlobalMode]);
+
+	const totalCount = Array.isArray(results) ? results.length : 0;
+
+	return (
+		<Container>
+		{!hideHeader && (
+			<DrawerHeader
+			title={quiz.title}
+			onClose={closeDrawer}
+			icon={<Trophy size={20} />}
+			subtitle={
+				isGlobalMode
+				? (t("leaderboard.title", { owner: quiz.owner ?? "", count: totalCount }) ||
+					`${quiz.owner ?? ""} • ${totalCount} participants`)
+				: (t("profile.myResultsForQuiz") ?? "Mes résultats pour ce quiz")
+			}
+			/>
+		)}
+
+		<Content>
+			<SearchRow>
+			<SearchLabel>
+				{isGlobalMode ? t("leaderboard.searchPlaceholder") : (t("profile.searchResult") ?? "Rechercher un résultat")}
+			</SearchLabel>
+			<SearchInput
+				type="text"
+				placeholder={isGlobalMode ? t("leaderboard.searchSpecificData") : (t("profile.searchScoreTime") ?? "Score / temps / rang...")}
+				value={searchText}
+				onChange={(e) => setSearchText(e.target.value)}
+			/>
+			<HelpText>
+				{isGlobalMode ? t("leaderboard.searchUserHelp") : (t("profile.searchHelp") ?? "Ex: 20, 120, 2m, 1")}
+			</HelpText>
+			</SearchRow>
+
+			<TableWrapper>
+			<LeaderboardTable
+				columns={columns}
+				entries={entries}
+				loading={loading}
+				sortColumn={sortColumn}
+				sortAsc={sortAsc}
+				onSortChange={(col, asc) => {
+				setSortColumn(col);
+				setSortAsc(asc);
+				}}
+				sortableColumns={
+				isGlobalMode
+					? ["rank", "user_name", "score", "time_seconds", "attempts"]
+					: ["rank", "score", "time_seconds"]
+				}
+			/>
+			</TableWrapper>
+
+			{!loading && totalCount === 0 && (
+			<EmptyState>{t("leaderboard.noResults") ?? "Aucun résultat trouvé."}</EmptyState>
+			)}
+		</Content>
+
+		<DrawerFooter style={{ justifyContent: "flex-end" }}>
+			<Button variant="ghost" onClick={closeDrawer}>
+			{t("actions.back") ?? "Retour"}
+			</Button>
+		</DrawerFooter>
+		</Container>
+	);
 };
 
 const Container = styled.div`
@@ -169,33 +245,11 @@ const Container = styled.div`
 
 const Content = styled.div`
 	flex: 1;
-	padding: var(--spacing);
+	padding: 18px;
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing);
+	gap: 14px;
 	overflow-y: auto;
-`;
-
-const InfoRow = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--spacing-s);
-`;
-
-const InfoChip = styled.div`
-	display: inline-flex;
-	flex-direction: column;
-	padding: 0.35rem 0.75rem;
-	border-radius: 999px;
-	background: var(--color-background-surface-4);
-	border: 1px solid var(--color-border, rgba(255, 255, 255, 0.16));
-	font-size: 0.75rem;
-	color: var(--color-text-muted);
-
-	strong {
-		font-size: 0.8rem;
-		color: var(--color-text);
-	}
 `;
 
 const SearchRow = styled.div`
@@ -232,7 +286,9 @@ const HelpText = styled.span`
 `;
 
 const TableWrapper = styled.div`
-  	margin-top: var(--spacing-xs);
+  	margin-top: 6px;
+  	padding-top: 10px;
+  	border-top: 1px solid var(--color-border);
 `;
 
 const EmptyState = styled.div`

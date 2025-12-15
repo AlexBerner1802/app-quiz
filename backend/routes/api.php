@@ -31,6 +31,7 @@ Route::get('/tags', [TagController::class, 'index']);
 Route::post('/tags/update', [TagController::class, 'update']);
 
 // Users
+Route::get('/me', [UserController::class, 'me']);
 Route::post('/user', [UserController::class, 'createUser']);
 Route::put('/user/theme', [UserController::class, 'updateTheme']);
 Route::get('/user/theme', [UserController::class, 'getTheme']);

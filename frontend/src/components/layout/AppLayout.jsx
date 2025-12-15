@@ -12,16 +12,26 @@ import {useAuth} from "../../context/auth";
 export default function AppLayout({ children }) {
 	const { t } = useTranslation();
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
-	const { logout } = useAuth();
+	const { user, logout } = useAuth();
+	const [dbUser, setDbUser] = useState(null);
 
-	const user = useMemo(() => {
-		try {
-			const stored = localStorage.getItem("user");
-			return stored ? JSON.parse(stored) : null;
-		} catch {
-			return null;
-		}
-	}, []);
+	useEffect(() => {
+		(async () => {
+			try {
+			const id_azure = user?.localAccountId;
+			if (!id_azure) return;
+
+			const res = await fetch(`${import.meta.env.VITE_API_URL}/api/me?id_azure=${encodeURIComponent(id_azure)}`);
+			if (!res.ok) throw new Error("Failed to load /me");
+			const data = await res.json();
+			setDbUser(data);
+			} catch (e) {
+			console.error(e);
+			setDbUser(null);
+			}
+		})();
+	}, [user?.localAccountId]);
+
 
 	const handleLogoutClick = () => setShowLogoutModal(true);
 
@@ -33,18 +43,19 @@ export default function AppLayout({ children }) {
 		}
 	};
 
+	const myProfilePath = dbUser?.id_user ? `/profile/${dbUser.id_user}` : null;
+
 	const avatarText =
-		user && (user.username || user.name || user.localAccountId)
-			? (user.username?.slice(0, 2) || "AB").toUpperCase()
+		user?.name
+			? (user.name.slice(0, 2) || "AB").toUpperCase()
 			: "AB";
+
 
 	const itemsTop = useMemo(() => ([
 		{ key: "quiz",    title: t("nav.quiz"),    icon: <FlaskConical size={24} />, to: "/home" },
 		{ key: "results", title: t("nav.results"), icon: <Award size={24} />,        to: "/results" },
 		{ key: "search",  title: t("nav.search"),  icon: <Search size={24} />,       to: "/search" },
 	]), [t]);
-
-	const myProfilePath = user?.id_user ? `/profile/${user.id_user}` : "/profile";
 
 	const itemsBottom = useMemo(() => ([
 	{ key: "profile",  title: t("nav.profile"), icon: <AvatarCircle text={avatarText} src={user?.avatar} />, to: myProfilePath },
@@ -63,6 +74,7 @@ export default function AppLayout({ children }) {
 					itemsTop={itemsTop}
 					itemsBottom={itemsBottom}
 					avatarText={avatarText}
+					profileTo={myProfilePath}
 				/>
 				<PageArea>{children}</PageArea>
 			</Container>
