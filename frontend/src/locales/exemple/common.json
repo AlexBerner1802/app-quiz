@@ -1,0 +1,21 @@
+{
+	"_comment": "Use common.json ONLY for context-free UI vocabulary that: (1) appears in many places, (2) means the same everywhere, and (3) can stand alone without screen context.",
+	
+	"actions": {
+		"save": "Save",
+		"cancel": "Cancel",
+		"close": "Close",
+		"confirm": "Confirm"
+	},
+	
+	"states": {
+		"loading": "Loading…",
+		"error": "Something went wrong",
+		"empty": "No data available"
+	},
+	
+	"time": {
+		"seconds": "seconds",
+		"minutes": "minutes"
+	}
+}

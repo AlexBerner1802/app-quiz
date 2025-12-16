@@ -6,7 +6,6 @@ import SettingsPage from "./pages/Settings/_index";
 import Users from "./pages/Users/_index";
 import ShowQuiz from "./pages/ShowQuiz/_index.jsx";
 import ResultsPage from "./pages/Results/GlobalLeaderboard/_index.jsx";
-import QuizLeaderboardPage from "./pages/Results/LeaderboardPerQuiz/_index.jsx";
 import ProfilePage from "./pages/Profile/_index.jsx";
 import AppLayout from "./components/layout/AppLayout";
 import ContentPage from "./pages/Content/_index";
@@ -59,12 +58,6 @@ export const routes = [
 	{
 		path: "results",
 		element: <ResultsPage />,
-		protected: true,
-		layout: AppLayout
-	},
-	{
-		path: "/results/quizzes",
-		element: <QuizLeaderboardPage />,
 		protected: true,
 		layout: AppLayout
 	},

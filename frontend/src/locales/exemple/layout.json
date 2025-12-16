@@ -1,0 +1,15 @@
+{
+	"sidebar": {
+		"home": "Home",
+		"profile": "Profile",
+		"settings": "Settings",
+		"logout": "Log out"
+	},
+	"topbar": {
+		"searchPlaceholder": "Search...",
+		"notifications": "Notifications"
+	},
+	"footer": {
+		"copyright": "© 2025 MyApp. All rights reserved."
+	}
+}

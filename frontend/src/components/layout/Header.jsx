@@ -53,7 +53,8 @@ const Header = styled.header`
     gap: var(--spacing-s);
     color: var(--color-text);
 	height: 68px;
-    background-color: var(--color-background);
+    background-color: ${({ $withBorder }) =>
+            $withBorder ? "var(--color-background)" : "transparent"};
     border-bottom: ${({ $withBorder }) =>
             $withBorder ? "1px solid var(--color-border)" : "none"};
 `;

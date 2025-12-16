@@ -1,6 +1,6 @@
 // src/pages/results/GlobalLeaderboard/_index.jsx
 import React, { useMemo, useState } from "react";
-import { Award, Search } from "lucide-react";
+import {Award, Search, FileChartColumn, Crown} from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
 import Header from "../../../components/layout/Header.jsx";
@@ -12,21 +12,27 @@ import ToggleThemeSwitch from "../../../components/ui/ToggleThemeSwitch.jsx";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../../components/ui/Tabs";
 import Input from "../../../components/ui/Input";
 import {useDrawer} from "../../../context/drawer";
+import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import FloatingIconBackground from "../../../components/FloatingIconBackground";
+import Astronaut from "../../../components/icons/Astronaut";
+import Atom from "../../../components/icons/Atom";
+import {applyScoreMultiplier} from "../../../utils/score";
 
 
 const mockEntries = [
-	{ id: 1, rank: 1, user_name: "Alice", score: 19, time_seconds: 71, quizzes_done: 2, attempts: 3 },
-	{ id: 2, rank: 2, user_name: "Bob", score: 18, time_seconds: 85, quizzes_done: 1, attempts: 1 },
-	{ id: 3, rank: 3, user_name: "Charlie", score: 17, time_seconds: 90, quizzes_done: 3, attempts: 4 },
-	{ id: 4, rank: 4, user_name: "Denis", score: 15, time_seconds: 120, quizzes_done: 1, attempts: 2 },
-	{ id: 5, rank: 5, user_name: "Eva", score: 12, time_seconds: 150, quizzes_done: 2, attempts: 2 },
-	{ id: 6, rank: 6, user_name: "John", score: 10, time_seconds: 155, quizzes_done: 5, attempts: 7 },
-	{ id: 7, rank: 7, user_name: "Globert", score: 5, time_seconds: 170, quizzes_done: 3, attempts: 3 },
-	{ id: 8, rank: 8, user_name: "Tim", score: 4, time_seconds: 200, quizzes_done: 3, attempts: 4 },
-	{ id: 9, rank: 9, user_name: "Marie", score: 2, time_seconds: 234, quizzes_done: 6, attempts: 8 },
-	{ id: 10, rank: 10, user_name: "Karine", score: 1, time_seconds: 500, quizzes_done: 33, attempts: 35 },
-	{ id: 11, rank: 11, user_name: "Martine", score: 0, time_seconds: 538, quizzes_done: 12, attempts: 15 },
+	{ id: 1, rank: 1, user_name: "Alice", score: 19, total_time_seconds: 71, best_time_seconds: 35, worst_time_seconds: 36, quizzes_done: 2, attempts: 3 },
+	{ id: 2, rank: 2, user_name: "Bob", score: 18, total_time_seconds: 85, best_time_seconds: 40, worst_time_seconds: 45, quizzes_done: 1, attempts: 1 },
+	{ id: 3, rank: 3, user_name: "Charlie", score: 17, total_time_seconds: 90, best_time_seconds: 42, worst_time_seconds: 48, quizzes_done: 3, attempts: 4 },
+	{ id: 4, rank: 4, user_name: "Denis", score: 15, total_time_seconds: 120, best_time_seconds: 55, worst_time_seconds: 65, quizzes_done: 1, attempts: 2 },
+	{ id: 5, rank: 5, user_name: "Eva", score: 12, total_time_seconds: 150, best_time_seconds: 70, worst_time_seconds: 80, quizzes_done: 2, attempts: 2 },
+	{ id: 6, rank: 6, user_name: "John", score: 10, total_time_seconds: 155, best_time_seconds: 72, worst_time_seconds: 83, quizzes_done: 5, attempts: 7 },
+	{ id: 7, rank: 7, user_name: "Globert", score: 5, total_time_seconds: 170, best_time_seconds: 80, worst_time_seconds: 90, quizzes_done: 3, attempts: 3 },
+	{ id: 8, rank: 8, user_name: "Tim", score: 4, total_time_seconds: 200, best_time_seconds: 95, worst_time_seconds: 105, quizzes_done: 3, attempts: 4 },
+	{ id: 9, rank: 9, user_name: "Marie", score: 2, total_time_seconds: 234, best_time_seconds: 110, worst_time_seconds: 124, quizzes_done: 6, attempts: 8 },
+	{ id: 10, rank: 10, user_name: "Karine", score: 1, total_time_seconds: 500, best_time_seconds: 240, worst_time_seconds: 260, quizzes_done: 33, attempts: 35 },
+	{ id: 11, rank: 11, user_name: "Martine", score: 0, total_time_seconds: 538, best_time_seconds: 250, worst_time_seconds: 288, quizzes_done: 12, attempts: 15 },
 ];
+
 
 const mockQuizzes = [
 	{
@@ -34,13 +40,13 @@ const mockQuizzes = [
 		title: "Quiz 1 - Admin 1",
 		owner: "Admin 1",
 		results: [
-			{ id: 1, rank: 1, user_name: "Alice", score: 20, time_seconds: 71, attempts: 2 },
-			{ id: 2, rank: 2, user_name: "Bob", score: 19, time_seconds: 85, attempts: 1 },
-			{ id: 3, rank: 3, user_name: "Charlie", score: 18, time_seconds: 90, attempts: 3 },
-			{ id: 4, rank: 4, user_name: "Denis", score: 15, time_seconds: 120, attempts: 2 },
-			{ id: 11, rank: 5, user_name: "Globert", score: 10, time_seconds: 144, attempts: 3 },
-			{ id: 5, rank: 6, user_name: "Eva", score: 8, time_seconds: 200, attempts: 1 },
-			{ id: 6, rank: 7, user_name: "John", score: 2, time_seconds: 201, attempts: 2 },
+			{ id: 1, rank: 1, user_name: "Alice", score: 20, total_time_seconds: 71, best_time_seconds: 35, worst_time_seconds: 36, attempts: 2 },
+			{ id: 2, rank: 2, user_name: "Bob", score: 19, total_time_seconds: 85, best_time_seconds: 40, worst_time_seconds: 45, attempts: 1 },
+			{ id: 3, rank: 3, user_name: "Charlie", score: 18, total_time_seconds: 90, best_time_seconds: 42, worst_time_seconds: 48, attempts: 3 },
+			{ id: 4, rank: 4, user_name: "Denis", score: 15, total_time_seconds: 120, best_time_seconds: 55, worst_time_seconds: 65, attempts: 2 },
+			{ id: 11, rank: 5, user_name: "Globert", score: 10, total_time_seconds: 144, best_time_seconds: 70, worst_time_seconds: 74, attempts: 3 },
+			{ id: 5, rank: 6, user_name: "Eva", score: 8, total_time_seconds: 200, best_time_seconds: 95, worst_time_seconds: 105, attempts: 1 },
+			{ id: 6, rank: 7, user_name: "John", score: 2, total_time_seconds: 201, best_time_seconds: 100, worst_time_seconds: 101, attempts: 2 },
 		],
 	},
 	{
@@ -48,8 +54,8 @@ const mockQuizzes = [
 		title: "Quiz 2 - Admin 1",
 		owner: "Admin 1",
 		results: [
-			{ id: 5, rank: 1, user_name: "Eva", score: 20, time_seconds: 60, attempts: 1 },
-			{ id: 6, rank: 2, user_name: "John", score: 18, time_seconds: 92, attempts: 2 },
+			{ id: 5, rank: 1, user_name: "Eva", score: 20, total_time_seconds: 60, best_time_seconds: 30, worst_time_seconds: 30, attempts: 1 },
+			{ id: 6, rank: 2, user_name: "John", score: 18, total_time_seconds: 92, best_time_seconds: 45, worst_time_seconds: 47, attempts: 2 },
 		],
 	},
 	{
@@ -57,35 +63,41 @@ const mockQuizzes = [
 		title: "Quiz 3 - Formateur 2",
 		owner: "Formateur 2",
 		results: [
-			{ id: 7, rank: 1, user_name: "Marie", score: 17, time_seconds: 75, attempts: 2 },
-			{ id: 8, rank: 2, user_name: "Tim", score: 14, time_seconds: 100, attempts: 3 },
+			{ id: 7, rank: 1, user_name: "Marie", score: 17, total_time_seconds: 75, best_time_seconds: 37, worst_time_seconds: 38, attempts: 2 },
+			{ id: 8, rank: 2, user_name: "Tim", score: 14, total_time_seconds: 100, best_time_seconds: 48, worst_time_seconds: 52, attempts: 3 },
 		],
 	},
 	{
 		id: "quiz-4",
 		title: "Quiz 4 - Formateur 1",
 		owner: "Formateur 1",
-		results: [{ id: 9, rank: 1, user_name: "Karine", score: 19, time_seconds: 68, attempts: 1 },],
+		results: [
+			{ id: 9, rank: 1, user_name: "Karine", score: 19, total_time_seconds: 68, best_time_seconds: 33, worst_time_seconds: 35, attempts: 1 },
+		],
 	},
 	{
 		id: "quiz-5",
 		title: "Quiz 5 - Admin 2",
 		owner: "Admin 2",
-		results: [{ id: 10, rank: 1, user_name: "Martine", score: 16, time_seconds: 110, attempts: 2 },],
+		results: [
+			{ id: 10, rank: 1, user_name: "Martine", score: 16, total_time_seconds: 110, best_time_seconds: 55, worst_time_seconds: 55, attempts: 2 },
+		],
 	},
 	{
 		id: "quiz-6",
 		title: "Quiz 6 - Formateur 2",
 		owner: "Formateur 2",
-		results: [{ id: 11, rank: 1, user_name: "Globert", score: 12, time_seconds: 140, attempts: 4 },],
+		results: [
+			{ id: 11, rank: 1, user_name: "Globert", score: 12, total_time_seconds: 140, best_time_seconds: 70, worst_time_seconds: 70, attempts: 4 },
+		],
 	},
 	{
 		id: "quiz-7",
 		title: "Quiz 7 - Admin 1",
 		owner: "Admin 1",
 		results: [
-			{ id: 5, rank: 1, user_name: "Eva", score: 20, time_seconds: 60, attempts: 1 },
-			{ id: 6, rank: 2, user_name: "John", score: 18, time_seconds: 92, attempts: 2 },
+			{ id: 5, rank: 1, user_name: "Eva", score: 20, total_time_seconds: 60, best_time_seconds: 30, worst_time_seconds: 30, attempts: 1 },
+			{ id: 6, rank: 2, user_name: "John", score: 18, total_time_seconds: 92, best_time_seconds: 45, worst_time_seconds: 47, attempts: 2 },
 		],
 	},
 	{
@@ -93,11 +105,12 @@ const mockQuizzes = [
 		title: "Quiz 8 - Admin 1",
 		owner: "Admin 1",
 		results: [
-			{ id: 5, rank: 1, user_name: "Eva", score: 20, time_seconds: 60, attempts: 1 },
-			{ id: 6, rank: 2, user_name: "John", score: 18, time_seconds: 92, attempts: 2 },
+			{ id: 5, rank: 1, user_name: "Eva", score: 20, total_time_seconds: 60, best_time_seconds: 30, worst_time_seconds: 30, attempts: 1 },
+			{ id: 6, rank: 2, user_name: "John", score: 18, total_time_seconds: 92, best_time_seconds: 45, worst_time_seconds: 47, attempts: 2 },
 		],
 	},
 ];
+
 
 
 export default function ResultsPage() {
@@ -112,14 +125,19 @@ export default function ResultsPage() {
 
 
 	const columns = [
-		{ key: "rank", label: t("leaderboard.rank"), align: "center" },
-		{ key: "user_name", label: t("leaderboard.name"), align: "left" },
-		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right" },
-		{ key: "score", label: t("leaderboard.score"), align: "right" },
-		{ key: "time_seconds", label: t("leaderboard.time"), align: "right" },
-		{ key: "attempts", label: t("leaderboard.attempts"), align: "right" },
+		{ key: "rank", label: t("leaderboard.rank"), align: "center", width: "100px" },
+		{ key: "user_name", label: t("leaderboard.name"), align: "left", width: "2fr" },
+		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right", width: "1fr" },
+		{ key: "score", label: t("leaderboard.score"), align: "right", width: "1fr" },
+		{ key: "time_seconds", label: t("leaderboard.best_time"), align: "right", width: "1fr" },
+		{ key: "attempts", label: t("leaderboard.attempts"), align: "right", width: "1fr" },
 	];
 
+	const rankColor = {
+		1: "#FFD700", // gold
+		2: "#C0C0C0", // silver
+		3: "#CD7F32", // bronze
+	};
 
 	const handleQuizClick = (quiz) => {
 		openDrawer("quizResult", { quiz });
@@ -196,6 +214,13 @@ export default function ResultsPage() {
 				/>
 
 				<Content>
+
+					<FloatingIconBackground color={"var(--color-text)"} icon={<Astronaut />} />
+					<FloatingIconBackground size={220} speed={0.4} color={"var(--color-text)"} icon={<Astronaut />}/>
+					<FloatingIconBackground size={120} speed={0.9} color={"var(--color-text)"} icon={<Atom />}/>
+					<FloatingIconBackground color={"var(--color-text)"} />
+					<FloatingIconBackground size={120} speed={0.9} color={"var(--color-text)"}/>
+
 					<AnimatedBlock>
 						<PodiumWrapper>
 							<LeaderboardPodium entries={podiumEntries} />
@@ -238,43 +263,53 @@ export default function ResultsPage() {
 							</TabsContent>
 
 							<TabsContent value={"quizzes"}>
-									<QuizGrid>
+								<ResponsiveMasonry
+									columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 4 }}
+								>
+									<Masonry gutter={"var(--spacing)"}>
 										{filteredQuizzes?.length > 0 && filteredQuizzes.map((quiz) => (
 											<QuizCard
 												key={quiz.id}
 												onClick={() => handleQuizClick(quiz)}
 											>
-												<QuizTitle>{quiz.title}</QuizTitle>
-												<QuizOwner>{quiz.owner}</QuizOwner>
+												<Overlay>
+													<FileChartColumn size={40} color={"var(--color-primary-bg)"}/>
+												</Overlay>
+
+												<QuizHeader>
+													<QuizTitle>{quiz.title}</QuizTitle>
+													<QuizOwner>{quiz.owner}</QuizOwner>
+												</QuizHeader>
 
 												<MiniTable>
-													<thead>
-														<tr>
-															<th>#</th>
-															<th>{t("leaderboard.name")}</th>
-															<th>{t("leaderboard.time")}</th>
-															<th>{t("leaderboard.score")}</th>
-														</tr>
-													</thead>
-													<tbody>
-														{quiz.results.slice(0, 5).map((row) => (
-															<tr key={row.id}>
-																<td>{row.rank}</td>
-																<td>{row.user_name}</td>
-																<td>{row.time_seconds}s</td>
-																<td>{row.score}</td>
-															</tr>
-														))}
-													</tbody>
+													{quiz.results.slice(0, 5).map((row, idx) => (
+														<MiniRow key={row.id} index={idx}>
+															<MiniCell>
+																{row.rank}
+															</MiniCell>
+															<MiniCell>
+																{row.rank <= 3 ? (
+																	<>
+																		{row.user_name}
+																		<Crown size={14}
+																			   color={rankColor[row.rank]}
+																			   style={{ position: 'relative', top: "-1px" }} />
+																	</>
+																) : (
+																	row.user_name
+																)}
+															</MiniCell>
+															<MiniCell>
+																{/*<Award size={16} color="var(--color-text-muted)" />*/}
+																{applyScoreMultiplier(row.score)}
+															</MiniCell>
+														</MiniRow>
+													))}
 												</MiniTable>
-
-												<CardFooterHint>
-													{t("leaderboard.clickForDetails") ??
-														"Cliquer pour voir le classement complet"}
-												</CardFooterHint>
 											</QuizCard>
 										))}
-									</QuizGrid>
+									</Masonry>
+								</ResponsiveMasonry>
 							</TabsContent>
 						</Tabs>
 					</AnimatedBlock>
@@ -291,7 +326,9 @@ const Main = styled.main`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	background-color: var(--color-background);
+	background: var(--gradient-background);
+	background-size: 400% 400%;
+	transition: background 0.3s ease;
 `;
 
 const Content = styled.section`
@@ -337,91 +374,94 @@ const PodiumWrapper = styled.div`
 	justify-content: center;
 `;
 
-const QuizGrid = styled.div`
-    display: grid;
-	margin-top: var(--spacing-l);
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--spacing);
+const QuizCard = styled.div`
+    position: relative;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    border-radius: var(--border-radius, 18px);
+    background: var(--color-background-surface-4);
+    border: 1px solid var(--color-border);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
 `;
 
-const QuizCard = styled.button`
+const Overlay = styled.div`
+	position: absolute;
+	inset: 0;
+	background: var(--color-background-overlay);
 	display: flex;
+	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	transition: all 0.2s ease;
+	z-index: 1;
+	
+	${QuizCard}:hover & {
+		opacity: 1;
+	}
+`;
+
+const QuizHeader = styled.div`
+	padding: var(--spacing);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	flex-direction: column;
-	width: 100%;
-
-	border-radius: var(--border-radius-l, 18px);
-	padding: var(--spacing-s);
-	background: var(--color-background-surface-4);
-	border: 1px solid var(--color-border);
-    box-shadow: var(--box-shadow-l);
-	cursor: pointer;
-	transition: transform 0.15s ease, box-shadow 0.15s ease,
-		border-color 0.15s ease, background 0.15s ease;
-
-	&:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
-		border-color: var(--color-primary-bg, #4f46e5);
-		background: radial-gradient(
-			circle at top left,
-			rgba(79, 70, 229, 0.16),
-			var(--color-background-surface-1, rgba(0, 0, 0, 0.3))
-		);
-	}
+	background: var(--color-background-alt);
 `;
 
-const QuizTitle = styled.h3`
+const QuizTitle = styled.p`
 	text-align: center;
-	font-size: 0.95rem;
-	font-weight: 600;
-	margin: 0 0 0.2rem 0;
+	font-size: var(--font-size);
+	color: var(--color-text);
+	font-weight: 500;
 `;
 
-const QuizOwner = styled.div`
+const QuizOwner = styled.span`
 	text-align: center;
-	font-size: 0.8rem;
-	opacity: 0.8;
-	margin-bottom: var(--spacing-s);
-	color: var(--color-text);
+    font-size: var(--font-size-s);
+	color: var(--color-text-muted);
 `;
 
-const MiniTable = styled.table`
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.8rem;
-	table-layout: fixed;
-	color: var(--color-text);
-
-	th,
-	td {
-		padding: 0.15rem 0.3rem;
-		text-align: left;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	th {
-		font-weight: 600;
-		border-bottom: 1px solid var(--color-border-strong);
-	}
-
-	tbody tr:nth-child(even) {
-		background: var(--color-background-surface-5);
-	}
-
-	tbody tr {
-		border-bottom: 1px solid var(--color-border-strong);
-		border-right: 1px solid var(--color-border-strong);
-		border-left: 1px solid var(--color-border-strong);
-	}
+const MiniTable = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    font-size: var(--font-size-s);
+    color: var(--color-text);
 `;
 
-const CardFooterHint = styled.div`
-	margin-top: auto;
-	font-size: 0.7rem;
-	text-align: right;
-	opacity: 0.7;
-	color: var(--color-text);
+const MiniRow = styled.div`
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-s) var(--spacing);
+    border-top: 1px solid var(--color-border);
+    background: ${({ index }) => index % 2 === 0 ? 'var(--color-background-surface-3)' : 'transparent'};
 `;
+
+const MiniCell = styled.div`
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+	gap: var(--spacing-s);
+
+    &:first-child {
+        width: 50px; /* rank */
+        justify-content: center;
+    }
+    &:nth-child(2) {
+        flex: 1; /* user name */
+    }
+    &:last-child {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-s);
+        justify-content: flex-end; /* score / icon */
+    }
+`;
+

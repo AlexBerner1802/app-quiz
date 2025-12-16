@@ -150,6 +150,7 @@
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/intervention/image" />
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/intervention/image-laravel" />
       <excludeFolder url="file://$MODULE_DIR$/backend/vendor/phpunit/php-text-template" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/_laravel_idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

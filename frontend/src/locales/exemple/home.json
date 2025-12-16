@@ -1,0 +1,13 @@
+{
+	"welcome": "Welcome to your dashboard",
+	"description": "Here is an overview of your recent activity.",
+	
+	"sections": {
+		"recentQuizzes": "Recent quizzes",
+		"leaderboard": "Leaderboard"
+	},
+	
+	"empty": {
+		"noActivity": "You don’t have any activity yet"
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"title": "Profile",
+	"subtitle": "Manage your personal information",
+	
+	"fields": {
+		"name": "Name",
+		"email": "Email address",
+		"password": "Password"
+	},
+	
+	"actions": {
+		"changePassword": "Change password",
+		"logout": "Log out"
+	},
+	
+	"success": {
+		"updated": "Profile updated successfully"
+	}
+}

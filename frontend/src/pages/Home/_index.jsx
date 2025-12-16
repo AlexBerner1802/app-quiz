@@ -194,7 +194,7 @@ export default function HomePage() {
 							</NoCards>
 						) : (
 							<ResponsiveMasonry
-								columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 5 }}
+								columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 4 }}
 							>
 								<Masonry gutter={"var(--spacing)"}>
 									{filteredQuizzes.map((q, index) => (

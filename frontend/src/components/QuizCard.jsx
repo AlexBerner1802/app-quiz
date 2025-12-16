@@ -120,7 +120,7 @@ const ImageWrapper = styled.div`
 	position: relative;
 	width: 100%;
 	height: var(--spacing-5xl);
-	min-height: 128px;
+	min-height: var(--spacing-7xl);
 	border-radius: var(--border-radius-s);
 	overflow: hidden;
 	transition: height 0.3s ease-in-out;

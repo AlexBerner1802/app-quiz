@@ -161,6 +161,8 @@
       <path value="$PROJECT_DIR$/backend/vendor/laravel/wayfinder" />
       <path value="$PROJECT_DIR$/backend/vendor/laravel/socialite" />
       <path value="$PROJECT_DIR$/backend/vendor/nikic/php-parser" />
+      <path value="$PROJECT_DIR$/backend/vendor/webmozart/assert" />
+      <path value="$PROJECT_DIR$/vendor/_laravel_idea" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2">

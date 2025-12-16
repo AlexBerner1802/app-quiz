@@ -1,7 +1,9 @@
 import React from "react";
 import styled from "styled-components";
-import { ArrowUpDown } from "lucide-react";
+import {ArrowUpDown, Award, Crown} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import Invader from "../icons/Invader";
+import {applyScoreMultiplier} from "../../utils/score";
 
 export default function LeaderboardTable({
 											 columns= [],
@@ -13,6 +15,14 @@ export default function LeaderboardTable({
 											 sortableColumns = [], // e.g. ["rank", "user_name", "score", "quizzes_done", "time_seconds", "attempts"]
 										 }) {
 	const { t } = useTranslation();
+
+	const getGridTemplateColumns = (columns) => {
+		return columns
+			.map(col => col.width || "1fr")
+			.join(" ");
+	};
+
+	const template = getGridTemplateColumns(columns);
 
 	const handleHeaderClick = (column) => {
 		if (!sortableColumns.includes(column)) return;
@@ -31,9 +41,15 @@ export default function LeaderboardTable({
 		return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 	};
 
+	const rankColor = {
+		1: "#FFD700", // gold
+		2: "#C0C0C0", // silver
+		3: "#CD7F32", // bronze
+	};
+
 	return (
 		<TableContainer>
-			<HeaderRow>
+			<HeaderRow template={template}>
 				{columns.map((col) => (
 					<HeaderCell
 						key={col.key}
@@ -70,10 +86,41 @@ export default function LeaderboardTable({
 				)}
 				{!loading &&
 					entries.map((entry) => (
-						<DataRow key={entry.id ?? entry.user_name}>
+						<DataRow key={entry.id ?? entry.user_name} template={template}>
 							{columns.map((col) => (
 								<Cell key={col.key} $align={col.align}>
-									{col.key === "time_seconds" ? formatTime(entry[col.key]) : entry[col.key]}
+									{col.key === "user_name" ? (
+										<AvatarWrapper>
+											{entry.avatar ? (
+												<AvatarImage src={entry.avatar} alt={entry.user_name} />
+											) : (
+												<AvatarCircle>
+													<Invader size={30} color={"var(--color-input-placeholder)"} />
+												</AvatarCircle>
+											)}
+											{entry.user_name}
+											{entry.rank <= 3 && (
+												<Crown
+													size={16}
+													color={rankColor[entry.rank]}
+												/>
+											)}
+										</AvatarWrapper>
+									) : col.key === "time_seconds" ? (
+										<TimeWrapper title={`Best: ${formatTime(entry.best_time_seconds)} | Worst: ${formatTime(entry.worst_time_seconds)} | Total: ${formatTime(entry.total_time_seconds)} `}>
+											{formatTime(entry.best_time_seconds)}
+											{/*<DetailTimeWrapper>
+												({formatTime(entry.total_time_seconds)})
+											</DetailTimeWrapper>*/}
+										</TimeWrapper>
+									) : col.key === "score" ? (
+										<ScoreTag>
+											<Award size={22} color={"var(--color-primary-bg)"} style={{ transform: "rotate(10deg)", position: "relative", top: "-1px"}}/>
+											{applyScoreMultiplier(entry[col.key])}
+										</ScoreTag>
+									) : (
+										entry[col.key]
+									)}
 								</Cell>
 							))}
 						</DataRow>
@@ -85,21 +132,17 @@ export default function LeaderboardTable({
 
 const TableContainer = styled.div`
 	width: 100%;
-	border-radius: var(--border-radius-s);
-	background-color: var(--color-background-alt);
-    box-shadow: var(--box-shadow-l);
 	overflow: hidden;
 `;
 
 const HeaderRow = styled.div`
-	display: grid;
-	grid-template-columns: 100px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
-	padding: var(--spacing-s);
-	background-color: var(--color-background-alt);
-	font-weight: 600;
-	font-size: var(--font-size);
+    display: grid;
+    grid-template-columns: ${({ template }) => template};
+    padding: var(--spacing-s) var(--spacing-l) var(--spacing-s) var(--spacing-s);
+    font-weight: 600;
+    font-size: var(--font-size);
     color: var(--color-text);
-	line-height: var(--spacing-xl);
+    line-height: var(--spacing-xl);
 `;
 
 const HeaderCell = styled.div`
@@ -119,22 +162,22 @@ const Body = styled.div`
 `;
 
 const DataRow = styled.div`
-	display: grid;
-	grid-template-columns: 100px minmax(0, 1.8fr) repeat(4, 1fr) 40px;
-	background-color: var(--color-background-surface-4);
-	padding: var(--spacing-s);
-	font-size: var(--font-size);
-	color: var(--color-text);
-	line-height: var(--spacing-xl);
-
-	&:nth-child(even) {
-		background-color: var(--color-background-surface-3);
-	}
+    display: grid;
+    grid-template-columns: ${({ template }) => template};
+    background-color: var(--color-background-surface-3);
+    padding: var(--spacing-s) var(--spacing-l) var(--spacing-s) var(--spacing-s);
+    font-size: var(--font-size);
+    color: var(--color-text);
+    line-height: var(--spacing-xl);
+    margin: var(--spacing-2xs) 0;
+    border-radius: var(--border-radius-xs);
+    border: 1px solid var(--color-border);
 `;
 
 const Cell = styled.div`
     display: flex;
     align-items: center;
+	font-weight: 500;
     justify-content: ${({ $align }) =>
             $align === "right" ? "flex-end" :
                     $align === "center" ? "center" :
@@ -147,3 +190,52 @@ const EmptyRow = styled.div`
 	color: var(--color-text-muted);
 	font-size: var(--font-size-s);
 `;
+
+const AvatarWrapper = styled.div`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing);
+`;
+
+const AvatarCircle = styled.div`
+	width: var(--spacing-2xl);
+	height: var(--spacing-2xl);
+	border-radius: var(--border-radius-xs);
+	background-color: var(--color-background-surface-2);
+	color: var(--color-input-placeholder);
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 14px;
+	flex-shrink: 0;
+	overflow: hidden;
+`;
+
+const AvatarImage = styled.img`
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+`;
+
+const ScoreTag = styled.span`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+    padding: var(--spacing-2xs) var(--spacing-s);
+    border-radius: var(--border-radius-xs);
+	gap: var(--spacing-s);
+    font-weight: 600;
+    font-size: var(--font-size-s);
+    background: var(--color-primary-muted);
+    color: var(--color-text, white);
+    box-shadow: var(--box-shadow);
+`;
+
+const TimeWrapper = styled.div`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	font-weight: 500;
+`;
+

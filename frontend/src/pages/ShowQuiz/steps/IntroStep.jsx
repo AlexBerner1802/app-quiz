@@ -11,6 +11,11 @@ export default function IntroStep({ quiz, onStart }) {
 
 	const { t } = useTranslation();
 
+	const MEDIA_URL = import.meta.env.VITE_MEDIA_URL || "http://localhost:8000";
+	const resolvedImg = quiz.cover_image_url?.startsWith("/")
+		? `${MEDIA_URL}${quiz.cover_image_url}`
+		: quiz.cover_image_url;
+
 	return (
 		<>
 			<ParticlesBackground preset="links" />
@@ -20,7 +25,7 @@ export default function IntroStep({ quiz, onStart }) {
 				<Title>{quiz.title}</Title>
 
 				<CoverContainer>
-					<Cover src={quiz.cover_image_url} alt={quiz.title} />
+					<Cover src={resolvedImg} alt={quiz.title} />
 					<OwnerLine>
 						<span className="owner">{quiz.owner.name}</span>
 						<span className="dot" />

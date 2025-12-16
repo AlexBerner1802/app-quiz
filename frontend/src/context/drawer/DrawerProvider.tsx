@@ -111,7 +111,7 @@ const DrawerWrapper = styled.div<{ $isActive: boolean; $open: boolean }>`
     position: fixed;
     top: var(--spacing-s);
     right: var(--spacing-s);
-    width: var(--spacing-9xl);
+    min-width: var(--spacing-9xl);
     height: calc(100vh - (var(--spacing-s) * 2 + 2px));
     background: var(--color-background-surface-2, #fff);
     border: 1px solid var(--color-border, #fff);

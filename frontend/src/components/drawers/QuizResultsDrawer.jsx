@@ -1,11 +1,12 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { Trophy } from "lucide-react";
+import {Search, Trophy} from "lucide-react";
 
 import Button from "../ui/Button";
 import { DrawerHeader, DrawerFooter } from "../../context/drawer/DrawerProvider";
 import LeaderboardTable from "../leaderboard/LeaderboardTable.jsx";
+import Input from "../ui/Input";
 
 function formatTime(sec) {
   const s = Math.max(0, Math.floor(sec || 0));
@@ -34,95 +35,96 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz, id_user, hideHeader = fal
 
 	useEffect(() => {
 		if (!quiz?.id) {
-		setResults([]);
-		setLoading(false);
-		return;
+			setResults([]);
+			setLoading(false);
+			return;
 		}
 
 		if (isGlobalMode) {
-		setResults(quiz.results);
-		setLoading(false);
-		return;
+			setResults(quiz.results);
+			setLoading(false);
+			return;
 		}
 
 		if (!id_user) {
-		setResults([]);
-		setLoading(false);
-		return;
+			setResults([]);
+			setLoading(false);
+			return;
 		}
 
 		(async () => {
-		try {
-			setLoading(true);
-			const res = await fetch(
-			`${import.meta.env.VITE_API_URL}/api/users/${id_user}/quizzes/${quiz.id}/results?lang=fr`
-			);
-			if (!res.ok) throw new Error("Failed to load quiz results");
-			const data = await res.json();
+			try {
+				setLoading(true);
+				const res = await fetch(
+				`${import.meta.env.VITE_API_URL}/api/users/${id_user}/quizzes/${quiz.id}/results?lang=fr`
+				);
+				if (!res.ok) throw new Error("Failed to load quiz results");
+				const data = await res.json();
 
-			const attempts = Array.isArray(data.attempts) ? data.attempts : [];
+				const attempts = Array.isArray(data.attempts) ? data.attempts : [];
 
-			const sorted = [...attempts].sort((a, b) => {
-			const sa = Number(a.score ?? 0);
-			const sb = Number(b.score ?? 0);
-			if (sb !== sa) return sb - sa;
+				const sorted = [...attempts].sort((a, b) => {
+				const sa = Number(a.score ?? 0);
+				const sb = Number(b.score ?? 0);
+				if (sb !== sa) return sb - sa;
 
-			const ta = Number(a.time_taken ?? 0);
-			const tb = Number(b.time_taken ?? 0);
-			return ta - tb;
-			});
+				const ta = Number(a.time_taken ?? 0);
+				const tb = Number(b.time_taken ?? 0);
+				return ta - tb;
+				});
 
-			const mapped = sorted.map((a, idx) => ({
-			rank: idx + 1,
-			score: Number(a.score ?? 0),
-			time_seconds: Number(a.time_taken ?? 0),
-			_raw: a,
-			}));
+				const mapped = sorted.map((a, idx) => ({
+				rank: idx + 1,
+				score: Number(a.score ?? 0),
+				time_seconds: Number(a.time_taken ?? 0),
+				_raw: a,
+				}));
 
-			setResults(mapped);
-		} catch (e) {
-			console.error(e);
-			setResults([]);
-		} finally {
-			setLoading(false);
-		}
+				setResults(mapped);
+			} catch (e) {
+				console.error(e);
+				setResults([]);
+			} finally {
+				setLoading(false);
+			}
 		})();
 	}, [quiz?.id, id_user, isGlobalMode, quiz?.results]);
 
+
 	if (!quiz) {
 		return (
-		<Container>
-			{!hideHeader && (
-			<DrawerHeader
-				title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
-				onClose={closeDrawer}
-				icon={<Trophy size={20} />}
-			/>
-			)}
-			<Content>
-			<EmptyState>{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}</EmptyState>
-			</Content>
-			<DrawerFooter>
-			<Button variant="ghost" onClick={closeDrawer}>
-				{t("common.close")}
-			</Button>
-			</DrawerFooter>
-		</Container>
+			<Container>
+				{!hideHeader && (
+					<DrawerHeader
+						title={t("leaderboard.quizResults") ?? "Résultats du quiz"}
+						onClose={closeDrawer}
+						icon={<Trophy size={20} />}
+					/>
+				)}
+				<Content>
+					<EmptyState>{t("leaderboard.noQuizSelected") ?? "Aucun quiz sélectionné."}</EmptyState>
+				</Content>
+				<DrawerFooter>
+					<Button variant="ghost" onClick={closeDrawer}>
+						{t("common.close")}
+					</Button>
+				</DrawerFooter>
+			</Container>
 		);
 	}
 
-  	const columns = isGlobalMode
+	const columns = isGlobalMode
 		? [
-			{ key: "rank", label: t("leaderboard.rank"), align: "center" },
-			{ key: "user_name", label: t("leaderboard.name"), align: "left" },
-			{ key: "score", label: t("leaderboard.score"), align: "right" },
-			{ key: "time_seconds", label: t("leaderboard.time"), align: "right" },
-			{ key: "attempts", label: t("leaderboard.attempts"), align: "right" },
+			{ key: "rank", label: t("leaderboard.rank"), align: "center", width: "100px" },
+			{ key: "user_name", label: t("leaderboard.name"), align: "left", width: "2fr" },
+			{ key: "score", label: t("leaderboard.score"), align: "right", width: "1fr" },
+			{ key: "time_seconds", label: t("leaderboard.best_time"), align: "right", width: "1fr" },
+			{ key: "attempts", label: t("leaderboard.attempts"), align: "right", width: "1fr" },
 		]
 		: [
-			{ key: "rank", label: t("leaderboard.rank") ?? "Rang", align: "center" },
-			{ key: "score", label: t("leaderboard.score") ?? "Score", align: "right" },
-			{ key: "time_seconds", label: t("leaderboard.time") ?? "Temps", align: "right" },
+			{ key: "rank", label: t("leaderboard.rank") ?? "Rang", align: "center", width: "100px" },
+			{ key: "score", label: t("leaderboard.score") ?? "Score", align: "right", width: "1fr" },
+			{ key: "time_seconds", label: t("leaderboard.time") ?? "Temps", align: "right", width: "1fr" },
 		];
 
 	const entries = useMemo(() => {
@@ -172,123 +174,80 @@ export const QuizResultsDrawer = ({ closeDrawer, quiz, id_user, hideHeader = fal
 
 	const totalCount = Array.isArray(results) ? results.length : 0;
 
+
 	return (
 		<Container>
-		{!hideHeader && (
-			<DrawerHeader
-			title={quiz.title}
-			onClose={closeDrawer}
-			icon={<Trophy size={20} />}
-			subtitle={
-				isGlobalMode
-				? (t("leaderboard.title", { owner: quiz.owner ?? "", count: totalCount }) ||
-					`${quiz.owner ?? ""} • ${totalCount} participants`)
-				: (t("profile.myResultsForQuiz") ?? "Mes résultats pour ce quiz")
-			}
-			/>
-		)}
-
-		<Content>
-			<SearchRow>
-			<SearchLabel>
-				{isGlobalMode ? t("leaderboard.searchPlaceholder") : (t("profile.searchResult") ?? "Rechercher un résultat")}
-			</SearchLabel>
-			<SearchInput
-				type="text"
-				placeholder={isGlobalMode ? t("leaderboard.searchSpecificData") : (t("profile.searchScoreTime") ?? "Score / temps / rang...")}
-				value={searchText}
-				onChange={(e) => setSearchText(e.target.value)}
-			/>
-			<HelpText>
-				{isGlobalMode ? t("leaderboard.searchUserHelp") : (t("profile.searchHelp") ?? "Ex: 20, 120, 2m, 1")}
-			</HelpText>
-			</SearchRow>
-
-			<TableWrapper>
-			<LeaderboardTable
-				columns={columns}
-				entries={entries}
-				loading={loading}
-				sortColumn={sortColumn}
-				sortAsc={sortAsc}
-				onSortChange={(col, asc) => {
-				setSortColumn(col);
-				setSortAsc(asc);
-				}}
-				sortableColumns={
-				isGlobalMode
-					? ["rank", "user_name", "score", "time_seconds", "attempts"]
-					: ["rank", "score", "time_seconds"]
-				}
-			/>
-			</TableWrapper>
-
-			{!loading && totalCount === 0 && (
-			<EmptyState>{t("leaderboard.noResults") ?? "Aucun résultat trouvé."}</EmptyState>
+			{!hideHeader && (
+				<DrawerHeader
+					title={quiz.title}
+					onClose={closeDrawer}
+					icon={<Trophy size={20} />}
+					subtitle={
+						isGlobalMode
+						? (t("leaderboard.title", { owner: quiz.owner ?? "", count: totalCount }) ||
+							`${quiz.owner ?? ""} • ${totalCount} participants`)
+						: (t("profile.myResultsForQuiz") ?? "Mes résultats pour ce quiz")
+					}
+				/>
 			)}
-		</Content>
 
-		<DrawerFooter style={{ justifyContent: "flex-end" }}>
-			<Button variant="ghost" onClick={closeDrawer}>
-			{t("actions.back") ?? "Retour"}
-			</Button>
-		</DrawerFooter>
+			<Content>
+				<Input
+					type="text"
+					placeholder={isGlobalMode ? t("leaderboard.searchPlaceholder") : (t("profile.searchResult") ?? "Rechercher un résultat")}
+					value={searchText}
+					onChange={(e) => setSearchText(e.target.value)}
+					icon={<Search size={20} color={"var(--color-text-muted)"} />}
+					size="m"
+					width="100%"
+				/>
+
+				<LeaderboardTable
+					columns={columns}
+					entries={entries}
+					loading={loading}
+					sortColumn={sortColumn}
+					sortAsc={sortAsc}
+					onSortChange={(col, asc) => {
+						setSortColumn(col);
+						setSortAsc(asc);
+					}}
+					sortableColumns={
+						isGlobalMode
+							? ["rank", "user_name", "score", "time_seconds", "attempts"]
+							: ["rank", "score", "time_seconds"]
+					}
+				/>
+
+				{!loading && totalCount === 0 && (
+					<EmptyState>{t("leaderboard.noResults") ?? "Aucun résultat trouvé."}</EmptyState>
+				)}
+			</Content>
+
+			<DrawerFooter>
+				<Button variant="secondary" onClick={closeDrawer}>
+					{t("common.actions.close")}
+				</Button>
+			</DrawerFooter>
 		</Container>
 	);
 };
+
 
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	width: var(--spacing-12xl);
 `;
 
 const Content = styled.div`
 	flex: 1;
-	padding: 18px;
+	padding: var(--spacing);
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: var(--spacing);
 	overflow-y: auto;
-`;
-
-const SearchRow = styled.div`
-	display: flex;
-	flex-direction: column;
-	gap: 0.3rem;
-`;
-
-const SearchLabel = styled.label`
-	font-size: 0.8rem;
-	color: var(--color-text-muted);
-`;
-
-const SearchInput = styled.input`
-	width: 100%;
-	border-radius: var(--border-radius);
-	border: 1px solid var(--color-border);
-	background: var(--color-background-surface-4);
-	padding: 0.45rem 0.7rem;
-	color: var(--color-text);
-	font-size: 0.85rem;
-
-	&:focus {
-		outline: none;
-		border-color: var(--color-primary-bg);
-		box-shadow: 0 0 0 1px var(--color-primary-bg);
-	}
-`;
-
-const HelpText = styled.span`
-	font-size: 0.7rem;
-	opacity: 0.7;
-	color: var(--color-text-muted);
-`;
-
-const TableWrapper = styled.div`
-  	margin-top: 6px;
-  	padding-top: 10px;
-  	border-top: 1px solid var(--color-border);
 `;
 
 const EmptyState = styled.div`
@@ -296,7 +255,7 @@ const EmptyState = styled.div`
 	align-items: center;
 	justify-content: center;
 	color: var(--color-text-muted);
-	font-size: 0.9rem;
+	font-size: var(--font-size);
 	text-align: center;
 	padding: var(--spacing);
 `;

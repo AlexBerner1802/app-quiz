@@ -19,7 +19,7 @@
     --color-secondary-muted-text: var(--indigo-400);
 
     /* Success */
-    --color-success-text: var(--brand-success-800);
+    --color-success-text: var(--brand-success-50);
     --color-success-bg: var(--brand-success-500);
     --color-success-bg-hover: var(--brand-success-600);
     --color-success-bg-active: var(--brand-success-700);
@@ -27,7 +27,7 @@
     --color-success-muted-text: var(--brand-success-400);
 
     /* Error */
-    --color-error-text: var(--brand-error-800);
+    --color-error-text: var(--brand-error-50);
     --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
     --color-error-bg-active: var(--brand-error-700);
@@ -35,7 +35,7 @@
     --color-error-muted-text: var(--brand-error-400);
 
     /* Warning */
-    --color-warning-text: var(--brand-warning-800);
+    --color-warning-text: var(--brand-warning-50);
     --color-warning-bg: var(--brand-warning-500);
     --color-warning-bg-hover: var(--brand-warning-600);
     --color-warning-bg-active: var(--brand-warning-700);
@@ -43,7 +43,7 @@
     --color-warning-muted-text: var(--brand-warning-400);
 
     /* Notification  */
-    --color-notification-text: var(--brand-notification-700);
+    --color-notification-text: var(--brand-notification-50);
     --color-notification-bg: var(--brand-notification-500);
     --color-notification-bg-hover: var(--brand-notification-600);
     --color-notification-bg-active: var(--brand-notification-700);
@@ -55,7 +55,7 @@
     --gradient-success: linear-gradient(135deg, var(--brand-success-400), var(--brand-success-700));
     --gradient-error: linear-gradient(135deg, var(--brand-error-400), var(--brand-error-800));
     --gradient-warning: linear-gradient(135deg, var(--brand-warning-400), var(--brand-warning-700));
-    --gradient-background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 50%, var(--slate-400) 100%);
+    --gradient-background: linear-gradient(135deg, var(--slate-50) 0%,var(--slate-50) 100%);
 
     /* Additional Utility Colors */
     --color-highlight: var(--brand-primary-100);     /* Highlighted text or UI elements */
@@ -66,7 +66,7 @@
     /* ------------------ Base / Backgrounds ------------------ */
 
     --color-background: var(--slate-50);                /* Main page background */
-    --color-background-muted: var(--slate-100);         /* Secondary / subtle background */
+    --color-background-muted: var(--slate-200);         /* Secondary / subtle background */
     --color-background-alt: var(--slate-200);           /* Alternate section backgrounds */
     --color-text: var(--slate-900);                     /* Primary text color */
     --color-text-muted: var(--slate-500);               /* Secondary / muted text */
@@ -92,7 +92,7 @@
     --color-input-border: var(--slate-300);                     /* Input border */
     --color-input-text: var(--slate-900);                       /* Text inside input */
     --color-input-focus-border: var(--brand-primary-500);       /* Focus state border */
-    --color-input-placeholder: var(--slate-500);                /* Placeholder text */
+    --color-input-placeholder: var(--slate-400);                /* Placeholder text */
     --color-input-disabled-background: var(--slate-100);        /* Disabled input background */
     --color-input-disabled-text: var(--slate-400);              /* Disabled input text */
 

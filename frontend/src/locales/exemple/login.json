@@ -1,0 +1,19 @@
+{
+	"title": "Sign in",
+	"subtitle": "Welcome back! Please enter your details.",
+	
+	"fields": {
+		"email": "Email address",
+		"password": "Password"
+	},
+	
+	"actions": {
+		"login": "Sign in",
+		"forgotPassword": "Forgot password?"
+	},
+	
+	"errors": {
+		"invalidCredentials": "Incorrect email or password",
+		"requiredField": "This field is required"
+	}
+}
