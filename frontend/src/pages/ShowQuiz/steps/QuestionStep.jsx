@@ -129,12 +129,12 @@ const Wrapper = styled.div`
 `;
 
 const Sidebar = styled.div`
-	border-right: 1px solid var(--color-border);
+	border-right: ${({ $open }) => ($open ? "1px solid var(--color-border)" : "none")};
     padding: ${({ $open }) => ($open ? "var(--spacing-l)" : "0")};
     width: ${({ $open }) => ($open ? "var(--spacing-8xl)" : "0")};
     overflow-y: auto; 
     overflow-x: hidden;
-    transition: width .3s, padding .3s;
+    transition: all .3s;
     display: flex;
     flex-direction: column;
 `;

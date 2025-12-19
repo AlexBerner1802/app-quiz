@@ -6,7 +6,7 @@ export default function FloatingIconBackground({
 												   size = 160,
 												   speed = 0.6,
 												   opacity = 0.1,
-												   color = "#000",
+												   color = "var(--color-text)",
 												   icon,
 											   }) {
 	const ref = useRef(null);

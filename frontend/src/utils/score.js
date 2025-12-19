@@ -1,7 +1,9 @@
 
 export function applyScoreMultiplier(score, withSpace = true) {
 	const multiplier = import.meta.env.VITE_SCORE_MULTIPLIER || 1000;
-	const result = score * multiplier;
+
+	// Ensure integer result (no decimals)
+	const result = Math.round(score * multiplier);
 
 	if (!withSpace) return result;
 

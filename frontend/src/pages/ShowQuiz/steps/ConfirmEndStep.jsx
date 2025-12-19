@@ -1,15 +1,21 @@
 import React from "react";
 import styled from "styled-components";
 import Button from "../../../components/ui/Button";
-import ParticlesBackground from "../../../components/particules/ParticlesBackground";
+import FloatingIconBackground from "../../../components/FloatingIconBackground";
+import Astronaut from "../../../components/icons/Astronaut";
+import Atom from "../../../components/icons/Atom";
 
 export default function ConfirmEndStep({ onCancel, onConfirm, saving }) {
 	return (
 		<EndCard>
-			<ParticlesBackground
-				preset="confetti-rainbow"
-				colors={["--color-primary-bg", "--color-primary-bg-hover", "--color-primary-bg-muted"]}
-			/>
+
+			<FloatingIconBackground icon={<Astronaut />}/>
+			<FloatingIconBackground icon={<Astronaut />}/>
+			<FloatingIconBackground icon={<Atom />}/>
+			<FloatingIconBackground icon={<Atom />}/>
+			<FloatingIconBackground />
+			<FloatingIconBackground />
+
 			<Content>
 				<Title>You're Almost There!</Title>
 				<Message>Ready to wrap up the quiz and see your results?</Message>
@@ -42,7 +48,7 @@ const Content = styled.div`
     padding: var(--spacing-2xl);
 	box-shadow: var(--box-shadow-l);
 	border-radius: var(--border-radius);
-	background-color: var(--color-background-surface-1);
+	background-color: var(--color-background-surface-2);
 	z-index: 2;
 `;
 

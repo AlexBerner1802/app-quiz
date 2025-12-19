@@ -135,6 +135,7 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     height: 100%;
+	width: var(--spacing-9xl);
 `;
 
 const Content = styled.div`
@@ -144,6 +145,7 @@ const Content = styled.div`
     flex-direction: column;
     gap: var(--spacing-l);
     overflow-y: auto;
+	width: 100%;
 `;
 
 const Section = styled.div`
