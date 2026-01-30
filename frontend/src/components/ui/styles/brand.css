@@ -1,16 +1,16 @@
 :root {
 	/* Primary palette */
-    --brand-primary-50:  var(--blue-50);
-    --brand-primary-100: var(--blue-100);
-    --brand-primary-200: var(--blue-200);
-    --brand-primary-300: var(--blue-300);
-    --brand-primary-400: var(--blue-400);
-    --brand-primary-500: var(--blue-500);  /* default primary */
-    --brand-primary-600: var(--blue-600);
-    --brand-primary-700: var(--blue-700);
-    --brand-primary-800: var(--blue-800);
-    --brand-primary-900: var(--blue-900);
-    --brand-primary-950: var(--blue-950);
+    --brand-primary-50:  var(--curious-blue-50);
+    --brand-primary-100: var(--curious-blue-100);
+    --brand-primary-200: var(--curious-blue-200);
+    --brand-primary-300: var(--curious-blue-300);
+    --brand-primary-400: var(--curious-blue-400);
+    --brand-primary-500: var(--curious-blue-500);
+    --brand-primary-600: var(--curious-blue-600);  /* default primary */
+    --brand-primary-700: var(--curious-blue-700);
+    --brand-primary-800: var(--curious-blue-800);
+    --brand-primary-900: var(--curious-blue-900);
+    --brand-primary-950: var(--curious-blue-950);
 
 	/* Success palette */
     --brand-success-50:  var(--green-50);

@@ -1,7 +1,24 @@
 :root {
     /* Base sizes */
     --base-size: 16px;       /* used for spacing, border-radius, etc. */
-    --font-base-size: 14px;  /* used for font sizes */
+    --font-base-size: 16px;  /* used for font sizes */
+
+    /* Header/Footer */
+    --header-height: 56px;      /* small 48px, medium 56px, large 68px */
+    --footer-height: 64px;      /* small 48px, medium 64px, large 80px */
+
+    /* Input/Button/Tag */
+    --input-height-s: 36px;
+    --input-height: 40px;
+    --input-height-l: 48px;
+
+    --button-height-s: 36px;
+    --button-height: 40px;
+    --button-height-l: 48px;
+
+    --tag-height-s: 32px;
+    --tag-height: 40px;
+    --tag-height-l: 48px;
 
     /* Spacing scale (multiples of base-size) */
     --spacing-2xs: calc(var(--spacing) * 0.125);    /* 2px */
@@ -22,7 +39,13 @@
     --spacing-11xl: calc(var(--spacing) * 48);      /* 768px */
     --spacing-12xl: calc(var(--spacing) * 64);      /* 1024px */
     --spacing-13xl: calc(var(--spacing) * 80);      /* 1280px */
-    --spacing-14xl: calc(var(--spacing) * 93.75);   /* 1500px approx */
+    --spacing-14xl: calc(var(--spacing) * 90);      /* 1440px */
+    --spacing-15xl: calc(var(--spacing) * 100);     /* 1600px */
+    --spacing-16xl: calc(var(--spacing) * 110);     /* 1760px */
+    --spacing-17xl: calc(var(--spacing) * 120);     /* 1920px */
+    --spacing-18xl: calc(var(--spacing) * 128);     /* 2048px */
+    --spacing-19xl: calc(var(--spacing) * 140);     /* 2240px */
+    --spacing-20xl: calc(var(--spacing) * 160);     /* 2560px ultra-wide screens */
 
     /* Font Sizes (multiples of font-base-size) */
     --font-size-3xs: calc(var(--font-base-size) * 0.5);    /* 7px */
@@ -68,8 +91,4 @@
     --bp-laptop: 1024px;
     --bp-desktop: 1280px;
     --bp-wide: 1536px;
-
-    /* Header/Footer */
-    --header-height: 60px; /* 64px */
-    --footer-height: 60px; /* 64px */
 }

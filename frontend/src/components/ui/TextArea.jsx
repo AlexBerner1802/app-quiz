@@ -134,7 +134,7 @@ const StyledTextArea = styled.textarea`
     padding: ${({ $size, $hasIcon }) => {
         if ($size === "s") return $hasIcon ? "var(--spacing-xs) var(--spacing-xs)" : "var(--spacing-xs) var(--spacing-s)";
         if ($size === "l") return $hasIcon ? "var(--spacing) var(--spacing-l)" : "var(--spacing) var(--spacing-l)";
-        return $hasIcon ? "var(--spacing-s) var(--spacing) var(--spacing-s) var(--spacing-s)" : "var(--spacing-s) var(--spacing)";
+        return $hasIcon ? "var(--spacing-s) var(--spacing)" : "var(--spacing-s) var(--spacing)";
     }};
 	
     font-size: ${({ $size }) =>

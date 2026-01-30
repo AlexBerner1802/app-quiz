@@ -56,7 +56,7 @@ const Header = styled.header`
     background-color: ${({ $withBorder }) =>
             $withBorder ? "var(--color-background)" : "transparent"};
     border-bottom: ${({ $withBorder }) =>
-            $withBorder ? "1px solid var(--color-border)" : "none"};
+            $withBorder ? "1px solid var(--color-border-subtle)" : "none"};
 `;
 
 const Left = styled.div`

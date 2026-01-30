@@ -1,10 +1,11 @@
 import styled from "styled-components";
-import { createTimestamp } from "../utils/dateUtils";
 import Tag from "./ui/Tag";
-import { SquareArrowOutUpRight } from "lucide-react";
+import {Pen, SquareArrowOutUpRight, Trash} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { Highlight } from "../utils/hightlight.jsx";
+import Invader from "./icons/Invader";
+import Button from "./ui/Button";
 
 
 export default function QuizCard({
@@ -40,34 +41,59 @@ export default function QuizCard({
 		? `${MEDIA_URL}${cover_image_url}`
 		: cover_image_url;
 
+	function renderTags(tags, maxVisible = 1) {
+		const visibleTags = tags.slice(0, maxVisible);
+		const hiddenCount = tags.length - visibleTags.length;
+
+		return (
+			<>
+				{visibleTags.map((t) => (
+					<Tag key={t.id} size={"s"} variant="secondary">{t.name}</Tag>
+				))}
+				{hiddenCount > 0 && <Tag size={"s"} variant="secondary" style={{ fontWeight: 500 }}>+{hiddenCount}</Tag>}
+			</>
+		);
+	}
+
+
 	return (
 		<Container data-inactive={!is_active} $loading={loading} onClick={safeClick}>
 			<ImageWrapper $loading={loading}>
 				{loading ? (
-					<Skeleton width="100%" height="100%" />
+					<>
+						{/* Cover image skeleton */}
+						<Skeleton width="100%" height="100%" />
+
+						{/* Avatar skeleton */}
+						<AvatarSkeleton />
+					</>
 				) : (
 					<>
 						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!is_active} />
-						<Overlay>
-							<SquareArrowOutUpRight size={32} color="var(--gray-50)" strokeWidth={2} />
-							<OverlayTitle>{title}</OverlayTitle>
-							<OverlayActions>
-								<OverlayBtn
-									type="button"
-									onClick={(e) => { e.stopPropagation(); onEdit?.(id); }}
-								>
-									{t("actions.edit")}
-								</OverlayBtn>
 
-								<OverlayBtn
-									type="button"
-									data-variant="danger"
-									onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}
-								>
-									{t("actions.delete")}
-								</OverlayBtn>
-							</OverlayActions>
-						</Overlay>
+						<EditButton
+							variant="ghost" isIcon
+							onClick={(e) => { e.stopPropagation(); onEdit?.(id); }}
+						>
+							<Pen size={20} />
+						</EditButton>
+
+						<DeleteButton
+							type="button"
+							onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}
+						>
+							<Trash size={16} />
+						</DeleteButton>
+
+						<AvatarWrapper onClick={(e) => e.stopPropagation()}>
+							{quiz.avatar_url ? (
+								<AvatarImage src={quiz.avatar_url} alt="Author avatar" />
+							) : (
+								<FallbackIcon>
+									<Invader size={32} color={"var(--color-primary-text)"} />
+								</FallbackIcon>
+							)}
+						</AvatarWrapper>
 					</>
 				)}
 			</ImageWrapper>
@@ -81,16 +107,9 @@ export default function QuizCard({
 					{loading ? <Skeleton width="100%" /> : <Highlight text={description} query={searchText} />}
 				</Description>
 
-				<Timestamp>
-					{loading ? <Skeleton width="50%" /> : createTimestamp(created_at, updated_at)}
-				</Timestamp>
-
 				<TagsContainer>
 					{loading ? (
 						<>
-							{Array.from({ length: 2 }).map((_, i) => (
-								<Skeleton key={`module-${i}`} width={100} height={24} style={{ borderRadius: 4 }} />
-							))}
 							{Array.from({ length: 3 }).map((_, i) => (
 								<Skeleton key={`tag-${i}`} width={80} height={24} style={{ borderRadius: 4 }} />
 							))}
@@ -98,107 +117,38 @@ export default function QuizCard({
 					) : (
 						<>
 							{modules.map((m) => (
-								<Tag key={`module-${m.id}`}>
-									{m.name}
-								</Tag>
+								<Tag key={`module-${m.id}`} size={"s"}>{m.name}</Tag>
 							))}
 
-							{tags.map((t) => (
-								<Tag key={`tag-${t.id}`} variant="secondary">
-									{t.name}
-								</Tag>
-							))}
+							{renderTags(tags, 1)}
 						</>
 					)}
 				</TagsContainer>
+
 			</Section>
 		</Container>
 	);
 }
 
-const ImageWrapper = styled.div`
-	position: relative;
-	width: 100%;
-	height: var(--spacing-5xl);
-	min-height: var(--spacing-7xl);
-	border-radius: var(--border-radius-s);
-	overflow: hidden;
-	transition: height 0.3s ease-in-out;
-	pointer-events: ${(props) => (props.$loading ? 'none' : 'auto')};
-`;
-
-const Section = styled.div`
-	flex: 1;
-	background: var(--color-background);
-	display: flex;
-	flex-direction: column;
-	gap: var(--spacing-xs);
-	padding: 0 var(--spacing-s) var(--spacing-s);
-	transition: height 0.3s ease-in-out, opacity 0.2s ease, visibility 0.2s ease, padding 0.2s ease;
-	border-radius: var(--border-radius);
-`;
-
-const Overlay = styled.div`
-	position: absolute;
-	inset: 0;
-	background: var(--color-background-overlay);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	padding: var(--spacing);
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.3s ease, visibility 0.3s ease;
-	z-index: 1;
-`;
-
-const OverlayTitle = styled.h3`
-	margin-top: var(--spacing);
-	color: var(--gray-50);
-	font-size: var(--font-size-xl);
-	line-height: var(--line-height-xl);
-	font-weight: 600;
-	text-align: center;
-	opacity: 0;
-	transform: scale(0.96);
-	transition: opacity 0.4s ease, transform 0.4s ease;
-	transition-delay: 0s;
-`;
-
 const Container = styled.div`
 	display: flex;
 	flex-direction: column;
-	padding: var(--spacing-s);
 	height: 100%;
-	min-height: 280px;
-	border-radius: var(--border-radius);
-	border: 1px solid var(--color-border);
-	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    min-height: 376px;
+	background-color: var(--color-background-surface-1);
+	box-shadow: var(--box-shadow);
+	border-radius: var(--border-radius-l);
+    outline: 2px solid transparent;
+	transition: all 0.2s ease;
+    overflow: hidden;
 	cursor: pointer;
 
 	/* Disable hover if loading */
 	&:hover {
 		z-index: ${(props) => (props.$loading ? 'auto' : '1000')};
-	}
-	&:hover ${ImageWrapper} {
-		height: ${(props) => (props.$loading ? 'var(--spacing-5xl)' : '100%')};
-	}
-	&:hover ${Section} {
-		opacity: ${(props) => (props.$loading ? '1' : '0')};
-		visibility: ${(props) => (props.$loading ? 'visible' : 'hidden')};
-		height: ${(props) => (props.$loading ? 'auto' : '0')};
-		padding: ${(props) => (props.$loading ? '0 var(--spacing-s) var(--spacing-s)' : '0')};
-		flex: ${(props) => (props.$loading ? '1' : '0')};
-	}
-	&:hover ${Overlay} {
-		opacity: ${(props) => (props.$loading ? '0' : '1')};
-		visibility: ${(props) => (props.$loading ? 'hidden' : 'visible')};
-	}
-	&:hover ${OverlayTitle} {
-		opacity: ${(props) => (props.$loading ? '0' : '1')};
-		transform: ${(props) => (props.$loading ? 'scale(0.96)' : 'scale(1)')};
-		transition-delay: 0.1s;
+        outline: 2px solid var(--color-primary-bg-hover);
+        background-color: var(--color-primary-muted);
+		box-shadow: var(--box-shadow-l);
 	}
 
 	&[data-inactive="true"] {
@@ -208,6 +158,16 @@ const Container = styled.div`
 	&[data-inactive="true"]:hover {
 		transform: none;
 	}
+`;
+
+const ImageWrapper = styled.div`
+	position: relative;
+	width: 100%;
+	height: var(--spacing-6xl);
+	min-height: var(--spacing-6xl);
+	transition: height 0.3s ease-in-out;
+	pointer-events: ${(props) => (props.$loading ? 'none' : 'auto')};
+	background: var(--color-background-alt);
 `;
 
 const Image = styled.div`
@@ -221,31 +181,118 @@ const Image = styled.div`
 	}
 `;
 
+const EditButton = styled(Button)`
+	position: absolute;
+	top: var(--spacing-s);
+	right: var(--spacing-s);
+	background-color: var(--color-background-overlay);
+	color: var(--color-primary-text);
+	z-index: 10;
+	
+	&:hover {
+        background-color: var(--color-background-overlay)!important;
+	}
+`;
+
+const DeleteButton = styled.button`
+	position: absolute;
+	top: var(--spacing-s);
+	right: calc(var(--spacing-s) + 56px);
+	z-index: 10;
+	
+	background: rgba(220, 38, 38, 0.8);
+	color: white;
+	border: none;
+	border-radius: var(--border-radius);
+	padding: var(--spacing-2xs) var(--spacing-xs);
+	
+	cursor: pointer;
+	backdrop-filter: blur(4px);
+	transition: background 0.2s ease, transform 0.2s ease;
+	
+	&:hover {
+		background: rgba(185, 28, 28, 0.9);
+		transform: translateY(-1px);
+	}
+`;
+
+const AvatarSkeleton = styled(Skeleton)`
+	position: absolute !important;
+	bottom: -24px;
+	left: var(--spacing-l);
+	width: 50px !important;
+	height: 50px !important;
+    border-radius: var(--border-radius-s);
+	z-index: 30;
+`;
+
+const AvatarWrapper = styled.div`
+	position: absolute;
+	bottom: -24px;
+	left: var(--spacing-l);
+	z-index: 30;
+	width: 50px;
+	height: 50px;
+	border-radius: var(--border-radius-s);
+	background: var(--color-background-surface-2);
+	border: 1px solid var(--color-border-subtle);
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: var(--box-shadow);
+`;
+
+const AvatarImage = styled.img`
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+    border-radius: var(--border-radius);
+    border: 1px solid white;
+`;
+
+const FallbackIcon = styled.div`
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--border-radius);
+`;
+
+const Section = styled.div`
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-xs);
+    padding: var(--spacing-l);
+	transition: height 0.3s ease-in-out, opacity 0.2s ease, visibility 0.2s ease, padding 0.2s ease;
+	border-radius: var(--border-radius);
+	position: relative;
+	z-index: 5;
+`;
+
 const Title = styled.p`
 	font-size: var(--font-size-xl);
 	font-weight: 500;
 	margin: var(--spacing) 0 var(--spacing-xs);
 	color: var(--color-text);
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 `;
 
 const Description = styled.p`
     font-size: var(--font-size);
-    font-weight: 500;
+    font-weight: 400;
     margin: 0 0 var(--spacing);
     color: var(--color-text-muted);
     display: -webkit-box;
-    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    -webkit-line-clamp: 2;
     line-height: 1.5;
-    max-height: calc(1.5em * 3);
-`;
-
-const Timestamp = styled.div`
-	font-size: var(--font-size-xs);
-	color: var(--color-text-muted);
-	margin-top: auto;
-	width: 100%;
+    height: calc(1.5em * 2);
 `;
 
 const TagsContainer = styled.div`
@@ -253,31 +300,4 @@ const TagsContainer = styled.div`
 	flex-wrap: wrap;
     gap: var(--spacing-xs);
 	margin-top: var(--spacing-xs);
-`;
-
-const OverlayActions = styled.div`
-	display: flex;
-	gap: 8px;
-	margin-top: var(--spacing);
-	flex-wrap: wrap;
-	justify-content: center;
-`;
-
-const OverlayBtn = styled.button`
-	border: 1px solid #ffffff55;
-	background: #ffffff22;
-	color: #fff;
-	padding: 6px 10px;
-	border-radius: 8px;
-	font-size: 12px;
-	cursor: pointer;
-
-	&:hover {
-		background: #ffffff35;
-	}
-
-	&[data-variant="danger"] {
-		border-color: #ef444455;
-		background: #ef444422;
-	}
 `;

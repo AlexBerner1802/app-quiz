@@ -144,7 +144,7 @@ const LeftPanel = styled.aside`
     flex-direction: column;
     gap: var(--spacing-s);
     padding: var(--spacing-l);
-    border-right: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-input-border);
     height: 100%;
     min-height: 0;
     overflow-y: auto;

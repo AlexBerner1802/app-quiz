@@ -4,21 +4,22 @@ import {X} from "lucide-react";
 
 const variants = {
 	primary: css`
-        background-color: var(--color-primary-bg);
-        color: var(--color-primary-text);
+        background-color: var(--color-primary-muted);
+        color: var(--color-primary-muted-text);
         border: 1px solid transparent;
 
         ${({ $clickable }) =>
                 $clickable &&
                 css`
-                &:hover {
-                    background-color: var(--color-primary-bg-hover);
-                }
-            `}
+					&:hover {
+                        color: var(--color-primary-text);
+						background-color: var(--color-primary-bg-hover);
+					}
+            	`}
 	`,
 	secondary: css`
         background-color: var(--color-background-surface-3);
-        color: var(--color-primary-bg);
+        color: var(--color-primary-muted-text);
         border: 1px solid transparent;
 
         ${({ $clickable }) =>
@@ -36,14 +37,14 @@ const variants = {
         border: 1px solid var(--color-primary-bg);
 
         ${({ $clickable }) =>
-                $clickable &&
+			$clickable &&
                 css`
-                &:hover {
-                    background-color: var(--color-primary-bg);
-                    color: var(--color-primary-text);
-                    border-color: var(--color-primary-bg);
-                }
-            `}
+					&:hover {
+						background-color: var(--color-primary-bg-hover);
+						color: var(--color-primary-text);
+						border-color: var(--color-primary-bg-hover);
+					}
+            	`}
 	`,
 	ghost: css`
         background-color: transparent;
@@ -51,12 +52,12 @@ const variants = {
         border: 1px solid transparent;
 
         ${({ $clickable }) =>
-                $clickable &&
+			$clickable &&
                 css`
-                &:hover {
-                    color: var(--color-primary-bg);
-                }
-            `}
+					&:hover {
+						color: var(--color-primary-bg);
+					}
+            	`}
 	`,
 	destructive: css`
         background-color: var(--color-error-bg);
@@ -106,8 +107,9 @@ const sizes = {
 	s: css`
         font-size: var(--font-size-xs);
         font-weight: 500;
-		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-2xs) var(--spacing-2xs) var(--spacing-2xs) var(--spacing-xs)" : "var(--spacing-2xs) var(--spacing-xs)")};
+		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-2xs) var(--spacing-xs) var(--spacing-2xs) var(--spacing-s)" : "var(--spacing-2xs) var(--spacing-s)")};
         border-radius: var(--border-radius-2xs);
+		min-height: var(--tag-height-s);
 		
 		& svg {
 			width: var(--font-size-xs);
@@ -119,6 +121,7 @@ const sizes = {
         font-weight: 500;
         padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-s)" : "var(--spacing-xs) var(--spacing-s)")};
         border-radius: var(--border-radius-2xs);
+        min-height: var(--tag-height);
 
 		& svg {
 			width: var(--font-size-s);
@@ -130,6 +133,7 @@ const sizes = {
         font-weight: 500;
 		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-s) var(--spacing-s) var(--spacing-s) var(--spacing)" : "var(--spacing-s) var(--spacing)")};
 		border-radius: var(--border-radius-2xs);
+        min-height: var(--tag-height-l);
 
 		& svg {
 			width: var(--font-size);
@@ -179,13 +183,13 @@ const StyledTag = styled.span`
     ${({ $size }) => sizes[$size] || sizes.m}
 
     ${({ $clickable }) =>
-            $clickable &&
+		$clickable &&
             css`
-      &:active {
-        transform: scale(0.95);
-        opacity: 0.85;
-      }
-    `}
+				&:active {
+					transform: scale(0.95);
+					opacity: 0.85;
+				}
+    		`}
 `;
 
 const DeleteButton = styled.span`

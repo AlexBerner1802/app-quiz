@@ -95,6 +95,10 @@ const InputWrapper = styled.div`
             $size === 's' ? 'var(--border-radius-xs)' :
                     $size === 'l' ? 'var(--border-radius-s)' :
                             'var(--border-radius-xs)'};
+    height: ${({ $size }) =>
+            $size === 's' ? 'var(--input-height-s)' :
+                    $size === 'l' ? 'var(--input-height-l)' :
+                            'var(--input-height)'};
     background-color: var(--color-input-background);
     transition: color 0.2s, box-shadow 0.2s;
     overflow: hidden;
@@ -160,15 +164,10 @@ const StyledInput = styled.input`
     transition: color 0.2s, box-shadow 0.2s;
 
     padding: ${({ $size, $hasIcon }) => {
-		if ($size === 's') return $hasIcon ? 'var(--spacing-xs) var(--spacing-xs)' : 'var(--spacing-xs) var(--spacing-s)';
-		if ($size === 'l') return $hasIcon ? 'var(--spacing) var(--spacing-l)' : 'var(--spacing) var(--spacing-l)';
-		return $hasIcon ? 'var(--spacing-s) var(--spacing) var(--spacing-s) var(--spacing-s)' : 'var(--spacing-s) var(--spacing)';
+		if ($size === 's') return $hasIcon ? '0 var(--spacing-xs)' : '0 var(--spacing-s)';
+		if ($size === 'l') return $hasIcon ? '0 var(--spacing-l)' : '0 var(--spacing-l)';
+		return $hasIcon ? '0 var(--spacing)' : '0 var(--spacing)';
 	}};
-
-    min-height: ${({ $size }) =>
-		$size === 's' ? 'var(--spacing-xl)' :
-			$size === 'l' ? 'var(--spacing-2xl)' :
-				'calc(var(--spacing-xs) + var(--spacing-xl))'};
 
     font-size: ${({ $size }) =>
 		$size === 's' ? 'var(--font-size-s)' :

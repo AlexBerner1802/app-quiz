@@ -13,6 +13,19 @@
     --slate-900: oklch(0.208 0.042 265.755);
     --slate-950: oklch(0.129 0.042 264.695);
 
+    /* Bunker */
+    --bunker-50:  oklch(97.64% 0.001 286.38);
+    --bunker-100: oklch(94.97% 0.003 286.35);
+    --bunker-200: oklch(88.68% 0.007 286.26);
+    --bunker-300: oklch(78.74% 0.011 280.42);
+    --bunker-400: oklch(66.55% 0.018 278.35);
+    --bunker-500: oklch(56.59% 0.023 279.60);
+    --bunker-600: oklch(48.61% 0.022 282.29);
+    --bunker-700: oklch(42.34% 0.018 281.47);
+    --bunker-800: oklch(37.91% 0.017 285.57);
+    --bunker-900: oklch(34.77% 0.014 285.66);
+    --bunker-950: oklch(21.03% 0.006 285.89);
+
     /* Gray */
     --gray-50:  oklch(0.985 0.002 247.839);
     --gray-100: oklch(0.967 0.003 264.542);
@@ -38,6 +51,19 @@
     --zinc-800: oklch(0.274 0.006 286.033);
     --zinc-900: oklch(0.21 0.006 285.885);
     --zinc-950: oklch(0.141 0.005 285.823);
+
+    /* Woodsmoke */
+    --woodsmoke-50:  oklch(97.64% 0.001 286.38);
+    --woodsmoke-100: oklch(94.72% 0.005 286.30);
+    --woodsmoke-200: oklch(88.38% 0.011 280.46);
+    --woodsmoke-300: oklch(77.98% 0.020 282.67);
+    --woodsmoke-400: oklch(65.25% 0.033 281.34);
+    --woodsmoke-500: oklch(55.48% 0.037 279.50);
+    --woodsmoke-600: oklch(47.51% 0.035 282.92);
+    --woodsmoke-700: oklch(41.20% 0.032 282.55);
+    --woodsmoke-800: oklch(37.03% 0.027 284.99);
+    --woodsmoke-900: oklch(34.41% 0.019 281.23);
+    --woodsmoke-950: oklch(16.52% 0.006 285.70);
 
     /* Neutral */
     --neutral-50:  oklch(0.985 0 0);
@@ -207,6 +233,19 @@
     --blue-800: oklch(0.424 0.199 265.638);
     --blue-900: oklch(0.379 0.146 265.522);
     --blue-950: oklch(0.282 0.091 267.935);
+
+    /* Curious Blue */
+    --curious-blue-50:  oklch(97.91% 0.013 228.92);
+    --curious-blue-100: oklch(95.34% 0.025 232.97);
+    --curious-blue-200: oklch(90.73% 0.057 226.44);
+    --curious-blue-300: oklch(83.85% 0.102 226.16);
+    --curious-blue-400: oklch(77.47% 0.137 227.74);
+    --curious-blue-500: oklch(70.89% 0.144 232.40);
+    --curious-blue-600: oklch(66.04% 0.146 237.71);
+    --curious-blue-700: oklch(51.83% 0.116 238.65);
+    --curious-blue-800: oklch(45.67% 0.097 236.81);
+    --curious-blue-900: oklch(40.22% 0.083 237.00);
+    --curious-blue-950: oklch(30.23% 0.062 239.07);
 
     /* Indigo */
     --indigo-50:  oklch(0.962 0.018 272.314);

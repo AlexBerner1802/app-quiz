@@ -177,12 +177,11 @@ const Content = styled.div`
 	margin-bottom: var(--spacing);
 `;
 
-const LanguageBlock = styled.div`
+const LanguageBlock = styled.div`    
 	width: 100%;
-    border: 1px solid var(--color-border);
-	box-shadow: var(--box-shadow-s);
+    box-shadow: var(--box-shadow-xs);
     border-radius: var(--border-radius-xs);
-	background-color: var(--color-background-surface-1);
+    background-color: var(--color-background-surface-1);
     padding: var(--spacing);
     display: flex;
     flex-direction: column;

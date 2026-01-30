@@ -3,7 +3,6 @@ import React, { useMemo, useState } from "react";
 import {Award, Search, FileChartColumn, Crown} from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import { useTranslation } from "react-i18next";
-import Header from "../../../components/layout/Header.jsx";
 import FaviconTitle from "../../../components/layout/Icon.jsx";
 import faviconUrl from "../../../assets/images/favicon.ico?url";
 import LeaderboardPodium from "../../../components/leaderboard/LeaderboardPodium.jsx";
@@ -13,9 +12,6 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "../../../components/ui/T
 import Input from "../../../components/ui/Input";
 import {useDrawer} from "../../../context/drawer";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
-import FloatingIconBackground from "../../../components/FloatingIconBackground";
-import Astronaut from "../../../components/icons/Astronaut";
-import Atom from "../../../components/icons/Atom";
 import {applyScoreMultiplier} from "../../../utils/score";
 
 
@@ -112,7 +108,6 @@ const mockQuizzes = [
 ];
 
 
-
 export default function ResultsPage() {
 	const { t } = useTranslation();
 	const { openDrawer } = useDrawer();
@@ -123,13 +118,14 @@ export default function ResultsPage() {
 	const [sortColumn, setSortColumn] = useState("rank");
 	const [sortAsc, setSortAsc] = useState(true);
 
+	const MINI_TABLE_MAX_ROWS = import.meta.env.VITE_QUIZ_LEADDERBOARD_MAX_ROW ?? 5;
 
 	const columns = [
-		{ key: "rank", label: t("leaderboard.rank"), align: "center", width: "100px" },
+		{ key: "rank", label: t("leaderboard.rank"), align: "left", width: "100px" },
 		{ key: "user_name", label: t("leaderboard.name"), align: "left", width: "2fr" },
-		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right", width: "1fr" },
 		{ key: "score", label: t("leaderboard.score"), align: "right", width: "1fr" },
 		{ key: "time_seconds", label: t("leaderboard.best_time"), align: "right", width: "1fr" },
+		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right", width: "1fr" },
 		{ key: "attempts", label: t("leaderboard.attempts"), align: "right", width: "1fr" },
 	];
 
@@ -205,21 +201,16 @@ export default function ResultsPage() {
 			<FaviconTitle title={pageTitle} iconHref={faviconUrl} />
 
 			<Main>
-				<Header
-					title={t("leaderboard.title")}
-					icon={<Award size={20} />}
-					actions={
-						<ToggleThemeSwitch/>
-					}
-				/>
 
 				<Content>
 
-					<FloatingIconBackground color={"var(--color-text)"} icon={<Astronaut />} />
-					<FloatingIconBackground size={220} speed={0.4} color={"var(--color-text)"} icon={<Astronaut />}/>
-					<FloatingIconBackground size={120} speed={0.9} color={"var(--color-text)"} icon={<Atom />}/>
-					<FloatingIconBackground color={"var(--color-text)"} />
-					<FloatingIconBackground size={120} speed={0.9} color={"var(--color-text)"}/>
+					<ContentHead>
+						<TitleContainer>
+							<Award size={30} strokeWidth={2.4} aria-hidden="true" color={"var(--color-text)"}/>
+							<Title>{t("leaderboard.title")}</Title>
+							<ToggleThemeSwitch/>
+						</TitleContainer>
+					</ContentHead>
 
 					<AnimatedBlock>
 						<PodiumWrapper>
@@ -258,7 +249,7 @@ export default function ResultsPage() {
 										setSortColumn(column);
 										setSortAsc(asc);
 									}}
-									sortableColumns={["rank","user_name","score","quizzes_done","time_seconds","attempts"]}
+									sortableColumns={["rank","score","user_name","quizzes_done","time_seconds","attempts"]}
 								/>
 							</TabsContent>
 
@@ -267,47 +258,69 @@ export default function ResultsPage() {
 									columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 4 }}
 								>
 									<Masonry gutter={"var(--spacing)"}>
-										{filteredQuizzes?.length > 0 && filteredQuizzes.map((quiz) => (
-											<QuizCard
-												key={quiz.id}
-												onClick={() => handleQuizClick(quiz)}
-											>
-												<Overlay>
-													<FileChartColumn size={40} color={"var(--color-primary-bg)"}/>
-												</Overlay>
+										{filteredQuizzes?.length > 0 && filteredQuizzes.map((quiz) => {
 
-												<QuizHeader>
-													<QuizTitle>{quiz.title}</QuizTitle>
-													<QuizOwner>{quiz.owner}</QuizOwner>
-												</QuizHeader>
+												const results = quiz.results;
+												const visibleRows = results.slice(0, MINI_TABLE_MAX_ROWS);
+												const remainingCount = results.length - visibleRows.length;
 
-												<MiniTable>
-													{quiz.results.slice(0, 5).map((row, idx) => (
-														<MiniRow key={row.id} index={idx}>
-															<MiniCell>
-																{row.rank}
-															</MiniCell>
-															<MiniCell>
-																{row.rank <= 3 ? (
-																	<>
-																		{row.user_name}
-																		<Crown size={14}
-																			   color={rankColor[row.rank]}
-																			   style={{ position: 'relative', top: "-1px" }} />
-																	</>
-																) : (
-																	row.user_name
-																)}
-															</MiniCell>
-															<MiniCell>
-																{/*<Award size={16} color="var(--color-text-muted)" />*/}
-																{applyScoreMultiplier(row.score)}
-															</MiniCell>
-														</MiniRow>
-													))}
-												</MiniTable>
-											</QuizCard>
-										))}
+												return (
+													<QuizCard
+														key={quiz.id}
+														onClick={() => handleQuizClick(quiz)}
+													>
+														<Overlay>
+															<FileChartColumn size={40} color={"var(--color-primary-bg)"}/>
+														</Overlay>
+
+														<QuizHeader>
+															<QuizTitle>{quiz.title}</QuizTitle>
+														</QuizHeader>
+
+														<MiniTable>
+															{visibleRows.map((row, idx) => (
+																<MiniRow key={row.id} index={idx}>
+																	<MiniCell>{row.rank}</MiniCell>
+
+																	<MiniCell>
+																		{row.rank <= 3 ? (
+																			<>
+																				{row.user_name}
+																				<Crown
+																					size={14}
+																					color={rankColor[row.rank]}
+																					style={{
+																						position: "relative",
+																						top: "-1px"
+																					}}
+																				/>
+																			</>
+																		) : (
+																			row.user_name
+																		)}
+																	</MiniCell>
+
+																	<MiniCell>
+																		{applyScoreMultiplier(row.score)}
+																	</MiniCell>
+																</MiniRow>
+															))}
+
+															{remainingCount > 0 && (
+																<MiniRow index={visibleRows.length} $isMore>
+																	<MiniCell />
+																	<MiniCell />
+																	<MoreCell>
+																		+{remainingCount} participants
+																	</MoreCell>
+																</MiniRow>
+															)}
+
+														</MiniTable>
+
+													</QuizCard>
+												)
+											})}
 									</Masonry>
 								</ResponsiveMasonry>
 							</TabsContent>
@@ -326,9 +339,7 @@ const Main = styled.main`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-	background: var(--gradient-background);
-	background-size: 400% 400%;
-	transition: background 0.3s ease;
+	background: var(--color-background);
 `;
 
 const Content = styled.section`
@@ -337,6 +348,29 @@ const Content = styled.section`
 	flex-direction: column;
 	padding: var(--spacing-xl);
 	gap: var(--spacing-l);
+	width: 100%;
+    max-width: var(--spacing-16xl);
+	margin: 0 auto;
+`;
+
+const ContentHead = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--spacing-l);
+`;
+
+const TitleContainer = styled.div`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-s);
+`;
+
+const Title = styled.h1`
+	font-weight: 600;
+	font-size: var(--font-size-4xl);
+    font-family: "Poppins", sans-serif;
+	line-height: 1;
 `;
 
 const fadeIn = keyframes`
@@ -374,17 +408,38 @@ const PodiumWrapper = styled.div`
 	justify-content: center;
 `;
 
+const MiniRow = styled.div`
+    display: flex;
+    align-items: center;
+    padding: var(--spacing) var(--spacing-l);
+    background: ${({ index }) =>
+            index % 2 === 0 ? "transparent" : "var(--color-background)"};
+    transition: all 0.2s ease;
+
+    ${({ $isMore }) =>
+            $isMore &&
+            `
+      opacity: 0.8;
+      font-style: italic;
+    `}
+`;
+
 const QuizCard = styled.div`
     position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
-    border-radius: var(--border-radius, 18px);
-    background: var(--color-background-surface-4);
-    border: 1px solid var(--color-border);
     cursor: pointer;
-    overflow: hidden;
     transition: all 0.2s ease;
+	
+	&:hover {
+        outline: 2px solid var(--color-primary-bg);
+        background: var(--color-primary-muted);
+		
+		& ${MiniRow} {
+            background: var(--color-primary-muted);
+		}
+	}
 `;
 
 const Overlay = styled.div`
@@ -404,25 +459,16 @@ const Overlay = styled.div`
 `;
 
 const QuizHeader = styled.div`
-	padding: var(--spacing);
+	padding: var(--spacing) var(--spacing);
 	display: flex;
-	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	background: var(--color-background-alt);
 `;
 
 const QuizTitle = styled.p`
-	text-align: center;
-	font-size: var(--font-size);
-	color: var(--color-text);
-	font-weight: 500;
-`;
-
-const QuizOwner = styled.span`
-	text-align: center;
-    font-size: var(--font-size-s);
+	font-size: var(--font-size-s);
 	color: var(--color-text-muted);
+	font-weight: 500;
 `;
 
 const MiniTable = styled.div`
@@ -431,14 +477,11 @@ const MiniTable = styled.div`
     width: 100%;
     font-size: var(--font-size-s);
     color: var(--color-text);
-`;
-
-const MiniRow = styled.div`
-    display: flex;
-    align-items: center;
-    padding: var(--spacing-s) var(--spacing);
-    border-top: 1px solid var(--color-border);
-    background: ${({ index }) => index % 2 === 0 ? 'var(--color-background-surface-3)' : 'transparent'};
+    border-radius: var(--border-radius-l);
+    background: var(--color-background-surface-1);
+    box-shadow: var(--box-shadow-xs);
+	border: 1px solid var(--color-border);
+	overflow: hidden;
 `;
 
 const MiniCell = styled.div`
@@ -452,7 +495,6 @@ const MiniCell = styled.div`
 
     &:first-child {
         width: 50px; /* rank */
-        justify-content: center;
     }
     &:nth-child(2) {
         flex: 1; /* user name */
@@ -462,6 +504,15 @@ const MiniCell = styled.div`
         align-items: center;
         gap: var(--spacing-s);
         justify-content: flex-end; /* score / icon */
+        font-family: "Orbitron", sans-serif;
     }
+`;
+
+const MoreCell = styled.div`
+  flex: 1;
+  text-align: right;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
 `;
 

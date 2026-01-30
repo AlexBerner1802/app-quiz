@@ -12,8 +12,8 @@ const TabsListContainer = styled.div`
 	display: flex;
 	width: fit-content;
 	max-width: 100%;
-    border: 1px solid var(--color-background-surface-3);
-    background-color: var(--color-background-surface-3);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-input-background);
 	padding: var(--spacing-xs);
 	border-radius: var(--border-radius-xs);
 	margin-bottom: var(--spacing-s);

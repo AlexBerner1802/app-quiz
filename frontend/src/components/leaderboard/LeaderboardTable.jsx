@@ -42,10 +42,11 @@ export default function LeaderboardTable({
 	};
 
 	const rankColor = {
-		1: "#FFD700", // gold
-		2: "#C0C0C0", // silver
-		3: "#CD7F32", // bronze
+		1: "var(--first-place)",
+		2: "var(--second-place)",
+		3: "var(--third-place)",
 	};
+
 
 	return (
 		<TableContainer>
@@ -114,8 +115,8 @@ export default function LeaderboardTable({
 											</DetailTimeWrapper>*/}
 										</TimeWrapper>
 									) : col.key === "score" ? (
-										<ScoreTag>
-											<Award size={22} color={"var(--color-primary-bg)"} style={{ transform: "rotate(10deg)", position: "relative", top: "-1px"}}/>
+										<ScoreTag
+											$color={rankColor[entry.rank]}>
 											{applyScoreMultiplier(entry[col.key])}
 										</ScoreTag>
 									) : (
@@ -138,7 +139,7 @@ const TableContainer = styled.div`
 const HeaderRow = styled.div`
     display: grid;
     grid-template-columns: ${({ template }) => template};
-    padding: var(--spacing-s) var(--spacing-l) var(--spacing-s) var(--spacing-s);
+    padding: var(--spacing-s) var(--spacing-2xl);
     font-weight: 600;
     font-size: var(--font-size);
     color: var(--color-text);
@@ -148,7 +149,10 @@ const HeaderRow = styled.div`
 const HeaderCell = styled.div`
     display: flex;
     align-items: center;
-    color: var(--color-text);
+    color: var(--color-text-muted);
+	font-size: var(--font-size-xs);
+	font-weight: 500;
+	text-transform: uppercase;
     cursor: ${({ $icon }) => ($icon ? "pointer" : "default")};
     justify-content: ${({ $align }) =>
             $align === "right" ? "flex-end" :
@@ -164,20 +168,20 @@ const Body = styled.div`
 const DataRow = styled.div`
     display: grid;
     grid-template-columns: ${({ template }) => template};
-    background-color: var(--color-background-surface-3);
-    padding: var(--spacing-s) var(--spacing-l) var(--spacing-s) var(--spacing-s);
+    background-color: var(--color-background-surface-1);
+    padding: var(--spacing-s) var(--spacing-2xl);
     font-size: var(--font-size);
     color: var(--color-text);
     line-height: var(--spacing-xl);
     margin: var(--spacing-2xs) 0;
-    border-radius: var(--border-radius-xs);
-    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-full);
 `;
 
 const Cell = styled.div`
     display: flex;
     align-items: center;
-	font-weight: 500;
+    font-weight: 500;
+    font-size: var(--font-size-s);
     justify-content: ${({ $align }) =>
             $align === "right" ? "flex-end" :
                     $align === "center" ? "center" :
@@ -195,6 +199,8 @@ const AvatarWrapper = styled.div`
 	display: flex;
 	align-items: center;
 	gap: var(--spacing);
+	font-size: var(--font-size-s);
+	font-weight: 600;
 `;
 
 const AvatarCircle = styled.div`
@@ -225,17 +231,15 @@ const ScoreTag = styled.span`
     padding: var(--spacing-2xs) var(--spacing-s);
     border-radius: var(--border-radius-xs);
 	gap: var(--spacing-s);
-    font-weight: 600;
-    font-size: var(--font-size-s);
-    background: var(--color-primary-muted);
-    color: var(--color-text, white);
-    box-shadow: var(--box-shadow);
+	font-weight: 600;
+    color: var(--color-primary-bg, white);
+    //color: ${({ $color }) => $color ?? "var(--color-primary-muted-text, white)"};
+    font-family: "Orbitron", sans-serif;
 `;
 
 const TimeWrapper = styled.div`
 	display: flex;
 	align-items: center;
 	gap: var(--spacing-xs);
-	font-weight: 500;
 `;
 

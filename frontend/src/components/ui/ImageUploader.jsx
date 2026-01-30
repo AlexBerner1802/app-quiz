@@ -123,7 +123,7 @@ const Placeholder = styled.div`
 `;
 
 const DropZone = styled.div`
-    border: 1px dashed var(--color-border, #ccc);
+    border: 1px dashed var(--color-border-subtle, #ccc);
     border-radius: var(--border-radius-xs);
     background-color: var(--color-input-background, #f9f9f9);
     cursor: pointer;

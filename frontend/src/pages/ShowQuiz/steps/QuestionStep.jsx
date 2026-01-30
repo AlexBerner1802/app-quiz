@@ -90,7 +90,7 @@ export default function QuestionStep({
 
 				<FixedBottomRow>
 					<PrevButton onClick={onPrev}
-								variant="secondary"
+								variant="primary"
 								disabled={currentIndex === 0}>
 						{t("common.previous")}
 					</PrevButton>
@@ -118,7 +118,6 @@ export default function QuestionStep({
 		</Wrapper>
 	);
 }
-
 
 
 const Wrapper = styled.div`
@@ -170,7 +169,7 @@ const SidebarStepItem = styled.div`
   position: relative;
   padding-left: 40px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 500;
   min-height: 40px;
   display: flex;
   align-items: center;
@@ -182,7 +181,7 @@ const SidebarStepItem = styled.div`
   transition: 0.2s;
 
 	&:hover {
-		background: var(--color-background-surface-2);
+		background: var(--color-background-surface-1);
 
         ${StepLabel} {
             color: var(--color-primary-bg);
@@ -261,21 +260,22 @@ const QuestionItem = styled.div`
 `;
 
 const SubTitle = styled.p`
-	font-weight: 600;
+	font-weight: 500;
     font-size: var(--font-size-l);
     color: var(--color-text-muted);
 `;
 
 const Question = styled.p`
 	font-size: var(--font-size-2xl); 
-	line-height: 1.9rem;
-	font-weight: 600; 
+	line-height: 1.3;
+	font-weight: 500; 
 	color: var(--color-text);
 `;
 
 const QuestionDescription = styled.p`
 	font-size: var(--font-size-l); 
 	color: var(--color-text-muted);
+	margin-top: var(--spacing-xs);
 `;
 
 const AnswersGrid = styled.div`
@@ -292,14 +292,18 @@ const AnswerBox = styled.div`
 	font-weight: 500;
 	padding: var(--spacing);
 	cursor: pointer;
-	border: ${({ selected }) => selected ? "2px solid var(--color-primary-bg)" : "2px solid var(--color-border)"};
-	background-color: ${({ selected }) => selected ? "var(--color-primary-muted)" : "var(--color-background-surface-2)"};
+	border: ${({ selected }) => selected ? "2px solid var(--color-primary-bg)" : "2px solid var(--color-border-subtle)"};
+	background-color: ${({ selected }) => selected ? "var(--color-primary-muted)" : "var(--color-background-surface-1)"};
 	color: ${({ selected }) => selected ? "var(--color-primary-bg)" : "var(--color-text)"};
 	transition: all 0.2s;
 	width: 100%;
 	min-height: 100px;
 	box-sizing: border-box;
     flex: 1;
+
+    &:active {
+        transform: scale(0.99);
+    }
 `;
 
 const FixedBottomRow = styled.div`

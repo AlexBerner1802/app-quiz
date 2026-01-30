@@ -51,10 +51,16 @@ const TagInputContainer = styled.div`
 	flex-wrap: wrap;
 	gap: var(--spacing-xs);
 	padding: var(--spacing-s);
-	border: 1px solid var(--color-border);
+    border: 1px solid var(--color-input-border);
 	border-radius: var(--border-radius-xs);
 	background-color: var(--color-input-background);
+    transition: all 0.2s;
 	cursor: text;
+
+    &:focus-within {
+        border-color: var(--color-input-focus-border);
+        box-shadow: 0 0 0 3px var(--color-primary-muted);
+    }
 `;
 
 const Input = styled.input`

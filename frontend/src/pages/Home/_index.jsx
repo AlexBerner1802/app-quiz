@@ -144,8 +144,6 @@ export default function HomePage() {
 				)}
 
 				<Header
-					title={t("pages.home.title")}
-					icon={<FlaskConical size={20} aria-hidden="true" />}
 					actions={[
 						<NewQuizButton
 							key="new"
@@ -164,25 +162,43 @@ export default function HomePage() {
 
 					{!err && (
 						<AnimatedDiv>
-							<SearchFilterContainer>
-								<Input
-									icon={<Search size={20} color={"var(--color-text-muted)"} />}
-									placeholder={t("common.search")}
-									value={searchText}
-									onChange={(e) => setSearchText(e.target.value)}
-									size="m"
-									width="100%"
-								/>
 
-								{
-									modules && tags && (
-										<Button key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
-											<Funnel size={20} />
-											{t("common.filter")}
-										</Button>
-									)
-								}
-							</SearchFilterContainer>
+							<ContentHead>
+								<TitleContainer>
+									<FlaskConical size={29} strokeWidth={2.4} aria-hidden="true" color={"var(--color-text)"}/>
+									<Title>{t("pages.home.title")}</Title>
+								</TitleContainer>
+
+								<SearchFilterContainer>
+									<Input
+										icon={<Search size={20} color={"var(--color-text-muted)"} />}
+										placeholder={t("common.search")}
+										value={searchText}
+										onChange={(e) => setSearchText(e.target.value)}
+										size="m"
+										width="400px"
+									/>
+
+									{
+										modules && tags && (
+											<Button variant={"secondary"} key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
+												<Funnel size={20} />
+												{t("common.filter")}
+											</Button>
+										)
+									}
+
+									<NewQuizButton
+										key="new"
+										onClick={() => navigate("/quizzes/new")}
+										aria-label={t("actions.newQuiz")}
+										title={t("actions.newQuiz")}
+									>
+										<Plus size={16} aria-hidden="true" />
+										{t("actions.newQuiz")}
+									</NewQuizButton>
+								</SearchFilterContainer>
+							</ContentHead>
 						</AnimatedDiv>
 					)}
 
@@ -193,10 +209,7 @@ export default function HomePage() {
 								<NoCardsText>{t("quiz.empty")}</NoCardsText>
 							</NoCards>
 						) : (
-							<ResponsiveMasonry
-								columnsCountBreakPoints={{ 350: 1, 600: 2, 900: 3, 1200: 4 }}
-							>
-								<Masonry gutter={"var(--spacing)"}>
+								<CardsGrid gutter={"var(--spacing)"}>
 									{filteredQuizzes.map((q, index) => (
 										<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
 											<QuizCard
@@ -209,8 +222,7 @@ export default function HomePage() {
 											/>
 										</AnimatedDiv>
 									))}
-								</Masonry>
-							</ResponsiveMasonry>
+								</CardsGrid>
 						)
 					)}
 
@@ -258,7 +270,10 @@ const Content = styled.section`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	padding: var(--spacing);
+	padding: var(--spacing-xl);
+	width: 100%;
+	max-width: var(--spacing-16xl);
+	margin: 0 auto;
 `;
 
 const fadeIn = keyframes`
@@ -272,10 +287,35 @@ const AnimatedDiv = styled.div`
   	animation: ${fadeIn} 0.5s ease forwards;
 `;
 
+const CardsGrid = styled.div`
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+	gap: var(--spacing);
+`;
+
+const ContentHead = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: var(--spacing-l);
+`;
+
+const TitleContainer = styled.div`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-s);
+`;
+
+const Title = styled.h1`
+	font-weight: 600;
+	font-size: var(--font-size-4xl);
+    font-family: "Poppins", sans-serif;
+	line-height: 1;
+`;
+
 const SearchFilterContainer = styled.div`
 	display: flex;
 	gap: var(--spacing-s);
-	margin-bottom: var(--spacing-l);
 `;
 
 const NoCards = styled.div`

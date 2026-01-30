@@ -5,6 +5,7 @@ const Button = ({
 	                children,
 	                variant = 'primary',
 	                size = 'm',
+					isIcon = false,
 	                disabled = false,
 	                ...props
                 }) => {
@@ -12,6 +13,7 @@ const Button = ({
 		<StyledButton
 			$variant={variant}
 			size={size}
+			$isIcon={isIcon}
 			disabled={disabled}
 			{...props}
 		>
@@ -25,27 +27,46 @@ export default Button;
 /* ---------------------- Sizes ---------------------- */
 const sizes = {
 	s: css`
-		font-size: var(--font-size-s);
-		padding: var(--spacing-xs) var(--spacing-s);
-		border-radius: var(--border-radius-2xs);
-		min-width: calc(var(--spacing-xs) + var(--spacing-l) + 2px);
-		min-height: calc(var(--spacing-xs) + var(--spacing-l) + 2px);
+        font-size: var(--font-size-s);
+        padding: var(--spacing-xs) var(--spacing-s);
+        border-radius: var(--border-radius-2xs);
+        min-width: var(--input-height-s);
+        min-height: var(--input-height-s);
 	`,
 	m: css`
-		font-size: var(--font-size);
-		padding: var(--spacing-s) var(--spacing);
-		border-radius: var(--border-radius-xs);
-		min-width: calc(var(--spacing-xs) + var(--spacing-xl) + 2px);
-		min-height: calc(var(--spacing-xs) + var(--spacing-xl) + 2px);
+        font-size: var(--font-size);
+        padding: var(--spacing-s) var(--spacing);
+        border-radius: var(--border-radius-xs);
+        min-width: var(--input-height);
+        min-height: var(--input-height);
 	`,
 	l: css`
-		font-size: var(--font-size-l);
-		padding: var(--spacing) var(--spacing-l);
-		border-radius: var(--border-radius-s);
-		min-width: calc(var(--spacing) + var(--spacing-2xl) + 2px);
-		min-height: calc(var(--spacing) + var(--spacing-2xl) + 2px);
+        font-size: var(--font-size-l);
+        padding: var(--spacing) var(--spacing-l);
+        border-radius: var(--border-radius-s);
+        min-width: var(--input-height-l);
+        min-height: var(--input-height-l);
 	`,
 };
+
+const iconSizes = {
+	s: css`
+		width: var(--input-height-s);
+		height: var(--input-height-s);
+		padding: 0;
+	`,
+	m: css`
+		width: var(--input-height);
+		height: var(--input-height);
+		padding: 0;
+	`,
+	l: css`
+		width: var(--input-height-l);
+		height: var(--input-height-l);
+		padding: 0;
+	`,
+};
+
 
 /* ---------------------- Variants (with disabled built-in) ---------------------- */
 const variants = {
@@ -60,7 +81,6 @@ const variants = {
 
 		&:disabled {
 			background-color: var(--color-primary-muted);
-			color: var(--color-primary-muted-text);
 			border-color: var(--color-primary-muted);
 			cursor: not-allowed;
 			opacity: 0.7;
@@ -73,13 +93,13 @@ const variants = {
 	`,
 
 	secondary: css`
-		background-color: var(--color-background-surface-3);
+		background-color: var(--color-input-background);
 		color: var(--color-primary-bg);
-		border: 1px solid transparent;
+        border: 1px solid var(--color-input-border);
 
 		&:hover:not(:disabled) {
 			background-color: var(--color-primary-bg-hover);
-			border-color: var(--color-primary-bg-hover);
+            border-color : var(--color-primary-bg-hover);
 			color: var(--color-primary-text);
 		}
 
@@ -182,6 +202,7 @@ const variants = {
 			border-color: var(--color-success-muted);
 			cursor: not-allowed;
 			opacity: 0.7;
+			pointer-events: none;
 		}
 
 		&:focus-visible {
@@ -212,6 +233,25 @@ const variants = {
 			outline-offset: 2px;
 		}
 	`,
+
+	icon: css`
+		background-color: transparent;
+		border: 1px solid transparent;
+
+		&:hover:not(:disabled) {
+			background-color: var(--color-background-surface-3);
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		&:focus-visible {
+			outline: 3px solid var(--color-primary-bg);
+			outline-offset: 2px;
+		}
+	`,
 };
 
 /* ---------------------- Styled Button ---------------------- */
@@ -219,7 +259,7 @@ const StyledButton = styled.button`
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.15s ease;
+    transition: all 0.2s ease, box-shadow 0.15s ease;
     user-select: none;
     display: inline-flex;
     align-items: center;
@@ -228,10 +268,18 @@ const StyledButton = styled.button`
     text-decoration: none;
     gap: var(--spacing-s, 0.25rem);
 
+    /* normal sizing */
     ${({ size }) => sizes[size] || sizes.m}
+
+	/* visual variant */
     ${({ $variant }) => variants[$variant] || variants.primary}
+
+	/* icon override */
+    ${({ $isIcon, size }) =>
+            $isIcon && (iconSizes[size] || iconSizes.m)}
 
     &:focus:not(:focus-visible) {
         outline: none;
     }
 `;
+

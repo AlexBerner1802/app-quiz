@@ -139,26 +139,26 @@ const ModulesManager = ({ modules: initialModules, loading, showLoader }) => {
 export default ModulesManager;
 
 const LoadingWrapper = styled.div`
-display: flex;
-justify-content: center;
-align-items: center;
-position: absolute;
-inset: 0;
-background-color: var(--color-background, #fff);
-color: var(--color-primary-bg, #2684ff);
-opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
-transition: opacity 0.4s ease;
-z-index: 100;
-
-	.spin {
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	100% {
-		transform: rotate(360deg);
-}
-}
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	inset: 0;
+	background-color: var(--color-background, #fff);
+	color: var(--color-primary-bg, #2684ff);
+	opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+	transition: opacity 0.4s ease;
+	z-index: 100;
+	
+		.spin {
+		animation: spin 1s linear infinite;
+	}
+	
+	@keyframes spin {
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 
 `;
 
@@ -166,17 +166,20 @@ const Container = styled.div`    display: flex;
     flex-direction: column;
     position: relative;`;
 
-const Content = styled.div`    margin-bottom: var(--spacing);`;
+const Content = styled.div`    
+	margin-bottom: var(--spacing);
+`;
 
-const LanguageBlock = styled.div`    width: 100%;
-    border: 1px solid var(--color-border);
-    box-shadow: var(--box-shadow-s);
+const LanguageBlock = styled.div`    
+	width: 100%;
+    box-shadow: var(--box-shadow-xs);
     border-radius: var(--border-radius-xs);
     background-color: var(--color-background-surface-1);
     padding: var(--spacing);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-s);`;
+    gap: var(--spacing-s);
+`;
 
 const Label = styled.label`    font-weight: 500;
     font-size: var(--font-size);

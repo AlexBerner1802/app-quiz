@@ -4,11 +4,11 @@ body.dark-mode {
 
     /* Primary  */
     --color-primary-text: var(--brand-primary-50);
-    --color-primary-bg: var(--brand-primary-500);
-    --color-primary-bg-hover: var(--brand-primary-600);
-    --color-primary-bg-active: var(--brand-primary-700);
+    --color-primary-bg: var(--brand-primary-600);
+    --color-primary-bg-hover: var(--brand-primary-700);
+    --color-primary-bg-active: var(--brand-primary-800);
     --color-primary-muted: var(--brand-primary-950);
-    --color-primary-muted-text: var(--brand-primary-700);
+    --color-primary-muted-text: var(--brand-primary-400);
 
     /* Secondary */
     --color-secondary-text: var(--indigo-50);
@@ -19,23 +19,23 @@ body.dark-mode {
     --color-secondary-muted-text: var(--indigo-700);
 
     /* Success */
-    --color-success-text: var(--brand-success-700);
+    --color-success-text: var(--brand-success-50);
     --color-success-bg: var(--brand-success-500);
     --color-success-bg-hover: var(--brand-success-600);
     --color-success-bg-active: var(--brand-success-700);
     --color-success-muted: var(--brand-success-950);
-    --color-success-muted-text: var(--brand-success-700);
+    --color-success-muted-text: var(--brand-success-600);
 
     /* Error */
-    --color-error-text: var(--brand-error-700);
+    --color-error-text: var(--brand-error-50);
     --color-error-bg: var(--brand-error-500);
     --color-error-bg-hover: var(--brand-error-600);
     --color-error-bg-active: var(--brand-error-700);
     --color-error-muted: var(--brand-error-950);
-    --color-error-muted-text: var(--brand-error-700);
+    --color-error-muted-text: var(--brand-error-600);
 
     /* Warning */
-    --color-warning-text: var(--brand-warning-700);
+    --color-warning-text: var(--brand-warning-50);
     --color-warning-bg: var(--brand-warning-500);
     --color-warning-bg-hover: var(--brand-warning-600);
     --color-warning-bg-active: var(--brand-warning-700);
@@ -43,7 +43,7 @@ body.dark-mode {
     --color-warning-muted-text: var(--brand-warning-700);
 
     /* Notification */
-    --color-notification-text: var(--brand-notification-700);
+    --color-notification-text: var(--brand-notification-50);
     --color-notification-bg: var(--brand-notification-500);
     --color-notification-bg-hover: var(--brand-notification-600);
     --color-notification-bg-active: var(--brand-notification-700);
@@ -55,7 +55,7 @@ body.dark-mode {
     --gradient-success: linear-gradient(135deg, var(--brand-success-700), var(--brand-success-800));
     --gradient-error: linear-gradient(135deg, var(--brand-error-700), var(--brand-error-800));
     --gradient-warning: linear-gradient(135deg, var(--brand-warning-700), var(--brand-warning-600));
-    --gradient-background: linear-gradient(160deg, var(--gray-900) 0%, var(--gray-500) 100%);
+    --gradient-background: linear-gradient(160deg, var(--bunker-900) 0%, var(--bunker-500) 100%);
 
     /* Additional Utility Colors */
     --color-highlight: var(--brand-primary-950);     /* Highlighted text or UI elements */
@@ -65,42 +65,43 @@ body.dark-mode {
 
     /* ------------------ Base / Backgrounds ------------------ */
 
-    --color-background: var(--gray-900);               /* Main page background */
-    --color-background-muted: var(--gray-800);         /* Secondary / subtle background */
-    --color-background-alt: var(--gray-700);           /* Alternate section backgrounds */
-    --color-text: var(--gray-50);                      /* Primary text color */
-    --color-text-muted: var(--gray-400);               /* Secondary / muted text */
-    --color-text-alt: var(--gray-200);                 /* Alternate text for emphasis */
+    --color-background: var(--woodsmoke-950);            /* Main page background */
+    --color-background-muted: var(--bunker-950);         /* Secondary / subtle background */
+    --color-background-alt: var(--bunker-900);           /* Alternate section backgrounds */
+    --color-text: var(--bunker-50);                      /* Primary text color */
+    --color-text-muted: var(--bunker-400);               /* Secondary / muted text */
+    --color-text-alt: var(--bunker-200);                 /* Alternate text for emphasis */
 
 
     /* ---------------- Surfaces / Elevation ---------------- */
 
-    --color-background-surface-1: var(--gray-900);     /* Cards, sheets, modals base surface */
-    --color-background-surface-2: var(--gray-800);     /* Slightly elevated surfaces */
-    --color-background-surface-3: var(--gray-700);     /* Medium elevation */
-    --color-background-surface-4: var(--gray-600);     /* High elevation (popovers, menus) */
-    --color-background-surface-5: var(--gray-500);     /* Highest elevation if needed */
+    --color-background-surface-1: var(--bunker-950);     /* Cards, sheets, modals base surface */
+    --color-background-surface-2: var(--bunker-900);     /* Slightly elevated surfaces */
+    --color-background-surface-3: var(--bunker-800);     /* Medium elevation */
+    --color-background-surface-4: var(--bunker-700);     /* High elevation (popovers, menus) */
+    --color-background-surface-5: var(--bunker-600);     /* Highest elevation if needed */
 
-    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.8);   /* expand of --gray-900 */
-    --color-background-overlay-text: var(--slate-50);
-    --color-background-overlay-text-muted: var(--slate-300);
+    --color-background-overlay: oklch(21.03% 0.006 285.89 / 0.8);   /* expand of --bunker-900 */
+    --color-background-overlay-text: var(--bunker-50);
+    --color-background-overlay-text-muted: var(--bunker-300);
 
     /* ---------------- Inputs / Form Controls ---------------- */
 
-    --color-input-background: var(--gray-800);                 /* Default input background */
-    --color-input-border: var(--gray-600);                     /* Input border */
-    --color-input-text: var(--gray-50);                        /* Text inside input */
-    --color-input-focus-border: var(--brand-primary-500);      /* Focus state border */
-    --color-input-placeholder: var(--gray-400);                /* Placeholder text */
-    --color-input-disabled-background: var(--gray-700);        /* Disabled input background */
-    --color-input-disabled-text: var(--gray-300);              /* Disabled input text */
+    --color-input-background: var(--bunker-950);                 /* Default input background */
+    --color-input-border: var(--zinc-800);                       /* Input border */
+    --color-input-text: var(--bunker-50);                        /* Text inside input */
+    --color-input-focus-border: var(--brand-primary-500);        /* Focus state border */
+    --color-input-placeholder: var(--bunker-400);                /* Placeholder text */
+    --color-input-disabled-background: var(--bunker-700);        /* Disabled input background */
+    --color-input-disabled-text: var(--bunker-300);              /* Disabled input text */
 
 
     /* ---------------- Borders / Dividers ---------------- */
 
-    --color-border: var(--gray-600);       /* Standard borders */
-    --color-border-strong: var(--gray-400);/* Stronger borders */
-    --color-divider: var(--gray-700);      /* Divider lines */
+    --color-border: var(--zinc-600);         /* Standard borders */
+    --color-border-subtle: var(--zinc-800);  /* Subtle borders */
+    --color-border-strong: var(--zinc-200);  /* Stronger borders */
+    --color-divider: var(--zinc-600);      /* Divider lines */
 
 
     /* ---------------- Feedback / States ---------------- */
@@ -108,11 +109,11 @@ body.dark-mode {
        They can be background, border, or text depending on context. */
 
     /* Hover state: apply when an interactive element is hovered */
-    --color-hover: var(--gray-700);
+    --color-hover: var(--bunker-700);
     /* Example usage: button:hover, list item hover, card hover background */
 
     /* Active state: apply when an element is being clicked or active */
-    --color-active: var(--gray-600);
+    --color-active: var(--bunker-600);
     /* Example usage: button:active, selected tab pressed, active menu item */
 
     /* Selected state: apply for items that are currently selected or highlighted.
@@ -122,35 +123,41 @@ body.dark-mode {
        Linking to primary color gives consistent branding for selected items */
 
     /* Disabled state: apply to elements that are non-interactive */
-    --color-disabled: var(--gray-300);
+    --color-disabled: var(--bunker-300);
     /* Example usage: disabled buttons, inputs, cards, or menu items
        Typically lighter or muted to indicate inactivity */
 
 
     /* Skeleton Loading */
-    --color-skeleton-base: var(--gray-700);
-    --color-skeleton-highlight: var(--gray-600);
+    --color-skeleton-base: var(--bunker-700);
+    --color-skeleton-highlight: var(--bunker-600);
 
-    /* Box Shadows (expands of --gray-50 ) */
-    --box-shadow-xs: 0 0 0 1px oklch(0.21 0.034 264.665 / 0.05);
+    /* Box Shadows (expands of --bunker-50 ) */
+    --box-shadow-xs: 0 0 0 1px oklch(16.52% 0.006 285.70), 0 10px 15px -3px rgba(0, 0, 0, .05), 0 4px 6px -4px rgba(0, 0, 0, .05);
     --box-shadow-s: 0 1px 2px 0 oklch(0.21 0.034 264.665 / 0.05);
     --box-shadow: 0 1px 3px 0 oklch(0.21 0.034 264.665 / 0.1), 0 1px 2px 0 oklch(0.21 0.034 264.665 / 0.06);
     --box-shadow-l: 0 10px 15px -3px oklch(0.21 0.034 264.665 / 0.1), 0 4px 6px -2px oklch(0.21 0.034 264.665 / 0.05);
     --box-shadow-xl: 0 20px 25px -5px oklch(0.21 0.034 264.665 / 0.1), 0 10px 10px -5px oklch(0.21 0.034 264.665 / 0.04);
 
     /* Liquid Glass / Frosted Background */
-    --liquidglass-bg: oklch(0.21 0.034 264.665 / 0.5);   /* expand of --gray-900 */
-    --liquidglass-shadow: 0 8px 32px 0 oklch(0.21 0.034 264.665 / 0.2); /* expand of --gray-900 */
+    --liquidglass-bg: oklch(0.21 0.034 264.665 / 0.5);   /* expand of --bunker-900 */
+    --liquidglass-shadow: 0 8px 32px 0 oklch(0.21 0.034 264.665 / 0.2); /* expand of --bunker-900 */
     --liquidglass-blur: blur(12px);
+
+
+    /* CUSTOMS */
+    --first-place: #8F7A1F;
+    --second-place: #5F6A74;
+    --third-place: #8C4F23;
 }
 
 /* Page-specific overrides */
 body.dark-mode.page-newquiz {
-    --quiz-surface: var(--gray-800);
-    --quiz-surface-muted: var(--gray-700);
-    --quiz-border: var(--gray-700);
-    --quiz-border-strong: var(--gray-600);
-    --quiz-placeholder: var(--gray-500);
-    --color-input: var(--gray-400);
+    --quiz-surface: var(--bunker-800);
+    --quiz-surface-muted: var(--bunker-700);
+    --quiz-border: var(--bunker-700);
+    --quiz-border-strong: var(--bunker-600);
+    --quiz-placeholder: var(--bunker-500);
+    --color-input: var(--bunker-400);
 }
 

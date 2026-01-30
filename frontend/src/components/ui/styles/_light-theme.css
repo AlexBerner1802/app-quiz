@@ -4,11 +4,11 @@
 
     /* Primary */
     --color-primary-text: var(--brand-primary-50);
-    --color-primary-bg: var(--brand-primary-500);
-    --color-primary-bg-hover: var(--brand-primary-600);
-    --color-primary-bg-active: var(--brand-primary-700);
-    --color-primary-muted: var(--brand-primary-100);
-    --color-primary-muted-text: var(--brand-primary-400);
+    --color-primary-bg: var(--brand-primary-600);
+    --color-primary-bg-hover: var(--brand-primary-700);
+    --color-primary-bg-active: var(--brand-primary-800);
+    --color-primary-muted: var(--brand-primary-200);
+    --color-primary-muted-text: var(--brand-primary-700);
 
     /* === Secondary  === */
     --color-secondary-text: var(--indigo-950);
@@ -24,7 +24,7 @@
     --color-success-bg-hover: var(--brand-success-600);
     --color-success-bg-active: var(--brand-success-700);
     --color-success-muted: var(--brand-success-100);
-    --color-success-muted-text: var(--brand-success-400);
+    --color-success-muted-text: var(--brand-success-600);
 
     /* Error */
     --color-error-text: var(--brand-error-50);
@@ -32,7 +32,7 @@
     --color-error-bg-hover: var(--brand-error-600);
     --color-error-bg-active: var(--brand-error-700);
     --color-error-muted: var(--brand-error-100);
-    --color-error-muted-text: var(--brand-error-400);
+    --color-error-muted-text: var(--brand-error-600);
 
     /* Warning */
     --color-warning-text: var(--brand-warning-50);
@@ -40,7 +40,7 @@
     --color-warning-bg-hover: var(--brand-warning-600);
     --color-warning-bg-active: var(--brand-warning-700);
     --color-warning-muted: var(--brand-warning-100);
-    --color-warning-muted-text: var(--brand-warning-400);
+    --color-warning-muted-text: var(--brand-warning-600);
 
     /* Notification  */
     --color-notification-text: var(--brand-notification-50);
@@ -66,7 +66,7 @@
     /* ------------------ Base / Backgrounds ------------------ */
 
     --color-background: var(--slate-50);                /* Main page background */
-    --color-background-muted: var(--slate-200);         /* Secondary / subtle background */
+    --color-background-muted: var(--slate-100);         /* Secondary / subtle background */
     --color-background-alt: var(--slate-200);           /* Alternate section backgrounds */
     --color-text: var(--slate-900);                     /* Primary text color */
     --color-text-muted: var(--slate-500);               /* Secondary / muted text */
@@ -75,13 +75,13 @@
 
     /* ---------------- Surfaces / Elevation ---------------- */
 
-    --color-background-surface-1: var(--slate-50);      /* Cards, sheets, modals base surface */
-    --color-background-surface-2: var(--slate-100);     /* Slightly elevated surfaces */
-    --color-background-surface-3: var(--slate-200);     /* Medium elevation */
-    --color-background-surface-4: var(--slate-300);     /* High elevation (popovers, menus) */
-    --color-background-surface-5: var(--slate-400);     /* Highest elevation if needed */
+    --color-background-surface-1: var(--slate-100);     /* Cards, sheets, modals base surface */
+    --color-background-surface-2: var(--slate-200);     /* Slightly elevated surfaces */
+    --color-background-surface-3: var(--slate-300);     /* Medium elevation */
+    --color-background-surface-4: var(--slate-400);     /* High elevation (popovers, menus) */
+    --color-background-surface-5: var(--slate-500);     /* Highest elevation if needed */
 
-    --color-background-overlay: oklch(0.21 0.034 264.665 / 0.7);   /* expand of --gray-900 */
+    --color-background-overlay: oklch(21.03% 0.006 285.89 / 0.6);   /* expand of --bunker-900 */
     --color-background-overlay-text: var(--slate-50);
     --color-background-overlay-text-muted: var(--slate-300);
 
@@ -89,7 +89,7 @@
     /* ---------------- Inputs / Form Controls ---------------- */
 
     --color-input-background: var(--slate-100);                  /* Default input background */
-    --color-input-border: var(--slate-300);                     /* Input border */
+    --color-input-border: var(--slate-200);                     /* Input border */
     --color-input-text: var(--slate-900);                       /* Text inside input */
     --color-input-focus-border: var(--brand-primary-500);       /* Focus state border */
     --color-input-placeholder: var(--slate-400);                /* Placeholder text */
@@ -100,8 +100,9 @@
     /* ---------------- Borders / Dividers ---------------- */
 
     --color-border: var(--slate-300);       /* Standard borders */
-    --color-border-strong: var(--slate-500);/* Stronger borders */
-    --color-divider: var(--slate-200);      /* Divider lines */
+    --color-border-subtle: var(--slate-200);  /* Subtle borders */
+    --color-border-strong: var(--slate-400);/* Stronger borders */
+    --color-divider: var(--slate-300);      /* Divider lines */
 
 
     /* ---------------- Feedback / States ---------------- */
@@ -132,8 +133,8 @@
     --color-skeleton-base: var(--gray-300);
     --color-skeleton-highlight: var(--gray-200);
 
-    /* Box Shadows expands of --var-900 */
-    --box-shadow-xs: 0 0 0 1px oklch(0.208 0.042 265.755 / 0.05);
+    /* Box Shadows */
+    --box-shadow-xs: 0 0 0 1px oklch(0.929 0.013 255.508), 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 2px 3px -1px rgba(0, 0, 0, 0.05);
     --box-shadow-s: 0 1px 2px 0 oklch(0.208 0.042 265.755 / 0.05);
     --box-shadow: 0 1px 3px 0 oklch(0.208 0.042 265.755 / 0.1), 0 1px 2px 0 oklch(0.208 0.042 265.755 / 0.06);
     --box-shadow-l: 0 10px 15px -3px oklch(0.208 0.042 265.755 / 0.1), 0 4px 6px -2px oklch(0.208 0.042 265.755 / 0.05);
@@ -143,6 +144,12 @@
     --liquidglass-bg: oklch(0.984 0.003 247.858 / 0.5);   /* expand of --slate-50 */
     --liquidglass-shadow: 0 8px 32px 0 oklch(0.984 0.003 247.858 / 0.2); /* expand of --slate-50 */
     --liquidglass-blur: blur(12px);
+
+
+    /* CUSTOMS */
+    --first-place: #e1cb40;
+    --second-place: #8F99A3;
+    --third-place: #B77840;
 
 }
 
