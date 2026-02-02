@@ -55,7 +55,7 @@ body.dark-mode {
     --gradient-success: linear-gradient(135deg, var(--brand-success-700), var(--brand-success-800));
     --gradient-error: linear-gradient(135deg, var(--brand-error-700), var(--brand-error-800));
     --gradient-warning: linear-gradient(135deg, var(--brand-warning-700), var(--brand-warning-600));
-    --gradient-background: linear-gradient(160deg, var(--bunker-900) 0%, var(--bunker-500) 100%);
+    --gradient-background: linear-gradient(160deg, var(--woodsmoke-950) 0%, var(--bunker-900) 100%);
 
     /* Additional Utility Colors */
     --color-highlight: var(--brand-primary-950);     /* Highlighted text or UI elements */
@@ -140,7 +140,7 @@ body.dark-mode {
     --box-shadow-xl: 0 20px 25px -5px oklch(0.21 0.034 264.665 / 0.1), 0 10px 10px -5px oklch(0.21 0.034 264.665 / 0.04);
 
     /* Liquid Glass / Frosted Background */
-    --liquidglass-bg: oklch(0.21 0.034 264.665 / 0.5);   /* expand of --bunker-900 */
+    --liquidglass-bg: oklch(16.52% 0.006 285.70 / 0.5);   /* expand of --bunker-900 */
     --liquidglass-shadow: 0 8px 32px 0 oklch(0.21 0.034 264.665 / 0.2); /* expand of --bunker-900 */
     --liquidglass-blur: blur(12px);
 

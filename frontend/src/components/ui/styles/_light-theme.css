@@ -141,8 +141,8 @@
     --box-shadow-xl: 0 20px 25px -5px oklch(0.208 0.042 265.755 / 0.1), 0 10px 10px -5px oklch(0.208 0.042 265.755 / 0.04);
 
     /* Liquid Glass / Frosted Background */
-    --liquidglass-bg: oklch(0.984 0.003 247.858 / 0.5);   /* expand of --slate-50 */
-    --liquidglass-shadow: 0 8px 32px 0 oklch(0.984 0.003 247.858 / 0.2); /* expand of --slate-50 */
+    --liquidglass-bg: oklch(0.929 0.013 255.508 / 0.5);   /* expand of --slate-50 */
+    --liquidglass-shadow: 0 8px 32px 0 oklch(0.929 0.013 255.508 / 0.2); /* expand of --slate-50 */
     --liquidglass-blur: blur(12px);
 
 

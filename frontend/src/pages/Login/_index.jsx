@@ -13,6 +13,7 @@ import breakpoints from "../../context/theme/breakpoints.js";
 import {useMediaQuery} from "react-responsive";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
+import Invader from "../../components/icons/Invader";
 
 function LoginPage() {
 
@@ -55,6 +56,11 @@ function LoginPage() {
 		<>
             <FaviconTitle title={t("pages.loginPage")} iconHref={faviconUrl} />
                 <Container $bg={loginBackground}>
+
+					<InvaderIconWrapper>
+						<Invader size={1200} color="var(--color-text)" />
+					</InvaderIconWrapper>
+
                     <Content>
                         <LeftContent $background={loginBackground}>
                             <LogoDesktop src={RafLogo} alt={t("app.name")} />
@@ -96,6 +102,18 @@ const Container = styled.div`
     background: var(--gradient-background);
     //background: url(${props => props.$bg}) no-repeat center;
     background-size: cover;
+	position: relative;
+	overflow: hidden;
+`;
+
+const InvaderIconWrapper = styled.div`
+    position: absolute;
+    bottom: -360px;
+    right: -200px;
+    transform: rotate(-30deg);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.2;
 `;
 
 const Content = styled.div`
@@ -111,8 +129,10 @@ const Content = styled.div`
     gap: var(--spacing-s);
     background: var(--liquidglass-bg);
     backdrop-filter: var(--liquidglass-blur);
+	border: 1px solid var(--color-border-subtle);
     -webkit-backdrop-filter: var(--liquidglass-blur);
     box-shadow: var(--liquidglass-shadow);
+	z-index: 2;
 
     @media (max-width: ${breakpoints.tablet}) {
         flex-direction: column;
@@ -170,7 +190,7 @@ const LeftContent = styled.div`
 `;
 
 const LogoDesktop = styled.img`
-    width: 60px;
+    width: 50px;
     height: auto;
     object-fit: contain;
     position: absolute;
@@ -242,7 +262,7 @@ const Subtitle = styled.p`
     width: 100%;
     font-weight: 400;
     color: var(--color-text);
-    font-size: var(--font-size);
+    font-size: var(--font-size-s);
     line-height: var(--line-height-l);
     margin-bottom: var(--spacing-xl);
 `;
