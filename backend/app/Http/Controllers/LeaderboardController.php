@@ -24,7 +24,7 @@ class LeaderboardController extends Controller
             })
             ->selectRaw('
                 u.id_user,
-                COALESCE(u.username, u.name, CONCAT("Random numéro ", u.id_user)) as user_name,
+                COALESCE(NULLIF(u.name, ""), NULLIF(u.username, ""), CONCAT("Random numéro ", u.id_user)) as user_name,
                 qa.id_quiz,
                 COALESCE(t.element_text, CONCAT("Quiz #", qa.id_quiz)) as quiz_title,
                 COUNT(*) as attempts,
@@ -52,7 +52,7 @@ class LeaderboardController extends Controller
             return [
                 'id'          => $row->id_user,
                 'rank'        => $rank++,
-                'userName'    => $row->user_name,
+                'name'        => $row->user_name,
                 'score'       => (float) $row->best_score,
                 'timeSeconds' => (int) $row->best_time,
                 'attempts'    => (int) $row->attempts,

@@ -258,11 +258,11 @@ export default function ProfilePage() {
 
 					<StatsContainer>
 						<StatList>
-							<StatRow><StatLabel>Correct / Wrong</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>Total finish</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>Total attempts</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>Total time</StatLabel><StatValue>{formatTime(stats.totalTimeSec) || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>Leaderboard rank</StatLabel><StatValue>{stats.rank || "-"}</StatValue></StatRow>
+							<StatRow><StatLabel>{t("profile.true")} / {t("profile.false")}</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
+							<StatRow><StatLabel>{t("profile.totalFinish")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
+							<StatRow><StatLabel>{t("profile.totalAttempts")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
+							<StatRow><StatLabel>{t("profile.totalTime")}</StatLabel><StatValue>{formatTime(stats.totalTimeSec) || "-"}</StatValue></StatRow>
+							<StatRow><StatLabel>{t("leaderboard.rank")}</StatLabel><StatValue>{stats.rank || "-"}</StatValue></StatRow>
 						</StatList>
 
 						<TopScoreContainer>

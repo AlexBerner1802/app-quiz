@@ -15,8 +15,9 @@
 	},
 	"nav": {
 		"quiz": "Quiz",
-		"results": "Ergebnisse",
+		"results": "Rangliste",
 		"search": "Suche",
+		"content": "Inhalt",
 		"settings": "Einstellungen",
 		"logout": "Abmelden"
 	},
@@ -140,16 +141,25 @@
 		"microsoftAlt": "Microsoft-Anmeldung",
 		"error": "Anmeldung fehlgeschlagen"
     },
+	"results": {
+		"globalLeaderboard": "Globale Rangliste"
+	},
+	"content": {
+		"title": "Inhalt",
+		"tag_lang": "Tags {{lang}}",
+		"module_lang": "Module {{lang}}"
+	},
     "homePage": "Startseite - Rafisa Quiz",
 		"createPage": "Quiz erstellen - Rafisa Quiz",
 		"editPage": "Quiz-Ausgabe - Rafisa Quiz",
 		"settingsPage": "Einstellungen - Rafisa Quiz",
-		"resultsPage": "Ergebnisse - Rafisa Quiz",
-		"searchPage": "Forschung - Rafisa Quiz",
+		"resultsPage": "Rangliste - Rafisa Quiz",
+		"searchPage": "Suche - Rafisa Quiz",
 		"loginPage": "Verbindung - Rafisa Quiz",
 		"accountPage": "Konto - Rafisa Quiz",
-		"leaderboardPage": "Rang - Rafisa Quiz",
-		"quizLeaderboardPage":"Rangliste nach Quiz - Rafisa Quiz"
+		"leaderboardPage": "Rangliste - Rafisa Quiz",
+		"quizLeaderboardPage":"Rangliste nach Quiz - Rafisa Quiz",
+		"ContentPage":"Inhalt - Rafisa Quiz"
 
   },
   	"modals": {
@@ -195,5 +205,18 @@
 		"searchUserHelp":"Es werden nur die Top 10 angezeigt; verwenden Sie die Suchleiste, um Ihr Ergebnis zu finden.",
 		"owner":"Eigentümer",
 		"participants":"Teilnehmer"	
+	},
+	"profile":{
+		"title": "Konto",
+		"stats": "STATISTIK",
+		"totalFinish": "Gesamt abgeschlossen",
+		"totalAttempts": "Gesamtversuche",
+		"true": "Wahr",
+		"false": "Falsch",
+		"totalPoints": "Punkte insgesamt",
+		"totalTime": "Gesamtzeit",
+		"results": "Meine Ergebnisse",
+		"openResults": "Öffnen",
+		"best": "Beste"
 	}
 }

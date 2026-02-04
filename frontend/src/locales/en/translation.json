@@ -15,8 +15,9 @@
 	},
 	"nav": {
 		"quiz": "Quiz",
-		"results": "Results",
+		"results": "Leaderboard",
 		"search": "Search",
+		"content": "Content",
 		"settings": "Settings",
 		"logout": "Logout"
 	},
@@ -140,6 +141,14 @@
 			"microsoftAlt": "Microsoft login",
 			"error": "Login failed"
 		},
+		"results": {
+			"globalLeaderboard": "Global leaderboard"
+		},
+		"content": {
+			"title": "Content",
+			"tag_lang": "Tags {{lang}}",
+			"module_lang": "Modules {{lang}}"
+		},
 		"homePage": "Home - Rafisa Quiz",
 		"createPage": "Quiz Creation - Rafisa Quiz",
 		"editPage": "Quiz edition - Rafisa Quiz",
@@ -148,8 +157,9 @@
 		"searchPage": "Search - Rafisa Quiz",
 		"loginPage": "Login - Rafisa Quiz",
 		"accountPage": "Account - Rafisa Quiz",
-		"leaderboardPage": "Leaaderboard - Rafisa Quiz",
-		"quizLeaderboardPage":"Leaderboard per quiz - Rafisa Quiz"
+		"leaderboardPage": "Leaderboard - Rafisa Quiz",
+		"quizLeaderboardPage":"Leaderboard per quiz - Rafisa Quiz",
+		"ContentPage":"Content - Rafisa Quiz"
 
 	},
 	"modals": {
@@ -195,5 +205,18 @@
 		"searchUserHelp":"Only the top 10 is displayed, use the search bar to find your result.",
 		"owner":"Owner",
 		"participants":"Participants"	
+	},
+	"profile":{
+		"title": "Account",
+		"stats": "STATISTICS",
+		"totalFinish": "Total finished",
+		"totalAttempts": "Total attempts",
+		"true": "True",
+		"false": "False",
+		"totalPoints": "Total points",
+		"totalTime": "Total time",
+		"results": "My results",
+		"openResults": "Open",
+		"best": "Best"
 	}
 }

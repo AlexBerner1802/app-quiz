@@ -14,9 +14,10 @@
 		"sign_in": "Accedi"
 	},
 	"nav": {
-		"quiz": "Quiz",
-		"results": "Risultati",
+		"quiz": "Pagina iniziale",
+		"results": "Classifica",
 		"search": "Cerca",
+		"content": "Contenuto",
 		"settings": "Impostazioni",
 		"logout": "Disconnettersi"
 	},
@@ -128,7 +129,7 @@
 	},
 	"pages": {
 		"home": {
-			"title": "Quiz"
+			"title": "Pagina iniziale"
 		},
 		"settings": {
 			"title": "Impostazioni"
@@ -139,6 +140,14 @@
 			"microsoftAlt": "Accesso Microsoft",
 			"error": "Accesso non riuscito"
 		},
+		"results": {
+			"globalLeaderboard": "Classifica globale"
+		},
+		"content": {
+			"title": "Contenuto",
+			"tag_lang": "Tag {{lang}}",
+			"module_lang": "Moduli {{lang}}"
+		},
 		"homePage": "Pagina iniziale- Rafisa Quiz",
 			"createPage": "Creazione di quiz - Rafisa Quiz",
 			"editPage": "Edizione quiz - Rafisa Quiz",
@@ -148,7 +157,8 @@
 			"loginPage": "Connessione - Rafisa Quiz",
 			"accountPage": "Account - Rafisa Quiz",
 			"leaderboardPage": "Classifica - Rafisa Quiz",
-			"quizLeaderboardPage":"Classifica per quiz - Rafisa Quiz"
+			"quizLeaderboardPage":"Classifica per quiz - Rafisa Quiz",
+			"ContentPage":"Contenuto - Rafisa Quiz"
 
 	},
 	"modals": {
@@ -194,5 +204,18 @@
 		"searchUserHelp":"Vengono visualizzati solo i primi 10; usa la barra di ricerca per trovare il risultato che cerchi.",
 		"owner":"Proprietario",
 		"participants":"Partecipanti"	
+	},
+	"profile":{
+		"title": "Account",
+		"stats": "STATISTICHE",
+		"totalFinish": "Totale completati",
+		"totalAttempts": "Tentativi totali",
+		"true": "Vero",
+		"false": "Falso",
+		"totalPoints": "Punti totali",
+		"totalTime": "Tempo totale",
+		"results": "I miei risultati",
+		"openResults": "Apri",
+		"best": "Migliore"
 	}
 }

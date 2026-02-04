@@ -38,17 +38,23 @@ const TabContentContainer = styled.div`
 
 
 // --- Recursive prop drilling ---
+const ALLOWED = new Set(["TabsList", "TabsTrigger", "TabsContent"]);
+
 const cloneChildrenWithProps = (children, props) =>
 	Children.map(children, child => {
 		if (!React.isValidElement(child)) return child;
+
+		const typeName = child.type?.name;
+		const shouldInject = ALLOWED.has(typeName);
+
 		return cloneElement(
 			child,
-			props,
+			shouldInject ? props : {},
 			child.props.children
 				? cloneChildrenWithProps(child.props.children, props)
 				: child.props.children
 		);
-	});
+  });
 
 // --- Tabs Components ---
 export const Tabs = ({ defaultValue, children }) => {
@@ -59,14 +65,32 @@ export const Tabs = ({ defaultValue, children }) => {
 
 export const TabsList = ({ children }) => <TabsListContainer>{children}</TabsListContainer>;
 
-export const TabsTrigger = ({ value, children, activeTab, setActiveTab, ...props }) => {
+export const TabsTrigger = ({
+	value,
+	children,
+	activeTab,
+	setActiveTab,
+	style,
+	className,
+	title,
+	}) => {
 	const isActive = activeTab === value;
+
 	return (
-		<TabButton $active={isActive} onClick={() => setActiveTab(value)} {...props}>
+		<TabButton
+			$active={isActive}
+			onClick={() => setActiveTab(value)}
+			style={style}
+			className={className}
+			title={title}
+			role="tab"
+			aria-selected={isActive}
+			>
 			{children}
 		</TabButton>
 	);
 };
+
 
 export const TabsContent = ({ value, activeTab, children }) => {
 	const isActive = activeTab === value;

@@ -35,11 +35,14 @@ export default function LeaderboardTable({
 	};
 
 	const formatTime = (seconds) => {
-		if (seconds == null || isNaN(seconds)) return "_time_";
-		const m = Math.floor(seconds / 60);
-		const s = seconds % 60;
-		return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+		const s = Number(seconds);
+		if (!Number.isFinite(s) || s < 0) return "_time_";
+		const total = Math.floor(s);
+		const m = Math.floor(total / 60);
+		const sec = total % 60;
+		return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 	};
+
 
 	const rankColor = {
 		1: "var(--first-place)",
@@ -50,7 +53,7 @@ export default function LeaderboardTable({
 
 	return (
 		<TableContainer>
-			<HeaderRow template={template}>
+			<HeaderRow $template={template}>
 				{columns.map((col) => (
 					<HeaderCell
 						key={col.key}
@@ -87,7 +90,7 @@ export default function LeaderboardTable({
 				)}
 				{!loading &&
 					entries.map((entry) => (
-						<DataRow key={entry.id ?? entry.user_name} template={template}>
+						<DataRow key={entry.id ?? entry.user_name} $template={template}>
 							{columns.map((col) => (
 								<Cell key={col.key} $align={col.align}>
 									{col.key === "user_name" ? (
@@ -108,12 +111,10 @@ export default function LeaderboardTable({
 											)}
 										</AvatarWrapper>
 									) : col.key === "time_seconds" ? (
-										<TimeWrapper title={`Best: ${formatTime(entry.best_time_seconds)} | Worst: ${formatTime(entry.worst_time_seconds)} | Total: ${formatTime(entry.total_time_seconds)} `}>
-											{formatTime(entry.best_time_seconds)}
-											{/*<DetailTimeWrapper>
-												({formatTime(entry.total_time_seconds)})
-											</DetailTimeWrapper>*/}
+										<TimeWrapper title={formatTime(entry.time_seconds)}>
+											{formatTime(entry.time_seconds)}
 										</TimeWrapper>
+
 									) : col.key === "score" ? (
 										<ScoreTag
 											$color={rankColor[entry.rank]}>
@@ -138,7 +139,7 @@ const TableContainer = styled.div`
 
 const HeaderRow = styled.div`
     display: grid;
-    grid-template-columns: ${({ template }) => template};
+  	grid-template-columns: ${({ $template }) => $template};
     padding: var(--spacing-s) var(--spacing-2xl);
     font-weight: 600;
     font-size: var(--font-size);
@@ -167,7 +168,7 @@ const Body = styled.div`
 
 const DataRow = styled.div`
     display: grid;
-    grid-template-columns: ${({ template }) => template};
+  	grid-template-columns: ${({ $template }) => $template};
     background-color: var(--color-background-surface-1);
     padding: var(--spacing-s) var(--spacing-2xl);
     font-size: var(--font-size);

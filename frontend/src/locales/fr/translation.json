@@ -15,7 +15,7 @@
 	},
 	"nav": {
 		"quiz": "Quiz",
-		"results": "Résultats",
+		"results": "Classement",
 		"search": "Recherche",
 		"content": "Contenu",
 		"settings": "Paramètres",
@@ -154,6 +154,7 @@
 			"globalLeaderboard": "Classement global"
 		},
 		"content": {
+			"title": "Contenu",
 			"tag_lang": "Étiquettes {{lang}}",
 			"module_lang": "Modules {{lang}}"
 		},
@@ -166,7 +167,8 @@
 		"loginPage": "Connexion - Rafisa Quiz",
 		"accountPage": "Compte - Rafisa Quiz",
 		"leaderboardPage": "Classement - Rafisa Quiz",
-		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz"
+		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz",
+		"ContentPage":"Contenu - Rafisa Quiz"
 
 	},
 	"modals": {
@@ -190,12 +192,12 @@
 		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
 	"leaderboard": {
-		"title":"Leaderboard",
+		"title":"Classement",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
 		"searchPlaceholder":"Recherche",
 		"sortByRank":"Trier par rang",
 		"filter": "Filtrer",
-		"filterDefault": "Leaderboard",
+		"filterDefault": "Classement",
 		"filterUsers": "Utilisateurs",
 		"rank" : "Rang",
 		"name":"Nom",
@@ -219,6 +221,7 @@
 	"profile":{
 		"title": "Compte",
 		"stats": "STATISTIQUES",
+		"totalFinish": "Total terminé",
 		"totalAttempts": "Essais totaux",
 		"true": "Vrai",
 		"false": "Faux",

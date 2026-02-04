@@ -46,7 +46,7 @@ export default function ContentPage() {
 		<>
 			<FaviconTitle title={t("pages.ContentPage")} iconHref={faviconUrl} />
 			<Main>
-				<Header title={t("pages.settings.title")} icon={<Settings size={20} />} />
+				<Header title={t("pages.content.title")} icon={<Settings size={20} />} />
 				<Content>
 					<Tabs defaultValue="tags">
 						<TabsList>
