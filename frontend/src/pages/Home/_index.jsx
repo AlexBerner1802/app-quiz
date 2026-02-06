@@ -4,7 +4,6 @@ import {FlaskConical, Search, Plus, SearchX, Funnel, Loader2} from "lucide-react
 import styled, {keyframes} from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
-import Header from "../../components/layout/Header";
 import Button from "../../components/ui/Button";
 import {getQuizzes, deleteQuiz, getModules, getTags} from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
@@ -142,20 +141,6 @@ export default function HomePage() {
 						<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"}/>
 					</LoadingWrapper>
 				)}
-
-				<Header
-					actions={[
-						<NewQuizButton
-							key="new"
-							onClick={() => navigate("/quizzes/new")}
-							aria-label={t("actions.newQuiz")}
-							title={t("actions.newQuiz")}
-						>
-							<Plus size={16} aria-hidden="true" />
-							{t("actions.newQuiz")}
-						</NewQuizButton>,
-					]}
-				/>
 
 				<Content>
 					{err && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{err}</pre>}

@@ -51,6 +51,8 @@
 		"languages": "Langues",
 		"search": "Recherche",
 		"filter": "Filtre",
+		"time_elapsed": "Temps écoulé",
+		"last_updated_at": "Dernière mise à jour : {{datetime}}",
 		"placeholders": {
 			"typeHere": "Tapez ici"
 		},
@@ -61,6 +63,58 @@
 		"loading": "Chargement...",
 		"error": "Erreur: ",
 		"already_added": "Ajouté"
+	},
+	"pages": {
+		"home": {
+			"title": "Quiz"
+		},
+		"settings": {
+			"title": "Paramètres"
+		},
+		"login": {
+			"title": "Connexion",
+			"microsoftSignIn": "Se connecter avec Microsoft",
+			"microsoftAlt": "Connexion Microsoft",
+			"error": "Échec du login"
+		},
+		"results": {
+			"globalLeaderboard": "Classement global"
+		},
+		"content": {
+			"tag_lang": "Étiquettes {{lang}}",
+			"module_lang": "Modules {{lang}}"
+		},
+		"homePage": "Accueil - Rafisa Quiz",
+		"createPage": "Création de quiz - Rafisa Quiz",
+		"editPage": "Édition de quiz - Rafisa Quiz",
+		"settingsPage": "Paramètres - Rafisa Quiz",
+		"resultsPage": "Résultats - Rafisa Quiz",
+		"searchPage": "Recherche - Rafisa Quiz",
+		"loginPage": "Connexion - Rafisa Quiz",
+		"accountPage": "Compte - Rafisa Quiz",
+		"leaderboardPage": "Classement - Rafisa Quiz",
+		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz"
+
+	},
+	"modals": {
+		"logout": {
+			"title": "Déconnexion",
+			"text": "Voulez-vous vraiment vous déconnecter ?",
+			"cancel": "Annuler",
+			"confirm": "Oui"
+		}
+	},
+	"dialogs": {
+		"unsaved": {
+			"title": "Quitter sans enregistrer ?",
+			"text": "Vous avez des modifications non sauvegardées.",
+			"stay": "Rester",
+			"leave": "Quitter"
+		}
+	},
+	"errors": {
+		"quiz_not_found": "Quiz non trouvé",
+		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
 	"quiz": {
 		"title": "Nouveau quiz",
@@ -73,6 +127,9 @@
 		"remove_description": "Retirer la remarque",
 		"description": "Remarque de la question (facultatif)",
 		"add_language": "Ajouter une langue",
+		"start_quiz": "Lancer le quiz",
+		"your_score": "Votre score",
+		"score_for_question": "Score obtenu pour cette question : {{score}} / {{total}}",
 		"saved_successfully": "Quiz enregistré avec succès !",
 		"placeholders": {
 			"title": "Titre du quiz",
@@ -137,6 +194,7 @@
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"
 	},
+<<<<<<< HEAD
 	"pages": {
 		"home": {
 			"title": "Quiz"
@@ -191,6 +249,8 @@
 		"quiz_not_found": "Quiz non trouvé",
 		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
+=======
+>>>>>>> origin/dev_alex
 	"leaderboard": {
 		"title":"Classement",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",

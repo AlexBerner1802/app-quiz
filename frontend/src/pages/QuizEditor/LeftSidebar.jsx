@@ -149,20 +149,20 @@ const LeftPanel = styled.aside`
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    background-color: var(--color-background-muted);
+    background-color: var(--color-background-surface-1);
     scrollbar-width: thin;
-    scrollbar-color: var(--color-primary-bg) var(--color-background-muted);
+    scrollbar-color: var(--color-primary-bg) var(--color-background-surface-1);
     &::-webkit-scrollbar {
         width: 8px;
     }
     &::-webkit-scrollbar-track {
-        background: var(--color-background-muted);
+        background: var(--color-background-surface-1);
         border-radius: 8px;
     }
     &::-webkit-scrollbar-thumb {
         background-color: var(--color-primary-bg);
         border-radius: 8px;
-        border: 2px solid var(--color-background-muted);
+        border: 2px solid var(--color-background-surface-1);
     }
     &::-webkit-scrollbar-thumb:hover {
         background-color: var(--color-primary-bg-hover);
@@ -218,8 +218,8 @@ const LeftRow = styled.div`
     gap: var(--spacing);
     transition: all .2s ease;
     border-radius: var(--border-radius-xs);
-	background-color: var(--color-background-alt);
-	border: 1px solid var(--color-background-alt);
+	background-color: var(--color-background-surface-2);
+	border: 1px solid var(--color-border-subtle);
     padding: var(--spacing);
     cursor: grab;
     &[data-dragging="1"] {

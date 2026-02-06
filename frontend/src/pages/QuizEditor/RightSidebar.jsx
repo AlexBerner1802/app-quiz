@@ -151,7 +151,7 @@ const RightPanel = styled.aside`
     flex-direction: column;
     border-left: 1px solid var(--color-border);
     height: 100%;
-    background-color: var(--color-background-muted);
+    background-color: var(--color-background-surface-1);
     position: relative;
 `;
 
