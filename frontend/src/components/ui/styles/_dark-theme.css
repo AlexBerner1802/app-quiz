@@ -76,7 +76,7 @@ body.dark-mode {
     /* ---------------- Surfaces / Elevation ---------------- */
 
     --color-background-surface-1: var(--bunker-950);     /* Cards, sheets, modals base surface */
-    --color-background-surface-2: var(--bunker-900);     /* Slightly elevated surfaces */
+    --color-background-surface-2: var(--woodsmoke-900);     /* Slightly elevated surfaces */
     --color-background-surface-3: var(--bunker-800);     /* Medium elevation */
     --color-background-surface-4: var(--bunker-700);     /* High elevation (popovers, menus) */
     --color-background-surface-5: var(--bunker-600);     /* Highest elevation if needed */

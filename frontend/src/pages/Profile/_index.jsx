@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import {Search, User, Trophy, Plus, Award, Pen, Crown, Funnel} from "lucide-react";
+import {Search, Trophy, Pen } from "lucide-react";
 
-import Header from "../../components/layout/Header";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";

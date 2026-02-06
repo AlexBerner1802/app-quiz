@@ -1,65 +1,96 @@
 import React from "react";
-import styled, {keyframes} from "styled-components";
+import styled from "styled-components";
 import Button from "../../../components/ui/Button";
 import {PartyPopper, CircleCheck, CircleX} from "lucide-react";
-import {applyScoreMultiplier} from "../../../utils/score";
+import {normalizeScore } from "../../../utils/score";
 import {formatTime} from "../../../utils/dateUtils";
-import ParticlesBackground from "../../../components/particules/ParticlesBackground";
 import Invader from "../../../components/icons/Invader";
+import {useTranslation} from "react-i18next";
 
 export default function ReviewStep({ quiz, result, onClose }) {
 
-	console.log(result)
+	const {t} = useTranslation();
 
 	return (
 		<ReviewCard>
 
 			<Container>
 
-				<BackgroundInvader color={"var(--color-background-surface-2)"}/>
+				<InvaderIconWrapper>
+					<Invader size={1200} color="var(--color-text)" />
+				</InvaderIconWrapper>
 
 				<Content>
 					<ResultsContent>
 						<ScoreContainer>
 							<ScoreInfo>
-								<Title>Your Score</Title>
+								<Title>{t("quiz.your_score")}</Title>
 								<Score>
-									{applyScoreMultiplier(result.score)}
-									<ScoreTotal> / {applyScoreMultiplier(result.best_possible_score)}</ScoreTotal>
+									{normalizeScore({
+										rawScore: result.score,
+										quizMaxScore: result.best_possible_score,
+									})}
+									<ScoreTotal>
+										{" / "}
+										{normalizeScore({
+											rawScore: result.best_possible_score,
+											quizMaxScore: result.best_possible_score,
+										})}
+									</ScoreTotal>
 								</Score>
 								<TimeTaken>Time taken: {formatTime(result.time_taken)}</TimeTaken>
 							</ScoreInfo>
 							<AnimatedPartyPopper  size={100} color={"var(--color-primary-bg"} />
 						</ScoreContainer>
 
-						{result.answers.map((a, i) => (
-							<QuestionCard key={i}>
-								<Question>{i + 1}. {a.question}</Question>
-								<AnswersGrid>
-									{a.answers.map(ans => {
-										const isUserSelected = a.user_answer_ids.includes(ans.id);
-										const isCorrect = ans.is_correct === true; // only exists for selected answers
-										return (
-											<AnswerBox
-												key={ans.id}
-												correct={isCorrect}
-												selected={isUserSelected && !isCorrect}
-												style={{
-													color: isCorrect ? "var(--color-success-muted-text)" : isUserSelected ? "var(--color-error-muted-text)" : "var(--color-text)",
-													backgroundColor: isCorrect ? "var(--color-success-muted)" : isUserSelected ? "var(--color-error-muted)" : undefined,
-													borderColor: isCorrect ? "var(--color-success-muted-text)" : isUserSelected ? "var(--color-error-muted-text)" : undefined
-												}}
-											>
-												<p>{ans.translation ?? "[No text]"}{" "}</p>
-												{isCorrect && <CircleCheck size={20} color="var(--color-success-muted-text)" style={{ verticalAlign: "middle" }} />}
-												{isUserSelected && !isCorrect && <CircleX size={20} color="var(--color-error-muted-text)" style={{ verticalAlign: "middle" }} />}
-											</AnswerBox>
-										);
-									})}
-								</AnswersGrid>
-								<ScoreQuestion>Score for this question: {applyScoreMultiplier(a.score)}</ScoreQuestion>
-							</QuestionCard>
-						))}
+						{result.answers.map((a, i) => {
+							const maxScoreForQuestion = a.answers.filter(ans => ans.is_correct).length;
+
+							return (
+								<QuestionCard key={i}>
+									<Question>{i + 1}. {a.question}</Question>
+									<AnswersGrid>
+										{a.answers.map(ans => {
+											const isUserSelected = a.user_answer_ids.includes(ans.id);
+											const isCorrect = ans.is_correct === true; // only exists for selected answers
+											return (
+												<AnswerBox
+													key={ans.id}
+													correct={isCorrect}
+													selected={isUserSelected && !isCorrect}
+													style={{
+														color: isCorrect ? "var(--color-success-muted-text)" : isUserSelected ? "var(--color-error-muted-text)" : "var(--color-text)",
+														backgroundColor: isCorrect ? "var(--color-success-muted)" : isUserSelected ? "var(--color-error-muted)" : undefined,
+														borderColor: isCorrect ? "var(--color-success-muted-text)" : isUserSelected ? "var(--color-error-muted-text)" : undefined
+													}}
+												>
+													<p>{ans.translation ?? "[No text]"}{" "}</p>
+													{isCorrect &&
+														<CircleCheck size={20} color="var(--color-success-muted-text)"
+																	 style={{verticalAlign: "middle"}}/>}
+													{isUserSelected && !isCorrect &&
+														<CircleX size={20} color="var(--color-error-muted-text)"
+																 style={{verticalAlign: "middle"}}/>}
+												</AnswerBox>
+											);
+										})}
+									</AnswersGrid>
+									<ScoreQuestion>
+										{t("quiz.score_for_question", {
+											score: normalizeScore({
+													rawScore: a.score,
+													quizMaxScore: result.best_possible_score,
+												}),
+											total:  normalizeScore({
+													rawScore: 1,
+													quizMaxScore: result.best_possible_score,
+												}),
+											}
+										)}
+									</ScoreQuestion>
+								</QuestionCard>
+							)
+						})}
 
 						<Button onClick={onClose} size="l">Close</Button>
 					</ResultsContent>
@@ -261,7 +292,6 @@ const AnswerBox = styled.div`
     }}
 `;
 
-
 const ScoreQuestion = styled.p`
 	text-align: right;
 	font-size: var(--font-size);
@@ -270,15 +300,12 @@ const ScoreQuestion = styled.p`
 	margin-top: calc(-1 * var(--spacing-xs));
 `;
 
-const BackgroundInvader = styled(Invader)`
-    position: absolute;       /* stays in the container */
-    bottom: -200px;            /* partially hidden */
-    right: -250px;             /* partially hidden */
-    width: 1000px;             /* large but not too big */
-    height: 1000px;
-    color: var(--color-background-surface-2);
-    opacity: 0.2;            /* subtle in background */
-    transform: rotate(-25deg); /* rotated once */
-    pointer-events: none;     /* clicks pass through */
-    z-index: 0;               /* behind content */
+const InvaderIconWrapper = styled.div`
+    position: absolute;
+    bottom: -360px;
+    right: -200px;
+    transform: rotate(-30deg);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.1;
 `;

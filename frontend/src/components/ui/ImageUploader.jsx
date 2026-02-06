@@ -9,8 +9,8 @@ export default function ImageUploader({
 										  placeholder = "Click or drag an image here",
 										  hoverPlaceholder = "Click to change image",
 										  width = "100%",
-										  height = "240px",
-										  minHeight = "240px",
+										  height = "300px",
+										  minHeight = "300px",
 										  maxFileSize = import.meta.env.VITE_MAX_UPLOAD_FILE_SIZE_MB,
 										  style
 									  }) {

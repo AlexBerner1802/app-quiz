@@ -5,6 +5,7 @@ import Tag from "../../../components/ui/Tag";
 import {useTranslation} from "react-i18next";
 import ParticlesBackground from "../../../components/particules/ParticlesBackground";
 import {formatDate} from "../../../utils/dateUtils";
+import {normalizeScore} from "../../../utils/score";
 
 
 export default function IntroStep({ quiz, onStart }) {
@@ -29,7 +30,11 @@ export default function IntroStep({ quiz, onStart }) {
 					<OwnerLine>
 						<span className="owner">{quiz.owner.name}</span>
 						<span className="dot" />
-						<span className="updated">Last update: {formatDate(quiz.updated_at || quiz.created_at)}</span>
+						<span className="updated">
+							{t("common.last_updated_at", {
+								datetime: formatDate(quiz.updated_at || quiz.created_at)
+							})}
+						</span>
 					</OwnerLine>
 				</CoverContainer>
 
