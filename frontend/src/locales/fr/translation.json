@@ -51,6 +51,7 @@
 		"languages": "Langues",
 		"search": "Recherche",
 		"filter": "Filtre",
+		"edit": "Modifier",
 		"time_elapsed": "Temps écoulé",
 		"last_updated_at": "Dernière mise à jour : {{datetime}}",
 		"placeholders": {
@@ -62,7 +63,9 @@
 		},
 		"loading": "Chargement...",
 		"error": "Erreur: ",
-		"already_added": "Ajouté"
+		"already_added": "Ajouté",
+		"top_score": "Meilleur score",
+		"total_top_score": "Meilleur score total"
 	},
 	"pages": {
 		"home": {
@@ -194,7 +197,6 @@
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"
 	},
-<<<<<<< HEAD
 	"pages": {
 		"home": {
 			"title": "Quiz"
@@ -249,8 +251,6 @@
 		"quiz_not_found": "Quiz non trouvé",
 		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
 	},
-=======
->>>>>>> origin/dev_alex
 	"leaderboard": {
 		"title":"Classement",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
@@ -287,7 +287,7 @@
 		"false": "Faux",
 		"totalPoints": "Points totaux",
 		"totalTime": "Temps total",
-		"results": "Mes résultats",
+		"quizzesStat": "Statistiques des quiz",
 		"openResults": "Ouvrir",
 		"best": "Meilleur"
 	}

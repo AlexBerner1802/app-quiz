@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import {Search, Trophy, Pen } from "lucide-react";
+import {Search, Trophy, Pen, Info } from "lucide-react";
 
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
@@ -47,7 +47,7 @@ function useAnimatedCounter(target, duration = 2000) {
 	}, [target, duration]);
 
 	// format with a space every 3 digits
-	return value.toLocaleString('fr-FR'); 
+	return value.toLocaleString('fr-FR');
 }
 
 const CircleStat = ({
@@ -62,7 +62,7 @@ const CircleStat = ({
 						shadowColor = "var(--color-primary-muted-text)"
 					}) => {
 	const radius = 100;
-	const stroke = 12;
+	const stroke = 16;
 	let normalized = value / maxValue;
 
 	if (reverse) normalized = 1 - normalized; // reverse fill for avgSpeed
@@ -72,6 +72,14 @@ const CircleStat = ({
 
 	return (
 		<CircleStatWrap>
+
+			{description && (
+				<InfoWrapper>
+					<Info size={30} />
+					<Tooltip>{description}</Tooltip>
+				</InfoWrapper>
+			)}
+
 			<svg width={radius * 2 + stroke * 4} height={radius * 2 + stroke * 4}>
 				{/* Define drop shadow filter */}
 				<defs>
@@ -116,9 +124,10 @@ const CircleStat = ({
 					y="50%"
 					textAnchor="middle"
 					dominantBaseline="middle"
-					fontSize="var(--font-size-2xl)"
+					fontSize="var(--font-size-3xl)"
+					fontFamily={"Orbitron, sans-serif"}
 					fontWeight="600"
-					fill="var(--color-text)"
+					fill="var(--color-text-muted)"
 				>
 					{label === "Avg Speed" && value >= maxValue
 						? `> ${formatTime(maxValue)}`
@@ -134,17 +143,24 @@ const CircleStat = ({
 
 
 
-
-export default function ProfilePage() {
-	const { t } = useTranslation();
-	const { openDrawer } = useDrawer();
-	const { id_user } = useParams();
+export function ProfilePage() {
+	const {t} = useTranslation();
+	const {openDrawer} = useDrawer();
+	const {id_user} = useParams();
 
 	const [loading, setLoading] = useState(false);
-	const [user, setUser] = useState({ name: "", role: "", avatarUrl: null, username: "" });
-	const [stats, setStats] = useState({ totalAttempts: 0, true: 0, false: 0, totalPoints: 0, totalTimeSec: 0, bestScore: 0 });
+	const [user, setUser] = useState({name: "", role: "", avatarUrl: null, username: ""});
+	const [stats, setStats] = useState({
+		totalAttempts: 0,
+		true: 0,
+		false: 0,
+		totalPoints: 0,
+		totalTimeSec: 0,
+		bestScore: 0
+	});
 	const [quizzes, setQuizzes] = useState([]);
 	const [searchText, setSearchText] = useState("");
+
 
 	useEffect(() => {
 		if (!id_user) return;
@@ -203,7 +219,7 @@ export default function ProfilePage() {
 		const efficiency = avgSpeed > 0 ? accuracy / (avgSpeed / 60 + 1) : 0;
 		const retryRate = quizzes.length > 0 ? stats.totalAttempts / quizzes.length : 0;
 
-		return { accuracy, avgSpeed, consistency, efficiency, retryRate };
+		return {accuracy, avgSpeed, consistency, efficiency, retryRate};
 	}, [stats, quizzes]);
 
 	const safeTarget = applyScoreMultiplier(stats.totalPoints, false) || 0;
@@ -211,143 +227,162 @@ export default function ProfilePage() {
 	const bestScoreAnimated = useAnimatedCounter(safeTarget, 2500);
 
 	const handleQuizClick = (quiz) => {
-		openDrawer("quizResult", { quiz: { ...quiz, owner: user.name || "Me" }, id_user });
+		openDrawer("quizResult", {quiz: {...quiz, owner: user.name || "Me"}, id_user});
 	};
+
+	const formatNumber = (n) =>
+		n.toLocaleString("fr-FR").replace(/\u202F/g, " ");
+
 
 	return (
 		<Main>
-			<FaviconTitle icon={faviconUrl} title={t("pages.accountPage")} />
+			<FaviconTitle icon={faviconUrl} title={t("pages.accountPage")}/>
 
-			<Content>
-				<ContentHead>
-					<TitleContainer>
-						<Invader size={54} aria-hidden="true" color={"var(--color-text)"}/>
-						<Title>{t("profile.title")}</Title>
-						<ToggleThemeSwitch/>
-					</TitleContainer>
-				</ContentHead>
+			<InvaderIconWrapper>
+				<Invader size={1200} color="var(--color-text)"/>
+			</InvaderIconWrapper>
 
-				<ProfileCard>
+			<ContentWrapper>
+				<Content>
 
-					<Identity>
-						{loading ? (
-							<AvatarSkeleton />
-						) : (
-							<AvatarWrapper onClick={(e) => e.stopPropagation()}>
-								{user.avatarUrl ? (
-									<AvatarImage src={user.avatarUrl} alt="Author avatar" />
+					<ContentHead>
+						<TitleContainer>
+							<Invader size={54} aria-hidden="true" color={"var(--color-text)"}/>
+							<Title>{t("profile.title")}</Title>
+							<ToggleThemeSwitch/>
+						</TitleContainer>
+					</ContentHead>
+
+					<ProfileCard>
+
+						<Identity>
+							<IdentityUser>
+								{loading ? (
+									<AvatarSkeleton/>
 								) : (
-									<FallbackIcon>
-										<Invader size={60} color="var(--color-primary-text)" />
-									</FallbackIcon>
+									<AvatarWrapper onClick={(e) => e.stopPropagation()}>
+										{user.avatarUrl ? (
+											<AvatarImage src={user.avatarUrl} alt="Author avatar"/>
+										) : (
+											<FallbackIcon>
+												<Invader size={60} color="var(--color-primary-text)"/>
+											</FallbackIcon>
+										)}
+									</AvatarWrapper>
 								)}
-							</AvatarWrapper>
-						)}
 
-						<IdentityInfo>
-							<ProfileName>{user.name || "—"}</ProfileName>
-							<ProfileRegister>{user.created_at || "Registered Dec. 17th 2025, 12:05:06"}</ProfileRegister>
-						</IdentityInfo>
+								<IdentityInfo>
+									<ProfileName>{user.name || "—"}</ProfileName>
+									<ProfileRegister>{user.created_at || "Registered Dec. 17th 2025, 12:05:06"}</ProfileRegister>
+								</IdentityInfo>
+							</IdentityUser>
 
-						<Button variant={"outline"}>
-							<Pen size={20} />
-							{t("common.edit")}
-						</Button>
-					</Identity>
+							<Button variant={"outline"}>
+								<Pen size={20}/>
+								{t("common.edit")}
+							</Button>
+						</Identity>
 
-					<StatsContainer>
-						<StatList>
-							<StatRow><StatLabel>{t("profile.true")} / {t("profile.false")}</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>{t("profile.totalFinish")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>{t("profile.totalAttempts")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>{t("profile.totalTime")}</StatLabel><StatValue>{formatTime(stats.totalTimeSec) || "-"}</StatValue></StatRow>
-							<StatRow><StatLabel>{t("leaderboard.rank")}</StatLabel><StatValue>{stats.rank || "-"}</StatValue></StatRow>
-						</StatList>
+						<StatsContainer>
+							<StatList>
+								<StatRow><StatLabel>{t("profile.true")} / {t("profile.false")}</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
+								<StatRow><StatLabel>{t("profile.totalFinish")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
+								<StatRow><StatLabel>{t("profile.totalAttempts")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
+								<StatRow><StatLabel>{t("profile.totalTime")}</StatLabel><StatValue>{formatTime(stats.totalTimeSec) || "-"}</StatValue></StatRow>
+								<StatRow><StatLabel>{t("leaderboard.rank")}</StatLabel><StatValue>{stats.rank || "-"}</StatValue></StatRow>
+							</StatList>
 
-						<TopScoreContainer>
-							<TopScoreLabel>{t("common.top_score")}</TopScoreLabel>
-							<TopScore>{bestScoreAnimated}</TopScore>
+							<TopScoreContainer>
+								<TopScore>{formatNumber(bestScoreAnimated)}</TopScore>
+								<TopScoreLabel>{t("common.total_top_score")}</TopScoreLabel>
 
-							<TrophyRow>
-								<TrophyColumn>
-									<TrophyCircle>
-										<Trophy size={28} color={"var(--first-place)"} />
-									</TrophyCircle>
-									<TrophyCount>{stats.goldTrophy || 0}</TrophyCount>
-								</TrophyColumn>
-								<TrophyColumn>
-									<TrophyCircle>
-										<Trophy size={28} color={"var(--second-place)"} />
-									</TrophyCircle>
-									<TrophyCount>{stats.silverTrophy || 0}</TrophyCount>
-								</TrophyColumn>
-								<TrophyColumn>
-									<TrophyCircle>
-										<Trophy size={28} color={"var(--third-place)"} />
-									</TrophyCircle>
-									<TrophyCount>{stats.bronzeTrophy || 0}</TrophyCount>
-								</TrophyColumn>
-							</TrophyRow>
-						</TopScoreContainer>
-					</StatsContainer>
-				</ProfileCard>
 
-				<CircleStatCard>
-					<CircleStatRow>
-						<CircleStat
-							label="Avg Speed"
-							value={performance.avgSpeed}
-							maxValue={3600}
-							unit="s"
-							reverse={true}
-							description="Average time taken to answer a question"
-						/>
-						<CircleStat
-							label="Accuracy"
-							value={performance.accuracy * 100}
-							maxValue={100}
-							unit="%"
-							description="Percentage of correct answers out of total attempts"
-						/>
-						<CircleStat
-							label="Consistency"
-							value={performance.consistency * 100}
-							maxValue={100}
-							unit="%"
-							description={`Measures how consistently you complete quizzes`}
-						/>
+								<TrophyRow>
+									<TrophyColumn>
+										<TrophyCircle>
+											<Trophy size={28} color={"var(--first-place)"}/>
+										</TrophyCircle>
+										<TrophyCount>{stats.goldTrophy || 0}</TrophyCount>
+									</TrophyColumn>
+									<TrophyColumn>
+										<TrophyCircle>
+											<Trophy size={28} color={"var(--second-place)"}/>
+										</TrophyCircle>
+										<TrophyCount>{stats.silverTrophy || 0}</TrophyCount>
+									</TrophyColumn>
+									<TrophyColumn>
+										<TrophyCircle>
+											<Trophy size={28} color={"var(--third-place)"}/>
+										</TrophyCircle>
+										<TrophyCount>{stats.bronzeTrophy || 0}</TrophyCount>
+									</TrophyColumn>
+								</TrophyRow>
+							</TopScoreContainer>
+						</StatsContainer>
+					</ProfileCard>
 
-					</CircleStatRow>
-				</CircleStatCard>
+					<CircleStatCard>
+						<CircleStatRow>
+							<CircleStat
+								label="Avg Speed"
+								value={performance.avgSpeed}
+								maxValue={3600}
+								unit="s"
+								reverse={true}
+								description="Average time taken to answer a question"
+							/>
+						</CircleStatRow>
+						<CircleStatRow>
+							<CircleStat
+								label="Accuracy"
+								value={performance.accuracy * 100}
+								maxValue={100}
+								unit="%"
+								description="Percentage of correct answers out of total attempts"
+							/>
+						</CircleStatRow>
+						<CircleStatRow>
+							<CircleStat
+								label="Consistency"
+								value={performance.consistency * 100}
+								maxValue={100}
+								unit="%"
+								description={`Measures how consistently you complete quizzes`}
+							/>
+						</CircleStatRow>
+					</CircleStatCard>
 
-				{/* ───── QUIZ RESULTS ───── */}
-				<ResultsPanel>
-					<ResultsHeader>
-						<ResultsTitle>{t("profile.results")}</ResultsTitle>
-					</ResultsHeader>
+					<ResultsPanel>
+						<ResultsHeader>
+							<ResultsTitle>{t("profile.quizzesStat")}</ResultsTitle>
 
-					<SearchBar>
-						<SearchInput value={searchText} onChange={(e) => setSearchText(e.target.value)} placeholder={t("nav.search")} />
-						<SearchIcon><Search size={18} /></SearchIcon>
-					</SearchBar>
+							<SearchBar>
+								<SearchInput value={searchText} onChange={(e) => setSearchText(e.target.value)}
+											 placeholder={t("nav.search")}/>
+								<SearchIcon><Search size={18}/></SearchIcon>
+							</SearchBar>
+						</ResultsHeader>
 
-					<GridScroller>
-						<QuizGrid>
-							{filteredQuizzes.map((quiz) => (
-								<QuizCard key={quiz.id} onClick={() => handleQuizClick(quiz)} title={quiz.title}>
-									<QuizCardTop>
-										<QuizCardTitle>{quiz.title}</QuizCardTitle>
-										<MiniBadge><Trophy size={14} /></MiniBadge>
-									</QuizCardTop>
-									<QuizCardMeta>
-										Attempts: {quiz.attempts} • Best: {quiz.bestScore}
-									</QuizCardMeta>
-								</QuizCard>
-							))}
-						</QuizGrid>
-					</GridScroller>
-				</ResultsPanel>
-			</Content>
+
+						<GridScroller>
+							<QuizGrid>
+								{filteredQuizzes.map((quiz) => (
+									<QuizCard key={quiz.id} onClick={() => handleQuizClick(quiz)} title={quiz.title}>
+										<QuizCardTop>
+											<QuizCardTitle>{quiz.title}</QuizCardTitle>
+											<MiniBadge><Trophy size={14}/></MiniBadge>
+										</QuizCardTop>
+										<QuizCardMeta>
+											Attempts: {quiz.attempts} • Best: {quiz.bestScore}
+										</QuizCardMeta>
+									</QuizCard>
+								))}
+							</QuizGrid>
+						</GridScroller>
+					</ResultsPanel>
+				</Content>
+			</ContentWrapper>
+
 		</Main>
 	);
 }
@@ -359,6 +394,17 @@ const Main = styled.div`
     flex-direction: column;
     width: 100%;
     background: var(--color-background);
+	position: relative;
+	overflow: hidden;
+`;
+
+const ContentWrapper = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    position: relative;
+	overflow-y: scroll;
 `;
 
 const Content = styled.div`
@@ -368,8 +414,18 @@ const Content = styled.div`
     padding: var(--spacing-xl);
     gap: var(--spacing-l);
     width: 100%;
-    max-width: var(--spacing-14xl);
+    max-width: var(--spacing-15xl);
     margin: 0 auto;
+`;
+
+const InvaderIconWrapper = styled.div`
+    position: absolute;
+    bottom: -360px;
+    right: -200px;
+    transform: rotate(-30deg);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.2;
 `;
 
 const ContentHead = styled.div`
@@ -393,9 +449,15 @@ const Title = styled.h1`
 `;
 
 const CardBase = styled.div`
-    background: var(--color-background-surface-1);
+    background: var(--liquidglass-bg);
     border-radius: var(--border-radius-2xl);
-    box-shadow: var(--box-shadow-xs);
+    background: var(--liquidglass-bg);
+    backdrop-filter: var(--liquidglass-blur);
+    border: 1px solid var(--color-border-subtle);
+    -webkit-backdrop-filter: var(--liquidglass-blur);
+    box-shadow: var(--liquidglass-shadow);
+	padding: var(--spacing-xl);
+	z-index: 1;
 `;
 
 const ProfileCard = styled(CardBase)`
@@ -404,8 +466,16 @@ const ProfileCard = styled(CardBase)`
 
 const Identity = styled.div`
     display: flex;
+	align-items: flex-start;
+	gap: var(--spacing);
+`;
+
+const IdentityUser = styled.div`
+    display: flex;
 	align-items: center;
 	gap: var(--spacing);
+    width: 100%;
+	flex: 1;
 `;
 
 const AvatarSkeleton = styled(Skeleton)`
@@ -471,6 +541,7 @@ const StatsContainer = styled.div`
 	align-items: center;
     gap: var(--spacing-xs);
     margin-top: var(--spacing-l);
+    margin-bottom: var(--spacing-s);
     width: 100%;
 `;
 
@@ -521,15 +592,18 @@ const TopScoreContainer = styled.div`
 
 const TopScoreLabel = styled.p`
     font-weight: 600;
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-l);
     color: var(--color-text-muted);
+	text-transform: uppercase;
+	margin-bottom: var(--spacing-s);
 `;
 
 const TopScore = styled.p`
     font-family: "Orbitron", sans-serif;
     color: var(--color-primary-bg);
-    font-size: var(--font-size-6xl);
+    font-size: var(--font-size-7xl);
     font-weight: 600;
+	margin-top: calc(-1 * var(--spacing-l));
 `;
 
 const TrophyRow = styled.div`
@@ -567,55 +641,140 @@ const TrophyCount = styled.div`
 	color: var(--color-text-muted);
 `;
 
-const CircleStatCard = styled(CardBase)`
-    padding: var(--spacing-xl) var(--spacing-2xl);
+const CircleStatCard = styled.div`
+    display: flex;
+	gap: var(--spacing-l);
+	flex-direction: row;
+	align-items: center;
 `;
 
-const CircleStatRow = styled.div`
+const CircleStatRow = styled(CardBase)`
 	display: flex;
-	justify-content: space-around;
-    margin: var(--spacing) 0;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	width: 100%;
+    position: relative;
+    overflow: hidden;
+    padding: var(--spacing-xl);
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+
+        /* diagonal stripes */
+        background-image: repeating-linear-gradient(
+                -128deg,
+                var(--color-background) 0px,
+                var(--color-background) 5px,
+                rgba(0,0,0,0) 5px,
+                rgba(0,0,0,0) 10px
+        );
+
+        /* fade from transparent (right) to opaque (left) */
+        -webkit-mask-image: linear-gradient(310deg, rgba(0,0,0,0) 70%, rgba(0,0,0,1) 80%);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+
+        mask-image: linear-gradient(310deg, rgba(0,0,0,0) 70%, rgba(0,0,0,1) 80%);
+        mask-repeat: no-repeat;
+        mask-size: cover;
+    }
+
+    & > * {
+        position: relative;
+        z-index: 1;
+    }
 `;
 
 const CircleStatWrap = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	width: 33.33%;
-	padding: 0 var(--spacing-s);
-	gap: var(--spacing);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 var(--spacing-s);
+    gap: var(--spacing);
+    width: 100%;
 `;
+
+const InfoWrapper = styled.div`
+	position: absolute;
+    top: -6px;
+    right: -6px;
+	color: var(--color-input-placeholder);
+	cursor: help;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	&:hover > div {
+		opacity: 1;
+		transform: translateY(0);
+		pointer-events: auto;
+	}
+`;
+
+const Tooltip = styled.div`
+	position: absolute;
+	top: 26px;
+	right: 0;
+	width: 220px;
+
+	background: var(--color-background);
+	color: var(--color-text);
+	font-size: var(--font-size-s);
+	line-height: 1.4;
+
+	padding: 10px 12px;
+	border-radius: 10px;
+	box-shadow: var(--box-shadow);
+	border: 1px solid var(--color-border-subtle);
+
+	opacity: 0;
+	transform: translateY(-4px);
+	transition: all 0.2s ease;
+	pointer-events: none;
+	z-index: 10;
+`;
+
 
 const CircleLabel = styled.div`
 	font-weight: 600;
 	font-size: var(--font-size-2xl);
 	color: var(--color-text);
+    text-align: center;
 `;
 
 const CircleDesc = styled.div`
     font-size: var(--font-size-s);
+	margin-bottom: var(--spacing);
 	line-height: 1.4;
     color: var(--color-text-muted);
 	text-align: center;
 `;
 
 const ResultsPanel = styled(CardBase)`
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
 `;
 
 const ResultsHeader = styled.div`
     display: flex;
-    justify-content: center;
+    align-items: center;
+	margin-bottom: var(--spacing-l);
 `;
 
-const ResultsTitle = styled.h1`
-    font-size: 44px;
+const ResultsTitle = styled.p`
+	width: 100%;
+	flex: 1;
+    font-size: var(--font-size-2xl);
+	color: var(--color-text);
+	font-weight: 600;
 `;
 
 const SearchBar = styled.div`
-    margin: 12px auto;
     width: min(520px, 100%);
     position: relative;
 `;
@@ -642,7 +801,7 @@ const GridScroller = styled.div`
 const QuizGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: var(--spacing-s);
 `;
 
 const QuizCard = styled.button`
