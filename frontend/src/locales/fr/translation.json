@@ -51,10 +51,9 @@
 		"languages": "Langues",
 		"search": "Recherche",
 		"filter": "Filtre",
+		"edit": "Modifier",
 		"time_elapsed": "Temps écoulé",
 		"last_updated_at": "Dernière mise à jour : {{datetime}}",
-		"edit": "Modifier",
-		"top_score": "Score total",
 		"next": "Suivant",
 		"previous": "Précédent",
 		"finish": "Terminer",
@@ -67,7 +66,9 @@
 		},
 		"loading": "Chargement...",
 		"error": "Erreur: ",
-		"already_added": "Ajouté"
+		"already_added": "Ajouté",
+		"top_score": "Meilleur score",
+		"total_top_score": "Meilleur score total"
 	},
 	"pages": {
 		"home": {
@@ -201,7 +202,6 @@
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"
 	},
-	
 	"leaderboard": {
 		"title":"Classement",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
@@ -238,7 +238,7 @@
 		"false": "Faux",
 		"totalPoints": "Points totaux",
 		"totalTime": "Temps total",
-		"results": "Mes résultats",
+		"quizzesStat": "Statistiques des quiz",
 		"openResults": "Ouvrir",
 		"best": "Meilleur"
 	}
