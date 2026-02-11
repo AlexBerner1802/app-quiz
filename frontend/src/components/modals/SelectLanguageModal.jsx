@@ -14,7 +14,7 @@ export default function SelectLanguageModal({ currentLangs = [], onAdd, onClose 
 	return (
 		<Overlay onClick={onClose}>
 			<Dialog onClick={(e) => e.stopPropagation()}>
-				<h3>{t("quiz.add_language") || "Select Language"}</h3>
+				<h3>{t("quiz.addLanguage") || "Select Language"}</h3>
 				<LangList>
 					{allLangs.map(([code]) => {
 						const isUsed = currentLangs.includes(code);
@@ -31,7 +31,7 @@ export default function SelectLanguageModal({ currentLangs = [], onAdd, onClose 
 								$used={isUsed}
 							>
 								{t("lang."+code)}
-								{isUsed && " (" + t("common.already_added") +  ")"}
+								{isUsed && " (" + t("common.alreadyAdded") +  ")"}
 							</LangItem>
 						);
 					})}

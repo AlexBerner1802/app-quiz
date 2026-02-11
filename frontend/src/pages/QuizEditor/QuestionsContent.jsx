@@ -213,7 +213,7 @@ export default function QuestionsContent({
 										)
 									}
 								>
-									<ScrollText size={16} /> {t("quiz.add_description") || "Ajouter une description"}
+									<ScrollText size={16} /> {t("quiz.addDescription") || "Ajouter une description"}
 								</AddDescriptionLink>
 							) : (
 								<DescriptionWrapper>
@@ -239,7 +239,7 @@ export default function QuestionsContent({
 											)
 										}
 									>
-										<Minus size={16} /> {t("quiz.remove_description") || "Supprimer la description"}
+										<Minus size={16} /> {t("quiz.removeDescription") || "Supprimer la description"}
 									</RemoveDescriptionLink>
 								</DescriptionWrapper>
 							)}
@@ -262,7 +262,7 @@ export default function QuestionsContent({
 											dragState.overQId === q.id && dragState.overIdx === idx ? "1" : undefined
 										}
 									>
-										<DragHandle title="Drag to reorder">
+										<DragHandle title={t("quiz.dragToReorder")}>
 											<Move size={16} />
 										</DragHandle>
 										<OptionContent>
@@ -293,7 +293,7 @@ export default function QuestionsContent({
 										<RemoveOpt
 											type="button"
 											onClick={() => deleteOption(q.id, idx)}
-											title={t("actions.deleteAnswer") || "Supprimer la réponse"}
+											title={t("quiz.options.remove") || "Supprimer la réponse"}
 										>
 											<Trash2 size={16} />
 										</RemoveOpt>

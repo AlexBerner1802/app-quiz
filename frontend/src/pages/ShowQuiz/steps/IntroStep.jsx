@@ -31,7 +31,7 @@ export default function IntroStep({ quiz, onStart }) {
 						<span className="owner">{quiz.owner.name}</span>
 						<span className="dot" />
 						<span className="updated">
-							{t("common.last_updated_at", {
+							{t("common.lastUpdatedAt", {
 								datetime: formatDate(quiz.updated_at || quiz.created_at)
 							})}
 						</span>
@@ -47,7 +47,7 @@ export default function IntroStep({ quiz, onStart }) {
 
 				<Description>{quiz.description}</Description>
 
-				<StartButton onClick={onStart} size="l">{t("quiz.start_quiz")}</StartButton>
+				<StartButton onClick={onStart} size="l">{t("quiz.startQuiz")}</StartButton>
 
 			</IntroCard>
 		</>

@@ -1,221 +1,255 @@
 {
-  "app": {
-    "name": "Rafisa Quiz"
-  },
-  "lang": {
+  	"app": {
+    	"name": "Rafisa Quiz"
+  	},
+
+  	"lang": {
 		"fr": "Français",
 		"de": "Deutsch",
 		"en": "English",
 		"it": "Italiano"
-	},
+  	},
+
+	"common": {
+		"active": "Attivo",
+		"inactive": "Inattivo",
+		"yes": "Sì",
+		"no": "No",
+		"cancel": "Annulla",
+		"confirm": "Conferma",
+		"delete": "Elimina",
+		"edit": "Modifica",
+		"back": "Indietro",
+		"settings": "Impostazioni",
+		"search": "Cerca",
+		"filter": "Filtro",
+		"loading": "Caricamento...",
+		"error": "Errore: ",
+		"untitled": "Senza titolo",
+		"languages": "Lingue",
+		"lang": "Lingua",
+		"timeElapsed": "Tempo trascorso",
+		"lastUpdatedAt": "Ultimo aggiornamento: {{datetime}}",
+		"next": "Successivo",
+		"previous": "Precedente",
+		"finish": "Termina",
+		"alreadyAdded": "Già aggiunto",
+		"topScore": "Punteggio migliore",
+		"totalTopScore": "Punteggio migliore totale",
+		"tags": "Tags",
+		"modules": "Moduli",
+		"typeAndPressEnterOrComma": "Digita una parola chiave e premi Invio o virgola",
+    	"state": {
+      		"on": "Attivato",
+      		"off": "Disattivato"
+    	},
+		"placeholders": {
+			"typeHere": "Digita qui"
+		}
+  	},
+
 	"login": {
-		"description": "Uno strumento web intelligente per creare, gestire e giocare ai quiz in modo semplice in tutte le filiali RAFISA.",
+		"description": "Uno strumento web intelligente per creare, gestire e svolgere quiz senza problemi in tutte le filiali RAFISA.",
 		"copyright": "Rafisa Quiz © 2025. Tutti i diritti riservati.",
-		"sign_in": "Accedi"
+		"signIn": "Accedi"
 	},
+
 	"nav": {
-		"quiz": "Pagina iniziale",
+		"quiz": "Quiz",
 		"results": "Classifica",
 		"search": "Cerca",
 		"content": "Contenuto",
 		"settings": "Impostazioni",
-		"logout": "Disconnettersi"
+		"logout": "Esci"
 	},
+
 	"actions": {
-		"newQuiz": "Nuovo Quiz",
+		"newQuiz": "Nuovo quiz",
 		"save": "Salva",
 		"saveChanges": "Salva modifiche",
-		"cancel": "Annulla",
-		"confirm": "Conferma",
-		"delete": "Elimina",
-		"addQuestion": "Aggiungi una domanda",
-		"reorder": "Riorganizzare",
-		"back": "Indietro",
-		"edit": "Per modificare",
-		"saveAllLangs": "Salvare tutte le lingue contemporaneamente ?",
+		"addQuestion": "Aggiungi domanda",
+		"reorder": "Riordina",
+		"saveAllLangs": "Salvare tutte le lingue in una volta ?",
 		"switchAnyway": "Hai modifiche non salvate in questa lingua. Cambiare comunque ?",
-		"deleteLastLang": "Questa è l'unica lingua. Eliminandola, il quiz verrà eliminato completamente e tornerai alla pagina iniziale. Continuare ?",
-		"delete_language": "Elimina lingua",
-		"confirm_delete_lang_title": "Rimuovere la lingua?",
-		"confirm_delete_lang_message": "Sei sicuro di voler eliminare la lingua {{lang}}?"
+		"deleteLastLang": "Questa è l'unica lingua disponibile. Eliminandola, il quiz verrà eliminato completamente e verrai reindirizzato alla homepage. Continuare?",
+		"deleteLanguage": "Elimina lingua",
+		"confirmDeleteLangTitle": "Eliminare lingua ?",
+		"confirmDeleteLangMessage": "Sei sicuro di voler eliminare la lingua {{lang}} ?"
 	},
-	"common": {
-		"active": "Attivo",
-		"inactive": "Inattivo",
-		"cancel": "Annulla",
-		"yes": "Sì",
-		"no": "No",
-		"untitled": "Senza titolo",
-		"settings": "Impostazioni",
-		"lang": "Lingua",
-		"placeholders": {
-			"typeHere": "Scrivi qui"
-		},
-		"state": {
-			"on": "Attivo",
-			"off": "Disattivo"
-		},
-		"loading": "Caricamento...",
-		"error": "Errore: "
-	},
-	"quiz": {
-		"title": "Crea e modifica un quiz",
-		"editTitle": "Modifica un quiz",
-		"general_quiz_information": "Informazioni sul quiz",
-		"question": "Domanda",
-		"questions": "Domande",
-		"answers": "Risposte",
-		"add_description": "Aggiungi una nota",
-		"remove_description": "Rimuovi nota",
-		"description": "Nota sulla domanda (facoltativa)",
-		"add_language": "Aggiungi una lingua",
-			"placeholders": {
-			"title": "Titolo del quiz",
-			"categoryTitle": "Scrivi qui il titolo della categoria",
-			"untitled": "Senza titolo",
-			"tags": "Digita un tag, quindi INVIO o +"		},
-		"sections": {
-			"categories": "Categorie",
-			"options": "Opzioni",
-			"descriptionAdd": "Aggiungi una descrizione",
-			"questions": "Domande",
-			"tagAdd": "Nuovo tag",
-			"existingTag": "Tag esistenti",
-			"module": "Modulo",
-			"noModule": "Nessun modulo esistente"
-		},
-		"hints": {
-			"dragCenter": "Trascina e rilascia al centro",
-			"emptyDrop": "Aggiungi la tua prima domanda con il pulsante a sinistra o quello qui sotto"
-		},
-		"fields": {
-			"title": "Titolo",
-			"description": "Descrizione",
-			"coverImage": "Immagine di sfondo",
-			"orUpload": "Oppure carica un file"
-		},
-		"category": {
-			"new": "Nuova Categoria"
-		},
-		"options": {
-			"new": "Nuova Opzione"
-		},
-		"types": {
-			"short": "Risposta breve",
-			"long": "Risposta lunga",
-			"single": "Scelta singola",
-			"multi": "Scelte multiple",
-			"boolean": "Vero / Falso"
-		},
-		"defaults": {
-			"option": "Opzione",
-			"true": "Vero",
-			"false": "Falso"
-		},
-			"labels": {
-				"single": "Singola",
-				"multi": "Multiplo"
-			},
-			"show": {
-				"cantFind": "Quiz non trovato...",
-				"noQuestion": "Nessuna domanda ancora",
-				"createdAt": "Creato il ",
-				"modifiedAt": "Modificato il ",
-				"finished": "Convalida il quiz",
-				"validation": "Convalida completata"
-			},
-			"empty": "Ancora nessun quiz.",
-			"confirmDelete": "Vuoi davvero eliminare questo quiz?"
-	},
+
 	"pages": {
-		"home": {
-			"title": "Pagina iniziale"
+		"home": { 
+			"title": "Quiz" 
 		},
-		"settings": {
-			"title": "Impostazioni"
+		"settings": { 
+			"title": "Impostazioni" 
 		},
 		"login": {
-			"title": "Accesso",
+			"title": "Connessione",
 			"microsoftSignIn": "Accedi con Microsoft",
-			"microsoftAlt": "Accesso Microsoft",
-			"error": "Accesso non riuscito"
+			"microsoftAlt": "Connessione Microsoft",
+			"error": "Accesso fallito"
 		},
 		"results": {
 			"globalLeaderboard": "Classifica globale"
 		},
 		"content": {
 			"title": "Contenuto",
-			"tag_lang": "Tag {{lang}}",
-			"module_lang": "Moduli {{lang}}"
+			"tagLang": "Etichette {{lang}}",
+			"moduleLang": "Moduli {{lang}}"
 		},
-		"homePage": "Pagina iniziale- Rafisa Quiz",
-			"createPage": "Creazione di quiz - Rafisa Quiz",
-			"editPage": "Edizione quiz - Rafisa Quiz",
-			"settingsPage": "Impostazioni - Rafisa Quiz",
-			"resultsPage": "Risultati - Rafisa Quiz",
-			"searchPage": "Ricerca - Rafisa Quiz",
-			"loginPage": "Connessione - Rafisa Quiz",
-			"accountPage": "Account - Rafisa Quiz",
-			"leaderboardPage": "Classifica - Rafisa Quiz",
-			"quizLeaderboardPage":"Classifica per quiz - Rafisa Quiz",
-			"ContentPage":"Contenuto - Rafisa Quiz"
 
+		"homePage": "Home  - Rafisa Quiz",
+		"createPage": "Creazione di quiz - Rafisa Quiz",
+		"editPage": "Modifica quiz - Rafisa Quiz",
+		"settingsPage": "Impostazioni - Rafisa Quiz",
+		"resultsPage": "Risultati - Rafisa Quiz",
+		"searchPage": "Ricerca - Rafisa Quiz",
+		"loginPage": "Connessione - Rafisa Quiz",
+		"accountPage": "Account - Rafisa Quiz",
+		"leaderboardPage": "Classifica - Rafisa Quiz",
+		"quizLeaderboardPage": "Classifica per quiz - Rafisa Quiz",
+		"contentPage": "Contenuto - Rafisa Quiz"
 	},
-	"modals": {
-		"logout": {
-			"title": "Disconnessione",
-			"text": "Vuoi davvero disconnetterti?",
-			"cancel": "Annulla",
-			"confirm": "Sì"
+
+  	"modals": {
+    	"logout": {
+    		"title": "Disconnessione",
+      		"text": "Sei sicuro di voler uscire?"
+    	}
+  	},
+
+  	"dialogs": {
+    	"unsaved": {
+			"title": "Esci senza salvare ?",
+			"text": "Hai modifiche non salvate.",
+			"stay": "Rimani",
+			"leave": "Esci"
 		}
 	},
-	"dialogs": {
-		"unsaved": {
-		"title": "Uscire senza salvare?",
-		"text": "Hai modifiche non salvate.",
-		"stay": "Rimani",
-		"leave": "Esci"
-		}
+
+	"errors": {
+		"quizNotFound": "Quiz non trovato",
+		"unauthorizedQuiz": "Non sei autorizzato a modificare questo quiz"
 	},
-	"leaderboard": {
-		"subtitle":"Classifica dei punteggi migliori in tutti i quiz",
-		"searchPlaceholder":"Ricerca",
-		"sortByRank":"Ordina per grado",
-		"filter": "Filtro",
+
+  	"quiz": {
+		"title": "Nuovo quiz",
+		"editTitle": "Modifica quiz",
+		"generalInfo": "Informazioni del quiz",
+		"question": "Domanda",
+		"questions": "Domande",
+		"answers": "Risposte",
+		"addDescription": "Aggiungi una descrizione",
+		"removeDescription": "Rimuovi la descrizione",
+		"description": "Descrizione della domanda (facoltativo)",
+		"addLanguage": "Aggiungi una lingua",
+		"startQuiz": "Inizia il quiz",
+		"yourScore": "Il tuo punteggio",
+		"scoreForQuestion": "Punteggio ottenuto per questa domanda: {{score}} / {{total}}",
+		"savedSuccessfully": "Quiz salvato con successo!",
+		"confirmDelete": "Sei sicuro di voler eliminare questo quiz ?",
+		"fields": {
+			"title": "Aggiungi un titolo",
+			"description": "Aggiungi una descrizione",
+			"coverImage": "Aggiungi un'immagine di copertina"
+		},
+		"placeholders": {
+			"title": "Titolo del quiz",
+			"categoryTitle": "Digita qui il titolo della categoria",
+			"tags": "Digita un tag e poi premi Invio o +",
+			"module": "Inserisci un nome o un numero di modulo"
+		},
+
+		"sections": {
+			"categories": "Categorie",
+			"options": "Opzioni",
+			"descriptionAdd": "Aggiungi una descrizione",
+			"questions": "Domande",
+			"tagAdd": "Nuovo tag",
+			"existingTag": "Tags",
+			"module": "Modulo",
+			"noModule": "Nessun modulo esistente"
+		},
+
+    	"types": {
+			"short": "Risposta breve",
+			"long": "Risposta lunga",
+			"single": "Scelta singola",
+			"multi": "Scelta multipla",
+			"boolean": "Vero / Falso"
+    	},
+
+    	"defaults": {
+			"option": "Risposta",
+			"true": "Vero",
+			"false": "Falso"
+    	},
+
+    	"labels": {
+      		"single": "Risposta unica",
+      		"multi": "Risposte multiple"
+    	},
+
+    	"show": {
+			"cantFind": "Quiz non trovato...",
+			"noQuestion": "Nessuna domanda per il momento",
+			"createdAt": "Creato il ",
+			"modifiedAt": "Modificato il ",
+			"finished": "Conferma quiz",
+			"validation": "Validazione completata"
+    	},
+		"options": {
+			"edit": "Modifica opzioni",
+			"new": "Aggiungi nuova opzione",
+			"remove": "Rimuovi opzione"
+		},
+    	"empty": "Nessun quiz per il momento.",
+		"dragToReorder": "Trascina per riordinare"
+  	},
+
+  	"leaderboard": {
+		"title": "Classifica",
+		"subtitle": "Classifica dei migliori punteggi di tutti i quiz",
+		"searchPlaceholder": "Ricerca",
+		"sortByRank": "Ordina per grado",
 		"filterDefault": "Classifica",
 		"filterUsers": "Utenti",
-		"rank" : "Rango",
-		"name":"Nome",
-		"quizzes_done":"Quiz completati",
-		"quiz":"Quiz",
-		"score":"Miglior punteggio",
-		"time":"Tempo",
-		"attempts":"Prove",
-		"empty":"Nessun risultato",
-		"loading":"Caricamento...",
-		"quizResultsFor":"Risultati per ",
-		"quizOverview":"Risultati per quiz",
-		"backToGlobal":"Torna alla classifica generale",
-		"backToQuizzes":"Torna alla classifica dei quiz",
-		"sortByQuiz":"Ordina per quiz",
-		"sortByOwner":"Ordina per proprietario",
-		"clickForDetails":"Clicca per la classifica completa",
-		"searchSpecificData": "nome, punteggio, tempo...",
-		"searchUserHelp":"Vengono visualizzati solo i primi 10; usa la barra di ricerca per trovare il risultato che cerchi.",
-		"owner":"Proprietario",
-		"participants":"Partecipanti"	
-	},
-	"profile":{
-		"title": "Account",
-		"stats": "STATISTICHE",
+		"rank": "Rango",
+		"name": "Nome",
+		"quizzesDone": "Quiz terminati",
+		"quiz": "Quiz",
+		"score": "Punteggio migliore",
+		"bestTime": "Tempo",
+		"attempts": "Tentativi",
+		"empty": "Nessun risultato",
+		"quizResultsFor": "Risultati per ",
+		"quizOverview": "Risultati per quiz",
+		"backToGlobal": "Torna alla classifica globale",
+		"backToQuizzes": "Torna alla classifica per quiz",
+		"sortByQuiz": "Ordina per quiz",
+		"sortByOwner": "Ordina per proprietario",
+		"clickForDetails": "Clicca per la classifica completa",
+		"owner": "Proprietario",
+		"participants": "Partecipanti"
+  	},
+
+  	"profile": {
+		"title": "Profilo",
+		"stats": "Statistiche",
 		"totalFinish": "Totale completati",
 		"totalAttempts": "Tentativi totali",
-		"true": "Vero",
-		"false": "Falso",
 		"totalPoints": "Punti totali",
 		"totalTime": "Tempo totale",
-		"results": "I miei risultati",
+		"quizzesStat": "Statistiche dei quiz",
 		"openResults": "Apri",
-		"best": "Migliore"
-	}
+		"best": "Migliore",
+		"speed": "Velocità media",
+		"accuracy": "Precisione",
+		"consistency": "Costanza",
+		"speedDesc": "Tempo medio per completare un quiz",
+		"accuracyDesc": "Percentuale di risposte corrette",
+		"consistencyDesc": "Misura la tua regolarità nel completare i quiz",
+		"searchResult": "Cerca un risultato"
+  	}
 }

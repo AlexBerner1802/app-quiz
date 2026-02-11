@@ -81,7 +81,7 @@ function LoginPage() {
                                 <Subtitle>{t("login.description")}</Subtitle>
                                 <Button onClick={handleLogin} style={{marginLeft: "auto"}}>
                                     <LogIn size={20} />
-                                    {t("login.sign_in")}
+                                    {t("login.signIn")}
                                 </Button>
                             </RightContentContent>
                         </RightContent>

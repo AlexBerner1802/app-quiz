@@ -43,7 +43,7 @@ export default function CenterPanel({
 				{/* Quiz general info */}
 				<QuizBlock $isOpen={quizExpanded}>
 					<TitleRow onClick={() => setQuizExpanded(!quizExpanded)}>
-						<Title>{t("quiz.general_quiz_information")}</Title>
+						<Title>{t("quiz.generalInfo")}</Title>
 						<TitleRowRight>
 							{
 								translation.is_active ?

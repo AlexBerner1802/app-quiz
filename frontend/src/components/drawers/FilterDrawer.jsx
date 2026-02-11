@@ -69,7 +69,7 @@ export const FilterDrawer = ({
 				{
 					modules && (
 						<Section>
-							<SectionTitle>{t("quiz.sections.modules")}</SectionTitle>
+							<SectionTitle>{t("common.modules")}</SectionTitle>
 							<TagContainer>
 								{modules.map((m) => (
 									<Tag
@@ -95,7 +95,7 @@ export const FilterDrawer = ({
 				{
 					tags && (
 						<Section>
-							<SectionTitle>{t("quiz.sections.tags")}</SectionTitle>
+							<SectionTitle>{t("common.tags")}</SectionTitle>
 							<TagContainer>
 								{tags.map((t) => (
 									<Tag

@@ -36,8 +36,8 @@ export default function ResultsPage() {
 		{ key: "rank", label: t("leaderboard.rank"), align: "left", width: "100px" },
 		{ key: "user_name", label: t("leaderboard.name"), align: "left", width: "2fr" },
 		{ key: "score", label: t("leaderboard.score"), align: "right", width: "1fr" },
-		{ key: "time_seconds", label: t("leaderboard.best_time"), align: "right", width: "1fr" },
-		{ key: "quizzes_done", label: t("leaderboard.quizzes_done"), align: "right", width: "1fr" },
+		{ key: "time_seconds", label: t("leaderboard.bestTime"), align: "right", width: "1fr" },
+		{ key: "quizzes_done", label: t("leaderboard.quizzesDone"), align: "right", width: "1fr" },
 		{ key: "attempts", label: t("leaderboard.attempts"), align: "right", width: "1fr" },
 	];
 

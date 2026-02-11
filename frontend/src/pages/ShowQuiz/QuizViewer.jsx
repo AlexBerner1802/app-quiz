@@ -103,7 +103,7 @@ export default function QuizViewer({ quiz }) {
 			}}>
 				<ToggleThemeSwitch />
 				<TimerDisplay>
-					<TimerLabel>{t("common.time_elapsed")}</TimerLabel>
+					<TimerLabel>{t("common.timeElapsed")}</TimerLabel>
 					<TimerDisplay>{formatTime(timer)}</TimerDisplay>
 				</TimerDisplay>
 				<CustomAlarmClock

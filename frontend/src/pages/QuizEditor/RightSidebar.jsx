@@ -50,7 +50,7 @@ export default function RightSidebar({
 							}
 							style={{ width: "100%" }}
 						>
-							<Plus size={16} /> {t("quiz.add_language")}
+							<Plus size={16} /> {t("quiz.addLanguage")}
 						</Button>
 
 						{langsStatus
@@ -100,13 +100,13 @@ export default function RightSidebar({
 											<ControlGroup>
 												<EraseButton
 													variant={"ghost"}
-													title={t("actions.delete_language") || "Remove language"}
+													title={t("actions.deleteLanguage") || "Remove language"}
 													onClick={(e) => {
 														e.stopPropagation();
 														openModal("confirm", {
-															title: t("actions.confirm_delete_lang_title") || "Delete this language?",
+															title: t("actions.confirmDeleteLangTitle") || "Delete this language?",
 															message:
-																t("actions.confirm_delete_lang_message", { lang: lang.code }) ||
+																t("actions.confirmDeleteLangMessage", { lang: lang.code }) ||
 																`Are you sure you want to remove ${lang.code}?`,
 															onConfirm: () => onDeleteLang(lang.code),
 														});

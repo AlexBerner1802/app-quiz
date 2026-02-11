@@ -84,7 +84,7 @@ export default function LeaderboardTable({
 			</HeaderRow>
 
 			<Body>
-				{loading && <EmptyRow>{t("leaderboard.loading")}</EmptyRow>}
+				{loading && <EmptyRow>{t("common.loading")}</EmptyRow>}
 				{!loading && entries.length === 0 && (
 					<EmptyRow>{t("leaderboard.empty")}</EmptyRow>
 				)}

@@ -285,7 +285,7 @@ export function ProfilePage() {
 
 						<StatsContainer>
 							<StatList>
-								<StatRow><StatLabel>{t("profile.true")} / {t("profile.false")}</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
+								<StatRow><StatLabel>{t("quiz.defaults.true")} / {t("quiz.defaults.false")}</StatLabel><StatValue>{stats.true || "-"} / {stats.false || "-"}</StatValue></StatRow>
 								<StatRow><StatLabel>{t("profile.totalFinish")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
 								<StatRow><StatLabel>{t("profile.totalAttempts")}</StatLabel><StatValue>{stats.totalAttempts || "-"}</StatValue></StatRow>
 								<StatRow><StatLabel>{t("profile.totalTime")}</StatLabel><StatValue>{formatTime(stats.totalTimeSec) || "-"}</StatValue></StatRow>
@@ -294,7 +294,7 @@ export function ProfilePage() {
 
 							<TopScoreContainer>
 								<TopScore>{formatNumber(bestScoreAnimated)}</TopScore>
-								<TopScoreLabel>{t("common.total_top_score")}</TopScoreLabel>
+								<TopScoreLabel>{t("common.totalTopScore")}</TopScoreLabel>
 
 
 								<TrophyRow>
@@ -324,30 +324,30 @@ export function ProfilePage() {
 					<CircleStatCard>
 						<CircleStatRow>
 							<CircleStat
-								label="Avg Speed"
+								label={t("profile.speed")}
 								value={performance.avgSpeed}
 								maxValue={3600}
 								unit="s"
 								reverse={true}
-								description="Average time taken to answer a question"
+								description={t("profile.speedDesc")}
 							/>
 						</CircleStatRow>
 						<CircleStatRow>
 							<CircleStat
-								label="Accuracy"
+								label={t("profile.accuracy")}
 								value={performance.accuracy * 100}
 								maxValue={100}
 								unit="%"
-								description="Percentage of correct answers out of total attempts"
+								description={t("profile.accuracyDesc")}
 							/>
 						</CircleStatRow>
 						<CircleStatRow>
 							<CircleStat
-								label="Consistency"
+								label={t("profile.consistency")}
 								value={performance.consistency * 100}
 								maxValue={100}
 								unit="%"
-								description={`Measures how consistently you complete quizzes`}
+								description={t("profile.consistencyDesc")}
 							/>
 						</CircleStatRow>
 					</CircleStatCard>
@@ -373,7 +373,7 @@ export function ProfilePage() {
 											<MiniBadge><Trophy size={14}/></MiniBadge>
 										</QuizCardTop>
 										<QuizCardMeta>
-											Attempts: {quiz.attempts} • Best: {quiz.bestScore}
+											{t("leaderboard.attempts")} : {quiz.attempts} • {t("profile.best")} : {applyScoreMultiplier(quiz.bestScore)}
 										</QuizCardMeta>
 									</QuizCard>
 								))}

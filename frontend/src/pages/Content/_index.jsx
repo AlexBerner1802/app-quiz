@@ -44,7 +44,7 @@ export default function ContentPage() {
 
 	return (
 		<>
-			<FaviconTitle title={t("pages.ContentPage")} iconHref={faviconUrl} />
+			<FaviconTitle title={t("pages.contentPage")} iconHref={faviconUrl} />
 			<Main>
 				<Header title={t("pages.content.title")} icon={<Settings size={20} />} />
 				<Content>

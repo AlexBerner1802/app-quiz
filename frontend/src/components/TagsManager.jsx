@@ -117,7 +117,7 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 						{langs.map(lang => (
 							<LanguageBlock key={lang}>
 								<Label>
-									{t("pages.content.tag_lang", { lang: lang.toUpperCase() })}
+									{t("pages.content.tagLang", { lang: lang.toUpperCase() })}
 								</Label>
 								<TagInput
 									lang={lang}
@@ -126,7 +126,7 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 									onInputChange={value => handleInputChange(lang, value)}
 									onKeyDown={e => handleKeyDown(e, lang)}
 									onRemoveTag={(tag, fromTemp) => removeTag(lang, tag, fromTemp)}
-									placeholder={t("common.type_and_press_enter_or_comma")}
+									placeholder={t("common.typeAndPressEnterOrComma")}
 								/>
 							</LanguageBlock>
 						))}
@@ -135,7 +135,7 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 			</Content>
 
 			<SaveButton variant={"success"} onClick={handleSaveAll} disabled={isSaving}>
-				{t("common.save")}
+				{t("actions.save")}
 			</SaveButton>
 		</Container>
 	);
