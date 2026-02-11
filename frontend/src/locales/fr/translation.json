@@ -53,6 +53,11 @@
 		"filter": "Filtre",
 		"time_elapsed": "Temps écoulé",
 		"last_updated_at": "Dernière mise à jour : {{datetime}}",
+		"edit": "Modifier",
+		"top_score": "Score total",
+		"next": "Suivant",
+		"previous": "Précédent",
+		"finish": "Terminer",
 		"placeholders": {
 			"typeHere": "Tapez ici"
 		},
@@ -81,6 +86,7 @@
 			"globalLeaderboard": "Classement global"
 		},
 		"content": {
+			"title": "Contenu",
 			"tag_lang": "Étiquettes {{lang}}",
 			"module_lang": "Modules {{lang}}"
 		},
@@ -93,7 +99,8 @@
 		"loginPage": "Connexion - Rafisa Quiz",
 		"accountPage": "Compte - Rafisa Quiz",
 		"leaderboardPage": "Classement - Rafisa Quiz",
-		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz"
+		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz",
+		"ContentPage":"Contenu - Rafisa Quiz"
 
 	},
 	"modals": {
@@ -194,63 +201,7 @@
 		"empty": "Aucun quiz pour le moment.",
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz?"
 	},
-<<<<<<< HEAD
-	"pages": {
-		"home": {
-			"title": "Quiz"
-		},
-		"settings": {
-			"title": "Paramètres"
-		},
-		"login": {
-			"title": "Connexion",
-			"microsoftSignIn": "Se connecter avec Microsoft",
-			"microsoftAlt": "Connexion Microsoft",
-			"error": "Échec du login"
-		},
-		"results": {
-			"globalLeaderboard": "Classement global"
-		},
-		"content": {
-			"title": "Contenu",
-			"tag_lang": "Étiquettes {{lang}}",
-			"module_lang": "Modules {{lang}}"
-		},
-		"homePage": "Accueil - Rafisa Quiz",
-		"createPage": "Création de quiz - Rafisa Quiz",
-		"editPage": "Édition de quiz - Rafisa Quiz",
-		"settingsPage": "Paramètres - Rafisa Quiz",
-		"resultsPage": "Résultats - Rafisa Quiz",
-		"searchPage": "Recherche - Rafisa Quiz",
-		"loginPage": "Connexion - Rafisa Quiz",
-		"accountPage": "Compte - Rafisa Quiz",
-		"leaderboardPage": "Classement - Rafisa Quiz",
-		"quizLeaderboardPage":"Leaderboard par quiz - Rafisa Quiz",
-		"ContentPage":"Contenu - Rafisa Quiz"
-
-	},
-	"modals": {
-		"logout": {
-			"title": "Déconnexion",
-			"text": "Voulez-vous vraiment vous déconnecter ?",
-			"cancel": "Annuler",
-			"confirm": "Oui"
-		}
-	},
-	"dialogs": {
-		"unsaved": {
-			"title": "Quitter sans enregistrer ?",
-			"text": "Vous avez des modifications non sauvegardées.",
-			"stay": "Rester",
-			"leave": "Quitter"
-		}
-	},
-	"errors": {
-		"quiz_not_found": "Quiz non trouvé",
-		"unauthorized_quiz": "Vous 'êtes pas autorisé a modifier ce quiz"
-	},
-=======
->>>>>>> origin/dev_alex
+	
 	"leaderboard": {
 		"title":"Classement",
 		"subtitle":"Classement des meilleurs scores tous quiz confondus",
@@ -263,8 +214,8 @@
 		"name":"Nom",
 		"quizzes_done":"Quiz terminés",
 		"quiz":"Quiz",
-		"score":"Score",
-		"best_time":"Meilleur temps",
+		"score":"Meilleur score",
+		"best_time":"Temps",
 		"attempts":"Essais",
 		"empty":"Aucun résultat",
 		"loading":"Chargement...",
