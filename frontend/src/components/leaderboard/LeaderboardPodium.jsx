@@ -134,7 +134,7 @@ export default function LeaderboardPodium({ entries = [] }) {
 
 							<StatsRow>
 								<Stat>
-									<StatLabel>Score</StatLabel>
+									<StatLabel>{t("common.score")}</StatLabel>
 									<StatValue>
 										<AnimatedScore
 											position={p.position}
@@ -145,14 +145,14 @@ export default function LeaderboardPodium({ entries = [] }) {
 								</Stat>
 
 								<Stat>
-									<StatLabel>Temps</StatLabel>
+									<StatLabel>{t("common.time")}</StatLabel>
 									<StatValue $color={crownColors[p.position]}>
 										{formatSeconds(timeSeconds)}
 									</StatValue>
 								</Stat>
 
 								<Stat>
-									<StatLabel>Essais</StatLabel>
+									<StatLabel>{t("common.tries")}</StatLabel>
 									<StatValue $color={crownColors[p.position]}>
 										{attempts}
 									</StatValue>

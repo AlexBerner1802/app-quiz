@@ -4,6 +4,7 @@ import Button from "../../../components/ui/Button";
 import FloatingIconBackground from "../../../components/FloatingIconBackground";
 import Astronaut from "../../../components/icons/Astronaut";
 import Atom from "../../../components/icons/Atom";
+import { t } from "i18next";
 
 export default function ConfirmEndStep({ onCancel, onConfirm, saving }) {
 	return (
@@ -17,10 +18,10 @@ export default function ConfirmEndStep({ onCancel, onConfirm, saving }) {
 			<FloatingIconBackground />
 
 			<Content>
-				<Title>You're Almost There!</Title>
-				<Message>Ready to wrap up the quiz and see your results?</Message>
+				<Title>{t("quiz.almostThere")}</Title>
+				<Message>{t("quiz.ready")}</Message>
 				<ButtonsRow>
-					<Button onClick={onCancel} variant="secondary">Not Yet</Button>
+					<Button onClick={onCancel} variant="secondary">{t("quiz.no")}</Button>
 					<Button onClick={onConfirm} variant="primary" disabled={saving}>
 						{saving ? "Saving..." : "Finish Quiz"}
 					</Button>

@@ -273,7 +273,7 @@ export default function ResultsPage() {
 																	<MiniRow $index={visibleRows.length} $isMore>
 																		<MiniCell />
 																		<MiniCell />
-																		<MoreCell>+{remainingCount} participants</MoreCell>
+																		<MoreCell>+{remainingCount} {t("leaderboard.participants")}</MoreCell>
 																	</MiniRow>
 																)}
 															</MiniTable>

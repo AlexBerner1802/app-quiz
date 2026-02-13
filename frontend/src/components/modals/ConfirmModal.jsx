@@ -11,8 +11,8 @@ export default function ConfirmModal({ title = 'Are you sure?', message, onConfi
 					<button onClick={() => {
 						onConfirm();
 						onClose();
-					}}>Confirm</button>
-					<button onClick={onClose}>Cancel</button>
+					}}>{t("common.confirm")}</button>
+					<button onClick={onClose}>{t("common.cancel")}</button>
 				</div>
 			</Dialog>
 		</Overlay>
