@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Crown } from "lucide-react";
 import { applyScoreMultiplier } from "../../utils/score";
 import Invader from "../icons/Invader";
-
+import { useTranslation } from "react-i18next";
 /* ---------------- Helpers ---------------- */
 
 function formatSeconds(totalSeconds) {
@@ -90,6 +90,7 @@ function Avatar({ src, name, color }) {
 /* ---------------- Main Component ---------------- */
 
 export default function LeaderboardPodium({ entries = [] }) {
+	const { t } = useTranslation();
 	const first = entries.find((e) => e.rank === 1);
 	const second = entries.find((e) => e.rank === 2);
 	const third = entries.find((e) => e.rank === 3);

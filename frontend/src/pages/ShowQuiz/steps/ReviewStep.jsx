@@ -24,7 +24,7 @@ export default function ReviewStep({ quiz, result, onClose }) {
 					<ResultsContent>
 						<ScoreContainer>
 							<ScoreInfo>
-								<Title>{t("quiz.your_score")}</Title>
+								<Title>{t("quiz.yourScore")}</Title>
 								<Score>
 									{normalizeScore({
 										rawScore: result.score,
@@ -38,7 +38,7 @@ export default function ReviewStep({ quiz, result, onClose }) {
 										})}
 									</ScoreTotal>
 								</Score>
-								<TimeTaken>Time taken: {formatTime(result.time_taken)}</TimeTaken>
+								<TimeTaken>{t("common.timeTaken")} : {formatTime(result.time_taken)}</TimeTaken>
 							</ScoreInfo>
 							<AnimatedPartyPopper  size={100} color={"var(--color-primary-bg"} />
 						</ScoreContainer>
@@ -76,7 +76,7 @@ export default function ReviewStep({ quiz, result, onClose }) {
 										})}
 									</AnswersGrid>
 									<ScoreQuestion>
-										{t("quiz.score_for_question", {
+										{t("quiz.scoreForQuestion", {
 											score: normalizeScore({
 													rawScore: a.score,
 													quizMaxScore: result.best_possible_score,
@@ -92,7 +92,7 @@ export default function ReviewStep({ quiz, result, onClose }) {
 							)
 						})}
 
-						<Button onClick={onClose} size="l">Close</Button>
+						<Button onClick={onClose} size="l">{t("common.close")}</Button>
 					</ResultsContent>
 				</Content>
 			</Container>
