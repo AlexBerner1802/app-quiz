@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import QuizHeader from "./QuizHeader";
 import { useTranslation } from "react-i18next";
@@ -9,16 +9,17 @@ import ReviewStep from "./steps/ReviewStep";
 import useBlockNavigation from "../../hooks/useBlockNavigation";
 import {finishQuizAttempt, startQuizAttempt} from "../../services/api";
 import { useAuth } from "../../context/auth";
-import { AlarmClock } from "lucide-react";
+import { AlarmClock, Loader2 } from "lucide-react";
 import {formatTime} from "../../utils/dateUtils";
 import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 
 export default function QuizViewer({ quiz }) {
 	const { user } = useAuth();
 	const { t, i18n } = useTranslation();
+	const startedRef = useRef(false);
 
 	const [attemptId, setAttemptId] = useState(null);
-	const [step, setStep] = useState("intro");
+	const [step, setStep] = useState("starting");
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [answersMap, setAnswersMap] = useState({});
 	const [timer, setTimer] = useState(0);
@@ -27,7 +28,25 @@ export default function QuizViewer({ quiz }) {
 
 	const lang = i18n.language.split('-')[0];
 
-	useBlockNavigation(step === "question", t("quiz.leave_warning"));
+	useEffect(() => {
+		if (!quiz?.id_quiz) return;
+		if (!user?.localAccountId) return;
+		if (startedRef.current) return;
+		startedRef.current = true;
+		
+		(async () => {
+			try {
+				const startResult = await startQuizAttempt(quiz.id_quiz, lang, user.localAccountId);
+				setAttemptId(startResult.attempt_id);
+				setStep("question");
+			} catch (e) {
+				startedRef.current = false;
+				alert(t("quiz.startError"));
+				}
+			})();
+	}, [quiz?.id_quiz, user?.localAccountId, lang, t]);
+
+	useBlockNavigation(step === "question", t("quiz.leaveWarning"));
 
 	// Timer
 	useEffect(() => {
@@ -57,11 +76,6 @@ export default function QuizViewer({ quiz }) {
 		if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
 	};
 
-	const handleStartQuiz = async () => {
-		const startResult = await startQuizAttempt(quiz.id_quiz, lang, user.localAccountId);
-		setAttemptId(startResult.attempt_id);
-		setStep("question");
-	}
 
 	const handleFinishQuiz = async () => {
 		if (saving) return;
@@ -86,7 +100,7 @@ export default function QuizViewer({ quiz }) {
 			setSavedResult(result);
 			setStep("review");
 		} catch (err) {
-			alert(t("quiz.save_error"));
+			alert(t("quiz.saveError"));
 		} finally {
 			setSaving(false);
 		}
@@ -98,7 +112,7 @@ export default function QuizViewer({ quiz }) {
 	return (
 		<Wrapper>
 			<QuizHeader title={quiz.title} onBack={() => {
-				if (step === "question") return window.confirm(t("quiz.leave_warning"));
+				if (step === "question") return window.confirm(t("quiz.leaveWarning"));
 				return true;
 			}}>
 				<ToggleThemeSwitch />
@@ -114,11 +128,11 @@ export default function QuizViewer({ quiz }) {
 			</QuizHeader>
 
 			<Content>
-				{step === "intro" && (
-					<IntroStep
-						quiz={quiz}
-						onStart={handleStartQuiz}
-					/>
+				{step === "starting" && (
+					<Starting>
+						<Loader2 className="spin" size={32} strokeWidth={2.5} />
+						<p>{t("common.loading")}</p>
+					</Starting>
 				)}
 
 				{step === "question" && (
@@ -147,7 +161,7 @@ export default function QuizViewer({ quiz }) {
 						quiz={quiz}
 						result={savedResult}
 						onClose={() => {
-							setStep("intro");
+							window.location.href = "/home";
 							setCurrentIndex(0);
 							setAnswersMap({});
 							setTimer(0);
@@ -197,4 +211,20 @@ const CustomAlarmClock = styled(AlarmClock)`
 const TimerLabel = styled.p`
 	font-size: var(--font-size-s); 
 	color: var(--color-text-muted); 
+`;
+
+const Starting = styled.div`
+	width: 100%;
+	height: 100%;
+	display: grid;
+	place-content: center;
+	gap: var(--spacing);
+	color: var(--color-text);
+
+	.spin {
+		animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+		100% { transform: rotate(360deg); }
+	}
 `;

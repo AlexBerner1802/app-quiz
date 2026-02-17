@@ -42,6 +42,8 @@
 		"tags": "Tags",
 		"modules": "Module",
 		"typeAndPressEnterOrComma": "Geben Sie ein Stichwort ein und drücken Sie Enter oder Komma",
+		"clear": "Löschen",
+		"apply": "Anwenden",
 		"state": {
 			"on": "Aktiviert",
 			"off": "Deaktiviert"
@@ -154,6 +156,9 @@
 		"almostThere": "Sie sind fast fertig",
 		"ready": "Bereit, das Quiz abzuschließen und Ihre Ergebnisse zu sehen?",
 		"no": "Nicht jetzt",
+		"leaveWarning": "Sie sind gerade dabei, ein Quiz zu beantworten. Wenn Sie jetzt verlassen, geht Ihr Fortschritt verloren.",
+		"saveError": "Fehler beim Speichern des Quiz. Bitte versuchen Sie es erneut.",
+		"startError": "Fehler beim Starten des Quiz. Bitte versuchen Sie es erneut.",
 		"fields": {
 			"title": "Titel hinzufügen",
 			"description": "Beschreibung hinzufügen",

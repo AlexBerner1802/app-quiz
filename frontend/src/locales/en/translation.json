@@ -42,6 +42,8 @@
 		"tags": "Tags",
 		"modules": "Modules",
 		"typeAndPressEnterOrComma": "Type a keyword then press Enter or comma",
+		"clear": "Clear",
+		"apply": "Apply",
 		"state": {
 			"on": "Activated",
 			"off": "Deactivated"
@@ -146,6 +148,9 @@
 		"almostThere": "You're almost there!",
 		"ready": "Ready to finish the quiz and see your results?",
 		"no": "Not yet",
+		"leaveWarning": "You are currently answering a quiz. Leaving now will lose your progress.",
+		"saveError": "Error saving the quiz. Please try again.",
+		"startError": "Error starting the quiz. Please try again.",
 		"fields": {
 			"title": "Add a title",
 			"description": "Add a description",

@@ -203,7 +203,14 @@ export default function HomePage() {
 												loading={loading}
 												onEdit={() => handleEdit(q)}
 												onDelete={() => handleDelete(q.id_quiz)}
-												onClick={() => q.is_active && navigate(`/quizzes/${q.id_quiz}`)}
+												onClick={() => {
+													if (!q.is_active) return;
+													openDrawer("quizPreview", {
+														quiz: q,
+														onStart: () => navigate(`/quizzes/${q.id_quiz}`),
+													});
+												}}
+
 											/>
 										</AnimatedDiv>
 									))}

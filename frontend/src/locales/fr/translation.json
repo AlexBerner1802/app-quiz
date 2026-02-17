@@ -42,6 +42,8 @@
 		"tags": "Tags",
 		"modules": "Modules",
 		"typeAndPressEnterOrComma": "Tapez un mot-clé puis appuyez sur Entrée ou virgule",
+		"clear": "Effacer",
+		"apply": "Appliquer",
 		"state": {
 			"on": "Activé",
 			"off": "Désactivé"
@@ -148,6 +150,9 @@
 		"almostThere": "Vous avez presque terminé",
 		"ready": "Prêt à finir le quiz et voir vos résultats ?",
 		"no": "Pas encore",
+		"leaveWarning": "Vous êtes en train de répondre à un quiz. Quitter maintenant vous fera perdre votre progression.",
+		"saveError": "Erreur lors de l'enregistrement du quiz. Veuillez réessayer.",
+		"startError": "Erreur lors du démarrage du quiz. Veuillez réessayer.",
 		"fields": {
 			"title": "Ajouter un titre",
 			"description": "Ajouter une description",

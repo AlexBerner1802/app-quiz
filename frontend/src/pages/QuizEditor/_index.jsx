@@ -210,13 +210,13 @@ export default function NewQuiz() {
 			console.log("res", res);
 
 			if (res) {
-				alert(t("quiz.saved_successfully"));
+				alert(t("quiz.savedSuccessfully"));
 
 				if (navigateAfter) {
 					window.location.href = "/";
 				}
 			} else {
-				alert(t("quiz.saved_successfully"));
+				alert(t("quiz.savedSuccessfully"));
 			}
 		} catch (e) {
 			console.error(e);

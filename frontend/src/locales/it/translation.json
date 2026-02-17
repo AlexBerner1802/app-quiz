@@ -44,7 +44,9 @@
 		"tags": "Tags",
 		"modules": "Moduli",
 		"typeAndPressEnterOrComma": "Digita una parola chiave e premi Invio o virgola",
-    	"state": {
+    	"clear": "Pulisci",
+		"apply": "Applica",
+		"state": {
       		"on": "Attivato",
       		"off": "Disattivato"
     	},
@@ -157,6 +159,9 @@
 		"almostThere": "Sei quasi arrivato alla fine",
 		"ready": "Pronto per terminare il quiz e vedere i tuoi risultati?",
 		"no": "Non ora",
+		"leaveWarning": "Sei attualmente in fase di risposta a un quiz. Uscire ora comporterà la perdita del tuo progresso.",
+		"saveError": "Errore durante il salvataggio del quiz. Riprova.",
+		"startError": "Errore durante l'avvio del quiz. Riprova.",
 		"fields": {
 			"title": "Aggiungi un titolo",
 			"description": "Aggiungi una descrizione",
