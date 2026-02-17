@@ -46,13 +46,15 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 		<Aside>
 			{/* Sidebar's upper part with the logo and itemsTop */}
 			<Stack>
-				{logoSrc ? (
+				<Link to="/home" style={{ textDecoration: "none" }}>
+					{logoSrc ? (
 					<LogoCircle title={logoAlt} aria-label={logoAlt}>
 						<img src={logoSrc} alt={logoAlt} />
 					</LogoCircle>
-				) : (
+					) : (
 					<LogoCircle title="Logo" aria-label="Logo">🦋</LogoCircle>
-				)}
+					)}
+				</Link>
 
 				{itemsTop.map(renderItem)}
 			</Stack>
