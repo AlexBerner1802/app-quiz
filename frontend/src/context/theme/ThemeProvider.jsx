@@ -18,25 +18,25 @@ export const ThemeProvider = ({ children }) => {
 	useEffect(() => {
 		if (!user) return; // user might be undefined while loading auth
 
+		if (typeof user.is_dark_mode !== "boolean") return;
+
 		const userTheme = user.is_dark_mode ? "dark" : "light";
 		setTheme(userTheme);
-
-		document.body.classList.toggle("dark-mode", userTheme === "dark");
 	}, [user]);
 
 
 	useEffect(() => {
 		document.body.classList.toggle("dark-mode", theme === "dark");
 		localStorage.setItem("theme", theme);
+
 		if (user?.localAccountId) {
 			axios.put(`${apiUrl}/api/user/theme`, {
 				id_user: user.localAccountId,
 				is_dark_mode: theme === "dark"
-			}).catch(err => {
-				console.error("Failed to sync theme:", err);
-			});
+			}).catch(err => console.error("Failed to sync theme:", err));
 		}
-	}, [theme]);
+	}, [theme, user]);
+
 
 	const toggleTheme = () =>
 		setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));

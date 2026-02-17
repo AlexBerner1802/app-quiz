@@ -86,7 +86,7 @@ export default function AppLayout({ children }) {
 						<ModalText>{t("modals.logout.text")}</ModalText>
 						<ModalActions>
 							<CancelButton onClick={() => setShowLogoutModal(false)}>{t("common.cancel")}</CancelButton>
-							<ConfirmButton onClick={confirmLogout}>{t("modals.logout.confirm")}</ConfirmButton>
+							<ConfirmButton onClick={confirmLogout}>{t("common.confirm")}</ConfirmButton>
 						</ModalActions>
 					</ModalBox>
 				</ModalOverlay>

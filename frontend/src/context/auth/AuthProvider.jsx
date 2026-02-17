@@ -101,7 +101,8 @@ export function AuthProvider({ children }) {
 			await pca.logoutPopup();
 			setUser(null);
 			setToken(null);
-			localStorage.clear();
+			localStorage.removeItem("token");
+			localStorage.removeItem("user");
 		} catch (err) {
 			console.error("Error logging out:", err);
 		}
