@@ -3,12 +3,21 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import { useSidebar } from "../../context/sidebar/SidebarContext";
+import SidebarToggleButton from "../buttons/SidebarToggleButton";
 
+export default function Sidebar({
+	logoSrc,
+	logoAlt = "Logo",
+	itemsTop = [],
+	itemsBottom = [],
+	avatarText,
+	profileTo
+}) {
 
-export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], itemsBottom = [], avatarText, profileTo }) {
-
-	const {t} = useTranslation();
+	const { t } = useTranslation();
+	const { expanded } = useSidebar();
 
 	// Get the current URL to know which button is active
 	const location = useLocation();
@@ -17,17 +26,36 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 	const renderItem = (item) => {
 		// Tells if the element is displayed as active
 		const isActive = (() => {
-			if (item.activePattern instanceof RegExp) return item.activePattern.test(location.pathname);
-			if (item.to) return location.pathname === item.to;
+			if (item.activePattern instanceof RegExp)
+				return item.activePattern.test(location.pathname);
+			if (item.to)
+				return location.pathname === item.to;
 			return false;
 		})();
 
-		// Buttons with dynamic styles according to $active
-		const Btn = (
+		// Button content (icon + label if expanded)
+		const content = (
+			<IconButton
+				title={!expanded ? item.title : undefined}
+				$active={isActive}
+				onClick={item.onClick}
+				aria-label={item.title}
+				$expanded={expanded}
+				type="button"
+			>
+				<IconWrapper>{item.icon}</IconWrapper>
+
+				{/* Show text only when expanded */}
+				{expanded && <Label>{item.title}</Label>}
+			</IconButton>
+		);
+
+		// If sidebar is collapsed → use tooltip
+		const Btn = expanded ? (
+			<Row key={item.key}>{content}</Row>
+		) : (
 			<TooltipWrapper key={item.key}>
-				<IconButton title={item.title} $active={isActive} onClick={item.onClick} aria-label={item.title}>
-					{item.icon}
-				</IconButton>
+				{content}
 				<Tooltip className="tooltip">{item.title}</Tooltip>
 			</TooltipWrapper>
 		);
@@ -43,38 +71,77 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 	};
 
 	return (
-		<Aside>
+		<Aside $expanded={expanded}>
+
 			{/* Sidebar's upper part with the logo and itemsTop */}
-			<Stack>
+			<Stack $expanded={expanded}>
 				<Link to="/home" style={{ textDecoration: "none" }}>
 					{logoSrc ? (
-					<LogoCircle title={logoAlt} aria-label={logoAlt}>
-						<img src={logoSrc} alt={logoAlt} />
-					</LogoCircle>
+						<LogoCircle title={logoAlt} aria-label={logoAlt}>
+							<img src={logoSrc} alt={logoAlt} />
+						</LogoCircle>
 					) : (
-					<LogoCircle title="Logo" aria-label="Logo">🦋</LogoCircle>
+						<LogoCircle title="Logo" aria-label="Logo">🦋</LogoCircle>
 					)}
 				</Link>
+				{/* Button to expand the sidebar*/}
+				<ToggleRow $expanded={expanded}>
+					<SidebarToggleButton />
+				</ToggleRow>
 
 				{itemsTop.map(renderItem)}
 			</Stack>
 
 			{/* Down part of the sidebar with itemsBottom and the avatar */}
-			<Stack>
+			<Stack $expanded={expanded}>
 				{itemsBottom.map(renderItem)}
 				{avatarText ? (
-					<TooltipWrapper>
-						{profileTo ? (
-						<StyledLink to={profileTo}>
-							<IconButton title={t("pages.accountPage")} type="button">
-							<Avatar>{avatarText}</Avatar>
-							</IconButton>
-						</StyledLink>
-						) : (
-						<Avatar style={{ opacity: 0.6 }}>{avatarText}</Avatar>
-						)}
-						<Tooltip className="tooltip">{t("pages.accountPage")}</Tooltip>
-					</TooltipWrapper>
+					expanded ? (
+						<Row>
+							{profileTo ? (
+								<StyledLink to={profileTo}>
+									<IconButton
+										title={t("pages.accountPage")}
+										type="button"
+										$expanded={expanded}
+									>
+										<Avatar>{avatarText}</Avatar>
+										<Label>{t("pages.accountPage")}</Label>
+									</IconButton>
+								</StyledLink>
+							) : (
+								<IconButton
+									type="button"
+									$expanded={expanded}
+									style={{ opacity: 0.6 }}
+								>
+									<Avatar>{avatarText}</Avatar>
+									<Label>{t("pages.accountPage")}</Label>
+								</IconButton>
+							)}
+						</Row>
+					) : (
+						<TooltipWrapper>
+							{profileTo ? (
+								<StyledLink to={profileTo}>
+									<IconButton
+										title={t("pages.accountPage")}
+										type="button"
+										$expanded={expanded}
+									>
+										<Avatar>{avatarText}</Avatar>
+									</IconButton>
+								</StyledLink>
+							) : (
+								<Avatar style={{ opacity: 0.6 }}>
+									{avatarText}
+								</Avatar>
+							)}
+							<Tooltip className="tooltip">
+								{t("pages.accountPage")}
+							</Tooltip>
+						</TooltipWrapper>
+					)
 				) : null}
 			</Stack>
 		</Aside>
@@ -83,84 +150,106 @@ export default function Sidebar({ logoSrc, logoAlt = "Logo", itemsTop = [], item
 
 
 const Aside = styled.aside`
-    width: var(--spacing-3xl);
-    border-right: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: var(--spacing) 0;
-    align-items: center;
-    background-color: var(--color-background-muted);
+	width: ${(p) => (p.$expanded ? "220px" : "var(--spacing-3xl)")};
+	border-right: 1px solid var(--color-border);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: var(--spacing) 0;
+	align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
+	background-color: var(--color-background-muted);
+	transition: width 0.2s ease;
 `;
 
 const Stack = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-s);
+	align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
+	padding: ${(p) => (p.$expanded ? "0 var(--spacing-s)" : "0")};
 `;
 
 const StyledLink = styled(Link)`
-    text-decoration: none;
+	text-decoration: none;
 `;
 
 const LogoCircle = styled.div`
-    width: 36px;
-    height: 36px;
-    display: grid;
-    place-items: center;
-    font-weight: bold;
-    overflow: hidden;
+	width: 36px;
+	height: 36px;
+	display: grid;
+	place-items: center;
+	font-weight: bold;
+	overflow: hidden;
 	margin-bottom: var(--spacing-xs);
 
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+`;
+
+const Row = styled.div`
+	position: relative;
+`;
+
+const IconWrapper = styled.span`
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	flex: 0 0 24px;
+`;
+
+const Label = styled.span`
+	font-size: var(--font-size-s);
+	color: var(--color-text);
+	white-space: nowrap;
 `;
 
 const IconButton = styled.button`
-    border: none;
-    background: none;
-    padding: var(--spacing-s);
-    border-radius: var(--border-radius-xs);
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--gray-500);
+	border: none;
+	background: none;
+	padding: var(--spacing-s);
+	border-radius: var(--border-radius-xs);
+	cursor: pointer;
+	transition: background 0.2s;
+	display: flex;
+	align-items: center;
+	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
+	gap: ${(p) => (p.$expanded ? "var(--spacing-s)" : "0")};
+	width: ${(p) => (p.$expanded ? "100%" : "auto")};
+	color: var(--gray-500);
 
-    /* hover */
-    &:hover {
-        background-color: var(--color-background-surface-3);
-		
+	/* hover */
+	&:hover {
+		background-color: var(--color-background-surface-3);
+
 		& svg {
 			stroke: var(--color-primary-bg);
 		}
-    }
+	}
 
-    /* active state */
-    ${(p) =>
+	/* active state */
+	${(p) =>
 		p.$active &&
-			`
-				color: var(--color-primary-bg);
+		`
+			color: var(--color-primary-bg);
 	`}
 `;
 
 const Avatar = styled.div`
-    width: 36px;
-    height: 36px;
-    border-radius: var(--border-radius-xs);
-    background-color: var(--color-background-surface-3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-s);
-    font-weight: bold;
-    color: var(--color-text-muted);
-    margin-bottom: var(--spacing-xs);
+	width: 36px;
+	height: 36px;
+	border-radius: var(--border-radius-xs);
+	background-color: var(--color-background-surface-3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--font-size-s);
+	font-weight: bold;
+	color: var(--color-text-muted);
+	margin-bottom: var(--spacing-xs);
 `;
 
 const TooltipWrapper = styled.div`
@@ -185,11 +274,18 @@ const Tooltip = styled.div`
 	border-radius: var(--border-radius-2xs);
 	border: 1px solid var(--color-border);
 	font-size: var(--font-size-s);
-    box-shadow: var(--box-shadow-l);
+	box-shadow: var(--box-shadow-l);
 	white-space: nowrap;
 	opacity: 0;
 	visibility: hidden;
 	transition: all 0.2s ease-in-out;
 	pointer-events: none;
 	z-index: 10;
+`;
+
+const ToggleRow = styled.div`
+	display: flex;
+	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
+	padding: ${(p) => (p.$expanded ? "0 var(--spacing-s)" : "0")};
+	margin-bottom: var(--spacing-xs);
 `;

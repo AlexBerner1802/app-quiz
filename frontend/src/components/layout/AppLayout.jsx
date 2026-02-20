@@ -58,7 +58,6 @@ export default function AppLayout({ children }) {
 	]), [t]);
 
 	const itemsBottom = useMemo(() => ([
-	{ key: "profile",  title: t("nav.profile"), icon: <AvatarCircle text={avatarText} src={user?.avatar} />, to: myProfilePath },
 	{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
 	{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
 	{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },

@@ -9,6 +9,7 @@ import {SkeletonTheme} from "react-loading-skeleton";
 import 'react-loading-skeleton/dist/skeleton.css';
 import {ModalProvider} from "./context/modal";
 import {DrawerProvider} from "./context/drawer";
+import { SidebarProvider } from './context/sidebar/SidebarContext.jsx';
 
 createRoot(document.getElementById('root')).render(
 	<StrictMode>
@@ -16,9 +17,11 @@ createRoot(document.getElementById('root')).render(
 			<ThemeProvider>
 				<ModalProvider>
 					<DrawerProvider>
-						<SkeletonTheme baseColor={"var(--color-skeleton-base)"} highlightColor={"var(--color-skeleton-highlight)"}>
-							<App />
-						</SkeletonTheme>
+						<SidebarProvider>
+							<SkeletonTheme baseColor={"var(--color-skeleton-base)"} highlightColor={"var(--color-skeleton-highlight)"}>
+								<App />
+							</SkeletonTheme>
+						</SidebarProvider>
 					</DrawerProvider>
 				</ModalProvider>
 			</ThemeProvider>
