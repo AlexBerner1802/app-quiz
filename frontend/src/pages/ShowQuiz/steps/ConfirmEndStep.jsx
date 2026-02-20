@@ -21,9 +21,9 @@ export default function ConfirmEndStep({ onCancel, onConfirm, saving }) {
 				<Title>{t("quiz.almostThere")}</Title>
 				<Message>{t("quiz.ready")}</Message>
 				<ButtonsRow>
-					<Button onClick={onCancel} variant="secondary">{t("quiz.no")}</Button>
+					<Button onClick={onCancel} variant="secondary">{t("common.no")}</Button>
 					<Button onClick={onConfirm} variant="primary" disabled={saving}>
-						{saving ? "Saving..." : "Finish Quiz"}
+						{saving ? "Saving..." : t("common.yes")}
 					</Button>
 				</ButtonsRow>
 			</Content>

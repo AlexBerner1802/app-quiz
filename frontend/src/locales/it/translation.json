@@ -158,7 +158,6 @@
 		"confirmDelete": "Sei sicuro di voler eliminare questo quiz ?",
 		"almostThere": "Sei quasi arrivato alla fine",
 		"ready": "Pronto per terminare il quiz e vedere i tuoi risultati?",
-		"no": "Non ora",
 		"leaveWarning": "Sei attualmente in fase di risposta a un quiz. Uscire ora comporterà la perdita del tuo progresso.",
 		"saveError": "Errore durante il salvataggio del quiz. Riprova.",
 		"startError": "Errore durante l'avvio del quiz. Riprova.",

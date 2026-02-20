@@ -149,7 +149,6 @@
 		"confirmDelete": "Voulez-vous vraiment supprimer ce quiz ?",
 		"almostThere": "Vous avez presque terminé",
 		"ready": "Prêt à finir le quiz et voir vos résultats ?",
-		"no": "Pas encore",
 		"leaveWarning": "Vous êtes en train de répondre à un quiz. Quitter maintenant vous fera perdre votre progression.",
 		"saveError": "Erreur lors de l'enregistrement du quiz. Veuillez réessayer.",
 		"startError": "Erreur lors du démarrage du quiz. Veuillez réessayer.",

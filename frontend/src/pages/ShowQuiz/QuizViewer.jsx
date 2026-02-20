@@ -12,6 +12,7 @@ import { useAuth } from "../../context/auth";
 import { AlarmClock, Loader2 } from "lucide-react";
 import {formatTime} from "../../utils/dateUtils";
 import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
+import ConfirmEndModal from "../../components/modals/ConfirmEndModal";
 
 export default function QuizViewer({ quiz }) {
 	const { user } = useAuth();
@@ -25,6 +26,7 @@ export default function QuizViewer({ quiz }) {
 	const [timer, setTimer] = useState(0);
 	const [saving, setSaving] = useState(false);
 	const [savedResult, setSavedResult] = useState(null);
+	const [showConfirmEndModal, setShowConfirmEndModal] = useState(false);
 
 	const lang = i18n.language.split('-')[0];
 
@@ -51,9 +53,14 @@ export default function QuizViewer({ quiz }) {
 	// Timer
 	useEffect(() => {
 		if (step !== "question") return;
-		const interval = setInterval(() => setTimer(t => t + 1), 1000);
+		if (showConfirmEndModal) return;
+
+		const interval = setInterval(() => {
+			setTimer(t => t + 1);
+		}, 1000);
+
 		return () => clearInterval(interval);
-	}, [step]);
+	}, [step, showConfirmEndModal]);
 
 	const handleAnswer = (answerId) => {
 		setAnswersMap(prev => {
@@ -68,7 +75,7 @@ export default function QuizViewer({ quiz }) {
 		if (currentIndex + 1 < quiz.questions.length) {
 			setCurrentIndex(prev => prev + 1);
 		} else {
-			setStep("confirmEnd");
+			setShowConfirmEndModal(true);
 		}
 	};
 
@@ -148,13 +155,18 @@ export default function QuizViewer({ quiz }) {
 					/>
 				)}
 
-				{step === "confirmEnd" && (
-					<ConfirmEndStep
-						onCancel={() => setStep("question")}
-						onConfirm={handleFinishQuiz}
+				{showConfirmEndModal && (
+					<ConfirmEndModal
 						saving={saving}
+						onCancel={() => setShowConfirmEndModal(false)}
+						onClose={() => setShowConfirmEndModal(false)}
+						onConfirm={async () => {
+						await handleFinishQuiz();
+
+						setShowConfirmEndModal(false);
+						}}
 					/>
-				)}
+					)}
 
 				{step === "review" && savedResult && (
 					<ReviewStep

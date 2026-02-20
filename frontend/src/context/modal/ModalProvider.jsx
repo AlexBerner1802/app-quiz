@@ -2,6 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { ModalContext } from './ModalContext.jsx';
 import styled, { keyframes } from "styled-components";
+import ConfirmEndModal from "../../components/modals/ConfirmEndModal";
 
 /**
  * Registry of modal components.
@@ -13,6 +14,7 @@ import SelectLanguageModal from "../../components/modals/SelectLanguageModal";
 const MODAL_REGISTRY = {
 	confirm: ConfirmModal,
 	selectLanguage: SelectLanguageModal,
+  confirmEnd: ConfirmEndModal,
 };
 
 export const ModalProvider = ({ children }) => {

@@ -155,7 +155,6 @@
 		"confirmDelete": "Möchten Sie dieses Quiz wirklich löschen?",
 		"almostThere": "Sie sind fast fertig",
 		"ready": "Bereit, das Quiz abzuschließen und Ihre Ergebnisse zu sehen?",
-		"no": "Nicht jetzt",
 		"leaveWarning": "Sie sind gerade dabei, ein Quiz zu beantworten. Wenn Sie jetzt verlassen, geht Ihr Fortschritt verloren.",
 		"saveError": "Fehler beim Speichern des Quiz. Bitte versuchen Sie es erneut.",
 		"startError": "Fehler beim Starten des Quiz. Bitte versuchen Sie es erneut.",
