@@ -40,7 +40,13 @@ export async function getQuizzes({ lang = "en", id_owner } = {}) {
  */
 export async function saveQuiz(payload, quizId = null) {
 	await ensureCsrf();
+
 	const formData = buildQuizFormData(payload);
+
+	formData.append(
+		"questions_to_show",
+		payload.questions_to_show == null ? "" : String(payload.questions_to_show)
+	);
 
 	if (quizId) formData.append("_method", "PUT");
 

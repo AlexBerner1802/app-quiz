@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import styled from "styled-components";
 import QuizHeader from "./QuizHeader";
 import { useTranslation } from "react-i18next";
@@ -7,12 +7,21 @@ import QuestionStep from "./steps/QuestionStep";
 import ConfirmEndStep from "./steps/ConfirmEndStep";
 import ReviewStep from "./steps/ReviewStep";
 import useBlockNavigation from "../../hooks/useBlockNavigation";
-import {finishQuizAttempt, startQuizAttempt} from "../../services/api";
+import { finishQuizAttempt, startQuizAttempt } from "../../services/api";
 import { useAuth } from "../../context/auth";
 import { AlarmClock, Loader2 } from "lucide-react";
-import {formatTime} from "../../utils/dateUtils";
+import { formatTime } from "../../utils/dateUtils";
 import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 import ConfirmEndModal from "../../components/modals/ConfirmEndModal";
+
+function pickRandomQuestions(allQuestions, count) {
+	const arr = Array.isArray(allQuestions) ? [...allQuestions] : [];
+	for (let i = arr.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[arr[i], arr[j]] = [arr[j], arr[i]];
+	}
+	return arr.slice(0, count);
+}
 
 export default function QuizViewer({ quiz }) {
 	const { user } = useAuth();
@@ -28,25 +37,53 @@ export default function QuizViewer({ quiz }) {
 	const [savedResult, setSavedResult] = useState(null);
 	const [showConfirmEndModal, setShowConfirmEndModal] = useState(false);
 
-	const lang = i18n.language.split('-')[0];
+	// Questions to show for one attempt and only this one
+	const [runQuiz, setRunQuiz] = useState(null);
 
+	const lang = i18n.language.split("-")[0];
+
+	// Start attempt + pick random questions (once)
 	useEffect(() => {
 		if (!quiz?.id_quiz) return;
 		if (!user?.localAccountId) return;
 		if (startedRef.current) return;
 		startedRef.current = true;
-		
+
 		(async () => {
 			try {
-				const startResult = await startQuizAttempt(quiz.id_quiz, lang, user.localAccountId);
+				const startResult = await startQuizAttempt(
+					quiz.id_quiz,
+					lang,
+					user.localAccountId
+				);
+
+				// Random questions at launch
+				const allQuestions = Array.isArray(quiz.questions) ? quiz.questions : [];
+				const total = allQuestions.length;
+
+				const rawWanted = quiz.questions_to_show;
+				const wanted =
+					rawWanted && Number.isFinite(Number(rawWanted))
+						? Math.max(1, Math.min(Number(rawWanted), total))
+						: total;
+
+				const chosen = pickRandomQuestions(allQuestions, wanted);
+
+				setRunQuiz({ ...quiz, questions: chosen });
 				setAttemptId(startResult.attempt_id);
+
+				// reset run state
+				setCurrentIndex(0);
+				setAnswersMap({});
+				setTimer(0);
+
 				setStep("question");
 			} catch (e) {
 				startedRef.current = false;
 				alert(t("quiz.startError"));
-				}
-			})();
-	}, [quiz?.id_quiz, user?.localAccountId, lang, t]);
+			}
+		})();
+	}, [quiz?.id_quiz, user?.localAccountId, lang, t, quiz]);
 
 	useBlockNavigation(step === "question", t("quiz.leaveWarning"));
 
@@ -56,14 +93,17 @@ export default function QuizViewer({ quiz }) {
 		if (showConfirmEndModal) return;
 
 		const interval = setInterval(() => {
-			setTimer(t => t + 1);
+			setTimer((tt) => tt + 1);
 		}, 1000);
 
 		return () => clearInterval(interval);
 	}, [step, showConfirmEndModal]);
 
+	const effectiveQuiz = runQuiz || quiz;
+	const effectiveQuestions = effectiveQuiz?.questions || [];
+
 	const handleAnswer = (answerId) => {
-		setAnswersMap(prev => {
+		setAnswersMap((prev) => {
 			const prevSet = new Set(prev[currentIndex] || []);
 			if (prevSet.has(answerId)) prevSet.delete(answerId);
 			else prevSet.add(answerId);
@@ -72,36 +112,33 @@ export default function QuizViewer({ quiz }) {
 	};
 
 	const handleNext = () => {
-		if (currentIndex + 1 < quiz.questions.length) {
-			setCurrentIndex(prev => prev + 1);
+		if (currentIndex + 1 < effectiveQuestions.length) {
+			setCurrentIndex((prev) => prev + 1);
 		} else {
 			setShowConfirmEndModal(true);
 		}
 	};
 
 	const handlePrev = () => {
-		if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
+		if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
 	};
-
 
 	const handleFinishQuiz = async () => {
 		if (saving) return;
 		setSaving(true);
 
-		console.log("the quiz", quiz);
-
-		const payload = quiz.questions.map((q, index) => ({
+		const payload = effectiveQuestions.map((q, index) => ({
 			id_question: q.id,
 			answer_ids: answersMap[index] || [],
 			answer_text: String(answersMap[index]?.[0] ?? ""),
 		}));
 
 		try {
-			const result = await finishQuizAttempt(quiz.id_quiz, attemptId, {
+			const result = await finishQuizAttempt(effectiveQuiz.id_quiz, attemptId, {
 				ended_at: new Date().toISOString(),
 				time_taken: timer,
 				lang,
-				answers: payload
+				answers: payload,
 			});
 
 			setSavedResult(result);
@@ -113,15 +150,17 @@ export default function QuizViewer({ quiz }) {
 		}
 	};
 
-
 	if (!quiz) return null;
 
 	return (
 		<Wrapper>
-			<QuizHeader title={quiz.title} onBack={() => {
-				if (step === "question") return window.confirm(t("quiz.leaveWarning"));
-				return true;
-			}}>
+			<QuizHeader
+				title={effectiveQuiz?.title || quiz.title}
+				onBack={() => {
+					if (step === "question") return window.confirm(t("quiz.leaveWarning"));
+					return true;
+				}}
+			>
 				<ToggleThemeSwitch />
 				<TimerDisplay>
 					<TimerLabel>{t("common.timeElapsed")}</TimerLabel>
@@ -142,9 +181,9 @@ export default function QuizViewer({ quiz }) {
 					</Starting>
 				)}
 
-				{step === "question" && (
+				{step === "question" && effectiveQuiz && (
 					<QuestionStep
-						quiz={quiz}
+						quiz={effectiveQuiz}
 						currentIndex={currentIndex}
 						answersMap={answersMap}
 						onAnswer={handleAnswer}
@@ -161,16 +200,15 @@ export default function QuizViewer({ quiz }) {
 						onCancel={() => setShowConfirmEndModal(false)}
 						onClose={() => setShowConfirmEndModal(false)}
 						onConfirm={async () => {
-						await handleFinishQuiz();
-
-						setShowConfirmEndModal(false);
+							await handleFinishQuiz();
+							setShowConfirmEndModal(false);
 						}}
 					/>
-					)}
+				)}
 
-				{step === "review" && savedResult && (
+				{step === "review" && savedResult && effectiveQuiz && (
 					<ReviewStep
-						quiz={quiz}
+						quiz={effectiveQuiz}
 						result={savedResult}
 						onClose={() => {
 							window.location.href = "/home";
@@ -186,43 +224,49 @@ export default function QuizViewer({ quiz }) {
 	);
 }
 
-
 const Wrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
 `;
 
 const Content = styled.div`
 	display: flex;
 	flex: 1;
 	width: 100%;
-    overflow: hidden;
+	overflow: hidden;
 `;
 
 const TimerDisplay = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
-	font-size: var(--font-size-2xl); 
+	font-size: var(--font-size-2xl);
 	font-weight: 600;
-	color: var(--color-text); 
+	color: var(--color-text);
 	gap: var(--spacing-xs);
 `;
 
 const CustomAlarmClock = styled(AlarmClock)`
-    animation: ${({ $active }) => $active ? "wiggle 1.2s ease-in-out infinite" : "none"};
+	animation: ${({ $active }) =>
+		$active ? "wiggle 1.2s ease-in-out infinite" : "none"};
 
-    @keyframes wiggle {
-        0%   { transform: rotate(20deg); }
-        50%  { transform: rotate(-20deg); }
-        100% { transform: rotate(20deg); }
-    }
+	@keyframes wiggle {
+		0% {
+			transform: rotate(20deg);
+		}
+		50% {
+			transform: rotate(-20deg);
+		}
+		100% {
+			transform: rotate(20deg);
+		}
+	}
 `;
 
 const TimerLabel = styled.p`
-	font-size: var(--font-size-s); 
-	color: var(--color-text-muted); 
+	font-size: var(--font-size-s);
+	color: var(--color-text-muted);
 `;
 
 const Starting = styled.div`
@@ -237,6 +281,8 @@ const Starting = styled.div`
 		animation: spin 1s linear infinite;
 	}
 	@keyframes spin {
-		100% { transform: rotate(360deg); }
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 `;

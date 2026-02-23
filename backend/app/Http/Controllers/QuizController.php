@@ -14,10 +14,8 @@ use App\Models\Question;
 use App\Models\Answer;
 use Throwable;
 
-
 class QuizController extends Controller
 {
-
     private function quizPk(): string { return 'id_quiz'; }
 
     public function index(Request $request): JsonResponse
@@ -64,17 +62,18 @@ class QuizController extends Controller
                 $isActive = $activeRecord ? (bool)$activeRecord->is_active : false;
 
                 return [
-                    'id_quiz'         => $qid,
-                    'lang'            => $lang,
-                    'title'           => optional($tmap->get('title'))->element_text ?? '',
-                    'description'     => optional($tmap->get('quiz_description'))->element_text ?? '',
-                    'cover_image_url' => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
-                    'modules'         => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])->values(),
-                    'tags'            => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
-                    'is_active'       => $isActive,
-                    'id_owner'        => $quiz->id_owner,
-                    'created_at'      => $quiz->created_at,
-                    'updated_at'      => $quiz->updated_at,
+                    'id_quiz'           => $qid,
+                    'lang'              => $lang,
+                    'title'             => optional($tmap->get('title'))->element_text ?? '',
+                    'description'       => optional($tmap->get('quiz_description'))->element_text ?? '',
+                    'cover_image_url'   => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
+                    'modules'           => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])->values(),
+                    'tags'              => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
+                    'is_active'         => $isActive,
+                    'id_owner'          => $quiz->id_owner,
+                    'created_at'        => $quiz->created_at,
+                    'updated_at'        => $quiz->updated_at,
+                    'questions_to_show' => $quiz->questions_to_show,
                 ];
             });
 
@@ -192,15 +191,16 @@ class QuizController extends Controller
                 ->first();
 
             return response()->json([
-                $this->quizPk()    => $qid,
-                'lang'             => $lang,
-                'title'            => $title,
-                'description'      => $desc,
-                'cover_image_url'  => $coverImage,
-                'is_active'        => (bool) $isActive,
-                'created_at'      => $quiz->created_at,
-                'updated_at'      => $quiz->updated_at,
-                'owner'            => $owner,
+                $this->quizPk()     => $qid,
+                'lang'              => $lang,
+                'title'             => $title,
+                'description'       => $desc,
+                'cover_image_url'   => $coverImage,
+                'is_active'         => (bool) $isActive,
+                'created_at'        => $quiz->created_at,
+                'updated_at'        => $quiz->updated_at,
+                'questions_to_show' => $quiz->questions_to_show, // ✅ ajouté
+                'owner'             => $owner,
 
                 'modules' => collect($quiz->modules)
                     ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name, 'slug' => $m->slug])
@@ -245,7 +245,6 @@ class QuizController extends Controller
             ], 403);
         }
 
-
         $quiz = $this->saveQuiz($request, $quiz);
         return response()->json(['quiz' => $quiz], 200);
     }
@@ -256,6 +255,7 @@ class QuizController extends Controller
     private function saveQuiz(Request $request, ?Quiz $quiz = null): ?Quiz
     {
         $isNew = !$quiz;
+
         if ($isNew) {
             if (is_string($request->input('translations'))) {
                 $request->merge([
@@ -269,6 +269,7 @@ class QuizController extends Controller
                 'id_owner' => 'required|string',
                 'cover_image_file' => 'nullable|file|image|max:5120',
                 'translations' => 'required|array',
+                'questions_to_show' => 'nullable|integer|min:1',
             ]);
 
             $quiz = new Quiz();
@@ -293,6 +294,7 @@ class QuizController extends Controller
             'cover_image_url' => 'nullable|string',
             'cover_image_file' => 'nullable|file|image|max:5120',
             'translations' => 'required|array',
+            'questions_to_show' => 'nullable|integer|min:1',
         ]);
 
         DB::beginTransaction();
@@ -300,6 +302,8 @@ class QuizController extends Controller
             // --- Handle cover image ---
             $newCoverUrl  = $request->input('cover_image_url');
             $newCoverFile = $request->file('cover_image_file');
+            $wanted = $request->input('questions_to_show');
+
             $oldPath = $quiz->cover_image_url
                 ? ltrim(str_replace('/storage/', '', parse_url($quiz->cover_image_url, PHP_URL_PATH)), '/')
                 : null;
@@ -316,6 +320,12 @@ class QuizController extends Controller
                     Storage::disk('public')->delete($oldPath);
                 }
                 $quiz->cover_image_url = null;
+            }
+
+            if ($wanted === null || $wanted === '') {
+                $quiz->questions_to_show = null;
+            } else {
+                $quiz->questions_to_show = max(1, (int) $wanted);
             }
 
             $quiz->save();
@@ -355,7 +365,12 @@ class QuizController extends Controller
 
                 // --- Questions & answers per language ---
                 $questions = $data['questions'] ?? [];
-                $existingQuestions = DB::table('questions')->where('id_quiz', $quiz->id_quiz)->where('lang', $lang)->pluck('id_question')->all();
+                $existingQuestions = DB::table('questions')
+                    ->where('id_quiz', $quiz->id_quiz)
+                    ->where('lang', $lang)
+                    ->pluck('id_question')
+                    ->all();
+
                 $incomingQuestionIds = collect($questions)->pluck('id')->filter()->all();
 
                 // Delete removed questions
@@ -373,6 +388,7 @@ class QuizController extends Controller
                         'lang' => $lang,
                         'order' => $orderIndex + 1,
                     ]);
+
                     if (!isset($q['id'])) {
                         DB::table('questions')->where('id_question', $questionId)->update(['order' => $orderIndex + 1]);
                     }
@@ -493,6 +509,7 @@ class QuizController extends Controller
                 'modules' => [],
                 'tags' => [],
                 'cover_image_url' => $quiz->cover_image_url ?? '',
+                'questions_to_show' => $quiz->questions_to_show,
                 'translations' => [],
             ]);
         }
@@ -538,15 +555,11 @@ class QuizController extends Controller
             $tQuiz = $allTranslations['quiz'][$qid] ?? collect();
             $tQ = $allTranslations['question'] ?? collect();
             $tA = $allTranslations['answer'] ?? collect();
-            $modulesTranslated = $allTranslations['module'] ?? collect();
-            $tagsTranslated = $allTranslations['tag'] ?? collect();
 
             // Build questions array (language-specific)
             $quizQuestions = collect($questions)->map(function($q) use ($answersByQ, $tQ, $tA) {
-                // Wrap the question translations in a collection
                 $qtTranslations = collect($tQ->get($q->id_question, []))->keyBy('field_name');
 
-                // Wrap the answers for this question in a collection
                 $answers = collect($answersByQ->get($q->id_question, []))->map(function($a) use ($tA) {
                     $answerTranslations = collect($tA->get($a->id_answer, []))->keyBy('field_name');
                     return [
@@ -596,6 +609,7 @@ class QuizController extends Controller
         return response()->json([
             'id_quiz' => $qid,
             'cover_image_url' => $quiz->cover_image_url ?? '',
+            'questions_to_show' => $quiz->questions_to_show,
             'translations' => $translations,
         ]);
     }
@@ -618,5 +632,4 @@ class QuizController extends Controller
         Answer::whereIn('id_question', $qIds ?: [-1])->delete();
         Question::where('id_quiz', $quiz->{$this->quizPk()})->delete();
     }
-
 }

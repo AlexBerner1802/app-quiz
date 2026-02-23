@@ -67,6 +67,32 @@ export default function CenterPanel({
 						}}
 					>
 						<Input
+							type="text"
+							inputMode="numeric"
+							pattern="[0-9]*"
+							value={quiz.questions_to_show ?? ""}
+							onKeyDown={(e) => {
+								const allowed = [
+								"Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End",
+								];
+								if (allowed.includes(e.key)) return;
+								if (!/^\d$/.test(e.key)) e.preventDefault();
+							}}
+							onPaste={(e) => {
+								e.preventDefault();
+								const txt = (e.clipboardData.getData("text") || "").replace(/\D/g, "");
+								const n = txt === "" ? null : Math.max(1, Number(txt));
+								updateQuizField({ questions_to_show: n });
+							}}
+							onChange={(e) => {
+								const digits = (e.target.value || "").replace(/\D/g, "");
+								const n = digits === "" ? null : Math.max(1, Number(digits));
+								updateQuizField({ questions_to_show: n });
+							}}
+							placeholder={t("quiz.fields.questionsToShowPlaceholder")}
+						/>
+
+						<Input
 							icon={
 								<PenLine
 									aria-hidden="true"

@@ -14,7 +14,9 @@ class Quiz extends Model
     protected $keyType = 'int';
     public $timestamps = true;
 
-    protected $fillable = ['cover_image_url', 'id_owner'];
+    protected $fillable = ['cover_image_url', 'id_owner', 'questions_to_show'];
+
+    protected $casts = ['questions_to_show' => 'integer'];
 
     /**
      * Relationships

@@ -46,6 +46,8 @@
 		"typeAndPressEnterOrComma": "Digita una parola chiave e premi Invio o virgola",
     	"clear": "Pulisci",
 		"apply": "Applica",
+		"of": "di",
+		"reduce": "Ridurre",
 		"state": {
       		"on": "Attivato",
       		"off": "Disattivato"
@@ -164,7 +166,8 @@
 		"fields": {
 			"title": "Aggiungi un titolo",
 			"description": "Aggiungi una descrizione",
-			"coverImage": "Aggiungi un'immagine di copertina"
+			"coverImage": "Aggiungi un'immagine di copertina",
+			"questionsToShowPlaceholder": "Numero di domande da mostrare (lasciare vuoto per tutte)"
 		},
 		"placeholders": {
 			"title": "Titolo del quiz",

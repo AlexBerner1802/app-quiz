@@ -44,6 +44,8 @@
 		"typeAndPressEnterOrComma": "Tapez un mot-clé puis appuyez sur Entrée ou virgule",
 		"clear": "Effacer",
 		"apply": "Appliquer",
+		"of": "sur",
+		"reduce": "Réduire",
 		"state": {
 			"on": "Activé",
 			"off": "Désactivé"
@@ -155,7 +157,8 @@
 		"fields": {
 			"title": "Ajouter un titre",
 			"description": "Ajouter une description",
-			"coverImage": "Ajouter une image de couverture"
+			"coverImage": "Ajouter une image de couverture",
+			"questionsToShowPlaceholder": "Nombre de questions à montrer (laisser vide pour toutes)"
 		},
 		"placeholders": {
 			"title": "Titre du quiz",

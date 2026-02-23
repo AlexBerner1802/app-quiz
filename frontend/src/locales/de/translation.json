@@ -44,6 +44,8 @@
 		"typeAndPressEnterOrComma": "Geben Sie ein Stichwort ein und drücken Sie Enter oder Komma",
 		"clear": "Löschen",
 		"apply": "Anwenden",
+		"of": "von",
+		"reduce": "Reduzieren",
 		"state": {
 			"on": "Aktiviert",
 			"off": "Deaktiviert"
@@ -161,7 +163,8 @@
 		"fields": {
 			"title": "Titel hinzufügen",
 			"description": "Beschreibung hinzufügen",
-			"coverImage": "Cover-Bild hinzufügen"
+			"coverImage": "Cover-Bild hinzufügen",
+			"questionsToShowPlaceholder": "Anzahl der anzuzeigenden Fragen (leer lassen für alle)"
 		},
 		"placeholders": {
 			"title": "Quiz-Titel",

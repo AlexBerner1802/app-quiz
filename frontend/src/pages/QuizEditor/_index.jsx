@@ -119,6 +119,7 @@ export default function NewQuiz() {
 					tags: allTags || [],
 					cover_image_url: quizData.cover_image_url || "",
 					cover_image_file: quizData.cover_image_file || "",
+					questions_to_show: quizData.questions_to_show ?? null,
 				});
 
 				console.log("Translations data:", newTranslations);

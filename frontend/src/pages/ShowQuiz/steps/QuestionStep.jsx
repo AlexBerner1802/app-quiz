@@ -29,7 +29,7 @@ export default function QuestionStep({
 
 			<Sidebar $open={sidebarOpen}>
 				<SidebarHeader>
-					<h3>{t("common.questions")}</h3>
+					<h3>{t("quiz.questions")}</h3>
 				</SidebarHeader>
 
 				<SidebarList>
@@ -43,7 +43,7 @@ export default function QuestionStep({
 								</StepIcon>
 
 								<StepLabel onClick={() => onJump(i)}>
-									{t("common.question")} {i + 1}
+									{t("quiz.question")} {i + 1}
 								</StepLabel>
 
 								{/* Only color the line if the next circle is checked */}
@@ -65,7 +65,7 @@ export default function QuestionStep({
 
 				<QuestionContent>
 					<QuestionItem>
-						<SubTitle>{t("common.question")} {currentIndex + 1} of {quiz.questions.length}</SubTitle>
+						<SubTitle>{t("quiz.question")} {currentIndex + 1} of {quiz.questions.length}</SubTitle>
 
 						<Question>{question.title}</Question>
 						{question.description && <QuestionDescription>{question.description}</QuestionDescription>}
