@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import styled from "styled-components";
-import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical, Layers } from "lucide-react";
+import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical, Layers, Menu } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MyLogo from "../../assets/images/raflogo.png";
@@ -52,15 +52,35 @@ export default function AppLayout({ children }) {
 
 
 	const itemsTop = useMemo(() => ([
+		{
+			key: "logo",
+			title: t("app.name"),
+			icon: (
+				<img
+					src={MyLogo}
+					alt={t("app.name")}
+					style={{ width: 24, height: 24, objectFit: "contain" }}
+				/>
+			),
+			to: "/home",
+		},
+		{
+			key: "toggle",
+			title: t("common.reduce"),
+			icon: <Menu size={24} />,
+			onClick: () => {
+				window.dispatchEvent(new Event("sidebar-toggle"));
+			},
+		},
 		{ key: "quiz",    title: t("nav.quiz"),    icon: <FlaskConical size={24} />, to: "/home" },
 		{ key: "results", title: t("nav.results"), icon: <Award size={24} />,        to: "/results" },
 		{ key: "search",  title: t("nav.search"),  icon: <Search size={24} />,       to: "/search" },
 	]), [t]);
 
 	const itemsBottom = useMemo(() => ([
-	{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
-	{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
-	{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
+		{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
+		{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
+		{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
 	]), [t, myProfilePath, avatarText, user?.avatar]);
 
 
@@ -69,7 +89,7 @@ export default function AppLayout({ children }) {
 			<Container>
 				<Sidebar
 					logoSrc={MyLogo}
-					logoAlt="Rafisa"
+					logoAlt={t("app.name")}
 					itemsTop={itemsTop}
 					itemsBottom={itemsBottom}
 					avatarText={avatarText}

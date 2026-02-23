@@ -34,18 +34,24 @@ export default function Sidebar({
 		})();
 
 		// Button content (icon + label if expanded)
+		const { toggle } = useSidebar();
+
 		const content = (
 			<IconButton
 				title={!expanded ? item.title : undefined}
 				$active={isActive}
-				onClick={item.onClick}
+				onClick={(e) => {
+					if (item.key === "toggle") {
+						toggle();
+						return;
+					}
+					item.onClick?.(e);
+				}}
 				aria-label={item.title}
 				$expanded={expanded}
 				type="button"
 			>
 				<IconWrapper>{item.icon}</IconWrapper>
-
-				{/* Show text only when expanded */}
 				{expanded && <Label>{item.title}</Label>}
 			</IconButton>
 		);
@@ -73,22 +79,8 @@ export default function Sidebar({
 	return (
 		<Aside $expanded={expanded}>
 
-			{/* Sidebar's upper part with the logo and itemsTop */}
+			{/* Sidebar's upper part with itemsTop */}
 			<Stack $expanded={expanded}>
-				<Link to="/home" style={{ textDecoration: "none" }}>
-					{logoSrc ? (
-						<LogoCircle title={logoAlt} aria-label={logoAlt}>
-							<img src={logoSrc} alt={logoAlt} />
-						</LogoCircle>
-					) : (
-						<LogoCircle title="Logo" aria-label="Logo">🦋</LogoCircle>
-					)}
-				</Link>
-				{/* Button to expand the sidebar*/}
-				<ToggleRow $expanded={expanded}>
-					<SidebarToggleButton />
-				</ToggleRow>
-
 				{itemsTop.map(renderItem)}
 			</Stack>
 
@@ -180,7 +172,6 @@ const LogoCircle = styled.div`
 	place-items: center;
 	font-weight: bold;
 	overflow: hidden;
-	margin-bottom: var(--spacing-xs);
 
 	img {
 		width: 100%;
@@ -283,9 +274,52 @@ const Tooltip = styled.div`
 	z-index: 10;
 `;
 
-const ToggleRow = styled.div`
+const LogoButton = styled.button`
+	border: none;
+	background: none;
+	padding: var(--spacing-s);
+	border-radius: var(--border-radius-xs);
+	cursor: pointer;
+	transition: background 0.2s;
 	display: flex;
+	align-items: center;
 	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
-	padding: ${(p) => (p.$expanded ? "0 var(--spacing-s)" : "0")};
-	margin-bottom: var(--spacing-xs);
+	gap: ${(p) => (p.$expanded ? "var(--spacing-s)" : "0")};
+	width: ${(p) => (p.$expanded ? "100%" : "auto")};
+	color: var(--color-text);
+
+	&:hover {
+		background-color: var(--color-background-surface-3);
+  }
+`;
+
+const LogoText = styled.span`
+	font-size: var(--font-size-s);
+	color: var(--color-text);
+	white-space: nowrap;
+	font-weight: 600;
+`;
+
+const ToggleButtonWrap = styled.div`
+	border: none;
+	background: none;
+	padding: var(--spacing-s);
+	border-radius: var(--border-radius-xs);
+	cursor: pointer;
+	transition: background 0.2s;
+	display: flex;
+	align-items: center;
+	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
+	gap: ${(p) => (p.$expanded ? "var(--spacing-s)" : "0")};
+	width: ${(p) => (p.$expanded ? "100%" : "auto")};
+
+	&:hover {
+		background-color: var(--color-background-surface-3);
+	}
+`;
+
+const ToggleLabel = styled.span`
+	font-size: var(--font-size-s);
+	color: var(--color-text);
+	white-space: nowrap;
 `;

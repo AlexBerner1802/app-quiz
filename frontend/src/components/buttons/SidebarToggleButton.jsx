@@ -28,7 +28,6 @@ const Btn = styled.button`
     align-items: center;
     justify-content: center;
 
-    /* couleur visible en permanence */
     color: var(--color-text);
 
     transition: background 0.2s, color 0.2s;
