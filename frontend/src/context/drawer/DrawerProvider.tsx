@@ -1,5 +1,5 @@
 // src/contexts/drawer/DrawerProvider.tsx
-import {useState, useCallback, useMemo, type ReactNode, type CSSProperties} from "react";
+import React, { useState, useCallback, useMemo, useRef, type ReactNode, type CSSProperties } from "react";
 import styled from "styled-components";
 import { X } from "lucide-react";
 import { DrawerContext } from "./DrawerContext";
@@ -7,24 +7,45 @@ import { drawerRegistry } from "./register";
 import Button from "../../components/ui/Button";
 
 interface DrawerProviderProps {
-    children: ReactNode;
+  children: ReactNode;
 }
 
 export const DrawerProvider = ({ children }: DrawerProviderProps) => {
-    const [currentDrawer, setCurrentDrawer] = useState<keyof typeof drawerRegistry | null>(null);
+    const [currentDrawer, setCurrentDrawer] =
+        useState<keyof typeof drawerRegistry | null>(null);
     const [drawerProps, setDrawerProps] = useState<any>({});
     const [isOpen, setIsOpen] = useState(false);
 
-    const openDrawer = useCallback((key: keyof typeof drawerRegistry, props?: any) => {
-        setCurrentDrawer(key);
-        setDrawerProps(props || {});
-        setIsOpen(true);
+    const closeTimerRef = useRef<number | null>(null);
+
+    const clearCloseTimer = useCallback(() => {
+        if (closeTimerRef.current !== null) {
+            window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+        }
     }, []);
+
+    const openDrawer = useCallback(
+        (key: keyof typeof drawerRegistry, props?: any) => {
+            clearCloseTimer();
+
+            setCurrentDrawer(key);
+            setDrawerProps(props || {});
+            setIsOpen(true);
+        }, [clearCloseTimer]
+    );
 
     const closeDrawer = useCallback(() => {
         setIsOpen(false);
-        setTimeout(() => setCurrentDrawer(null), 300);
-    }, []);
+
+        clearCloseTimer();
+
+        closeTimerRef.current = window.setTimeout(() => {
+            setCurrentDrawer(null);
+            setDrawerProps({});
+            closeTimerRef.current = null;
+            }, 300);
+    }, [clearCloseTimer]);
 
     const contextValue = useMemo(
         () => ({
@@ -33,24 +54,23 @@ export const DrawerProvider = ({ children }: DrawerProviderProps) => {
             drawerProps,
             openDrawer,
             closeDrawer,
-        }),
-        [isOpen, currentDrawer, drawerProps, openDrawer, closeDrawer]
-    );
+        }), [isOpen, currentDrawer, drawerProps, openDrawer, closeDrawer]
+  );
 
     return (
         <DrawerContext.Provider value={contextValue}>
-            {children}
+        {children}
 
-            {Object.entries(drawerRegistry).map(([key, DrawerComp]) => {
-                const isActive = currentDrawer === key;
-                return (
-                    <DrawerWrapper key={key} $isActive={isActive} $open={isOpen && isActive}>
-                        {isActive && <DrawerComp {...drawerProps} closeDrawer={closeDrawer} />}
-                    </DrawerWrapper>
-                );
-            })}
+        {Object.entries(drawerRegistry).map(([key, DrawerComp]) => {
+            const isActive = currentDrawer === key;
+            return (
+            <DrawerWrapper key={key} $isActive={isActive} $open={isOpen && isActive}>
+                {isActive && <DrawerComp {...drawerProps} closeDrawer={closeDrawer} />}
+            </DrawerWrapper>
+            );
+        })}
 
-            <Overlay $open={isOpen} onClick={closeDrawer} />
+        <Overlay $open={isOpen} onClick={closeDrawer} />
         </DrawerContext.Provider>
     );
 };
