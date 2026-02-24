@@ -85,7 +85,11 @@ export default function NewQuiz() {
 
 				if (!quizId) return;
 
-				const quizData = await getQuizEditor(quizId);
+				const quizData = await getQuizEditor({
+					id_quiz: quizId,
+					langs: quizLanguages.map(l => l.code).join(","),
+					id_owner: user?.localAccountId,
+				});
 				console.log("Fetched quiz data:", quizData);
 
 				const newTranslations = {};
@@ -134,7 +138,7 @@ export default function NewQuiz() {
 		};
 
 		init().then(() => false);
-	}, [quizId]);
+	}, [quizId, user?.localAccountId, quizLanguages]);
 
 	const translation = translations[currentLang] ?? emptyDraft;
 

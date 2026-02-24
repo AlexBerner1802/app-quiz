@@ -146,6 +146,7 @@
 		"yourScore": "Your score",
 		"scoreForQuestion": "Score obtained for this question: {{score}} / {{total}}",
 		"savedSuccessfully": "Quiz saved successfully!",
+		"confirmDeleteTitle" : "Delete quiz ?",
 		"confirmDelete": "Are you sure you want to delete this quiz ?",
 		"almostThere": "You're almost there!",
 		"ready": "Ready to finish the quiz and see your results?",

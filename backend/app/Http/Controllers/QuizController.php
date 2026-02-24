@@ -18,11 +18,32 @@ class QuizController extends Controller
 {
     private function quizPk(): string { return 'id_quiz'; }
 
+    private function authUserId(Request $request): ?int
+    {
+        $u = $request->user();
+        if ($u && isset($u->id_user)) return (int) $u->id_user;
+        if ($u && isset($u->id)) return (int) $u->id;
+
+        $azure = $request->query('id_owner') ?? $request->input('id_owner');
+        if (!$azure) return null;
+
+        $dbUser = User::where('id_azure', $azure)->first();
+        return $dbUser ? (int) $dbUser->id_user : null;
+    }
+
+    private function ensureOwnerOr403(Request $request, Quiz $quiz): void
+    {
+        $authUserId = $this->authUserId($request);
+        if (!$authUserId || (int)$quiz->id_owner !== (int)$authUserId) {
+            abort(403, 'Unauthorized: you are not the owner');
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         try {
             $lang = strtolower($request->query('lang', 'en'));
-            $ownerId = (string) $request->query('id_owner');
+            $authUserId = $this->authUserId($request);
 
             // Load quizzes with relations
             $quizzes = Quiz::with([
@@ -30,12 +51,14 @@ class QuizController extends Controller
                 'tags:id_tag,name,slug',
                 'activeQuizzes' => fn($q) => $q->where('lang', $lang)
             ])
-                ->where(function($q) use ($ownerId) {
-                    // Only include quizzes that are active OR owned by this owner
-                    $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1))
-                        ->orWhere(function($q2) use ($ownerId) {
-                            $q2->where('id_owner', $ownerId);
-                        });
+                ->where(function ($q) use ($authUserId) {
+                    // Public: include quizzes that are active in requested lang
+                    $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1));
+
+                    // Owner logged in: include his quizzes even if inactive
+                    if ($authUserId) {
+                        $q->orWhere('id_owner', $authUserId);
+                    }
                 })
                 ->get();
 
@@ -54,12 +77,14 @@ class QuizController extends Controller
                 ->groupBy('element_id');
 
             // Map quizzes
-            $mapped = $quizzes->map(function ($quiz) use ($tRows, $lang) {
+            $mapped = $quizzes->map(function ($quiz) use ($tRows, $lang, $authUserId) {
                 $qid = $quiz->id_quiz;
                 $tmap = collect($tRows->get($qid, []))->keyBy('field_name');
 
                 $activeRecord = $quiz->activeQuizzes->first();
                 $isActive = $activeRecord ? (bool)$activeRecord->is_active : false;
+
+                $isOwner = $authUserId && ((int)$quiz->id_owner === (int)$authUserId);
 
                 return [
                     'id_quiz'           => $qid,
@@ -71,6 +96,8 @@ class QuizController extends Controller
                     'tags'              => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
                     'is_active'         => $isActive,
                     'id_owner'          => $quiz->id_owner,
+                    'can_edit'          => (bool) $isOwner,
+                    'can_delete'        => (bool) $isOwner,
                     'created_at'        => $quiz->created_at,
                     'updated_at'        => $quiz->updated_at,
                     'questions_to_show' => $quiz->questions_to_show,
@@ -101,12 +128,16 @@ class QuizController extends Controller
 
             $qid = $quiz->{$this->quizPk()};
 
-            $isActive = DB::table('active_quiz')
+            $isActive = (int) DB::table('active_quiz')
                 ->where('id_quiz', $qid)
                 ->where('lang', $lang)
                 ->value('is_active');
 
-            if (!$isActive) {
+            $authUserId = $this->authUserId($request);
+            $isOwner = $authUserId && ((int)$quiz->id_owner === (int)$authUserId);
+
+            // If inactive: only owner can view
+            if (!$isActive && !$isOwner) {
                 return response()->json(['message' => 'Quiz is inactive'], 403);
             }
 
@@ -199,8 +230,9 @@ class QuizController extends Controller
                 'is_active'         => (bool) $isActive,
                 'created_at'        => $quiz->created_at,
                 'updated_at'        => $quiz->updated_at,
-                'questions_to_show' => $quiz->questions_to_show, // ✅ ajouté
+                'questions_to_show' => $quiz->questions_to_show,
                 'owner'             => $owner,
+                'is_owner'          => (bool) $isOwner,
 
                 'modules' => collect($quiz->modules)
                     ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name, 'slug' => $m->slug])
@@ -237,13 +269,7 @@ class QuizController extends Controller
             ], 404);
         }
 
-        $user = User::where('id_azure', $request->input('id_owner'))->first();
-        if (!$user || $quiz->id_owner != $user->id_user) {
-            return response()->json([
-                'error_code' => 'unauthorized_quiz',
-                'message' => "Unauthorized: you are not the owner"
-            ], 403);
-        }
+        $this->ensureOwnerOr403($request, $quiz);
 
         $quiz = $this->saveQuiz($request, $quiz);
         return response()->json(['quiz' => $quiz], 200);
@@ -458,9 +484,11 @@ class QuizController extends Controller
         }
     }
 
-    public function destroy($id): Response
+    public function destroy(Request $request, $id): Response
     {
         $quiz = Quiz::findOrFail($id);
+
+        $this->ensureOwnerOr403($request, $quiz);
 
         DB::transaction(function () use ($quiz) {
             $quiz->modules()->detach();
@@ -479,9 +507,7 @@ class QuizController extends Controller
 
     public function editor(Request $request, $id): JsonResponse
     {
-        $langsQuery = $request->query('langs', 'en');
-        $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
-
+        // Owner-only
         $quiz = Quiz::with([
             'modules:id_module,name,slug',
             'tags:id_tag,name,slug'
@@ -490,6 +516,11 @@ class QuizController extends Controller
         if (!$quiz) {
             return response()->json(['message' => "Quiz not found for ID $id"], 404);
         }
+
+        $this->ensureOwnerOr403($request, $quiz);
+
+        $langsQuery = $request->query('langs', 'en');
+        $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
 
         $qid = $quiz->{$this->quizPk()};
 

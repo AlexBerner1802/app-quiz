@@ -15,12 +15,13 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { safeNavigateToEditor } from "../../utils/navigation";
 import i18n from "i18next";
 import {useAuth} from "../../context/auth";
-
+import { useModal } from "../../context/modal/ModalContext";
 
 export default function HomePage() {
 
 	const navigate = useNavigate();
 
+	const { openModal } = useModal();
 	const { openDrawer } = useDrawer();
 	const { user } = useAuth();
 	const { t } = useTranslation();
@@ -106,17 +107,20 @@ export default function HomePage() {
   };
 
 	const handleDelete = useCallback(
-		async (id_quiz) => {
-			const confirmText = t("quiz.confirmDelete");
-			if (!window.confirm(confirmText)) return;
-			try {
-				await deleteQuiz(id_quiz);
+		(id_quiz) => {
+			openModal("confirm", {
+			title: t("quiz.confirmDeleteTitle"),
+			message: t("quiz.confirmDelete"),
+			onConfirm: async () => {
+				try {
+				await deleteQuiz(id_quiz, user.localAccountId);
 				setQuizzes((prev) => prev.filter((q) => q.id_quiz !== id_quiz));
-			} catch (e) {
+				} catch (e) {
 				alert(e.message || "Erreur lors de la suppression");
-			}
-		},
-		[t]
+				}
+			},
+			});
+		}, [openModal, t, user.localAccountId]
 	);
 
 	const handleOpenFilterDrawer = () => {
@@ -201,27 +205,26 @@ export default function HomePage() {
 												quiz={q}
 												searchText={searchText}
 												loading={loading}
-												onEdit={() => handleEdit(q)}
-												onDelete={() => handleDelete(q.id_quiz)}
+												onEdit={(id) => safeNavigateToEditor(navigate, id)}
+												onDelete={(id) => handleDelete(id)}
 												onClick={() => {
 													if (!q.is_active) return;
 													openDrawer("quizPreview", {
-														quiz: q,
-														onStart: () => navigate(`/quizzes/${q.id_quiz}`),
+													quiz: q,
+													onStart: () => navigate(`/quizzes/${q.id_quiz}`),
 													});
 												}}
-
 											/>
 										</AnimatedDiv>
 									))}
 								</CardsGrid>
-						)
-					)}
+							)
+				)}
 
-				</Content>
-			</Main>
-		</>
-  );
+			</Content>
+		</Main>
+	</>
+);
 }
 
 const Main = styled.main`

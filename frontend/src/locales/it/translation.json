@@ -157,6 +157,7 @@
 		"yourScore": "Il tuo punteggio",
 		"scoreForQuestion": "Punteggio ottenuto per questa domanda: {{score}} / {{total}}",
 		"savedSuccessfully": "Quiz salvato con successo!",
+		"confirmDeleteTitle" : "Eliminare quiz ?",
 		"confirmDelete": "Sei sicuro di voler eliminare questo quiz ?",
 		"almostThere": "Sei quasi arrivato alla fine",
 		"ready": "Pronto per terminare il quiz e vedere i tuoi risultati?",

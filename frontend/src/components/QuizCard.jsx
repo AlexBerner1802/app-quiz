@@ -21,6 +21,7 @@ export default function QuizCard({
 
 	const {
 		id,
+		id_quiz,
 		title,
 		description,
 		modules = [],
@@ -28,12 +29,16 @@ export default function QuizCard({
 		cover_image_url,
 		created_at,
 		updated_at,
-		is_active = true
+		is_active = true,
+		can_edit = false,
+		can_delete = false,
 	} = quiz || {};
+
+	const resolvedId = id_quiz ?? id;
 
 	const safeClick = () => {
 		if (!is_active) return;
-		onClick?.(id);
+		onClick?.(resolvedId);
 	};
 
 	const MEDIA_URL = import.meta.env.VITE_MEDIA_URL || "http://localhost:8000";
@@ -71,19 +76,30 @@ export default function QuizCard({
 					<>
 						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!is_active} />
 
-						<EditButton
-							variant="ghost" isIcon
-							onClick={(e) => { e.stopPropagation(); onEdit?.(id); }}
-						>
-							<Pen size={20} />
-						</EditButton>
+						{can_edit && (
+							<EditButton
+								variant="ghost"
+								isIcon
+								onClick={(e) => {
+									e.stopPropagation();
+									onEdit?.(resolvedId);
+								}}
+							>
+								<Pen size={20} />
+							</EditButton>
+						)}
 
-						<DeleteButton
-							type="button"
-							onClick={(e) => { e.stopPropagation(); onDelete?.(id); }}
-						>
-							<Trash size={16} />
-						</DeleteButton>
+						{can_delete && (
+							<DeleteButton
+								type="button"
+								onClick={(e) => {
+									e.stopPropagation();
+									onDelete?.(resolvedId);
+								}}
+							>
+								<Trash size={16} />
+							</DeleteButton>
+						)}
 
 						<AvatarWrapper onClick={(e) => e.stopPropagation()}>
 							{quiz.avatar_url ? (

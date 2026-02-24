@@ -23,16 +23,15 @@ export async function ensureCsrf() {
  * Fetch list of quizzes, optionally filtered by lang or active status
  */
 export async function getQuizzes({ lang = "en", id_owner } = {}) {
-	return api
-		.get("/api/quizzes", {
-			params: {
-				lang: lang.toLowerCase(),
-				id_owner,
-			},
-		})
-		.then(res => res.data)
-		.catch(err => ({ error: err.message }));
+	const res = await api.get("/api/quizzes", {
+		params: {
+			lang: lang.toLowerCase(),
+			id_owner,
+		},
+	});
+	return res.data;
 }
+
 
 /**
  * Create or update a quiz using FormData
@@ -59,15 +58,12 @@ export async function saveQuiz(payload, quizId = null) {
 /**
  * Load quiz editor data with multiple languages
  */
-export async function getQuizEditor(id) {
-	if (!id) throw new Error("Invalid quiz ID");
-
-	const langs = Object.keys(i18n.options.resources)
-		.map((l) => l.toLowerCase())
-		.join(",");
-
-	const res = await api.get(`/api/quizzes/${id}/editor`, {
-		params: { langs },
+export async function getQuizEditor({ id_quiz, langs = "en", id_owner } = {}) {
+	const res = await api.get(`/api/quizzes/${id_quiz}/editor`, {
+		params: {
+			langs,
+			id_owner,
+		},
 	});
 	return res.data;
 }
@@ -85,10 +81,8 @@ export async function getQuiz(id, lang) {
 /**
  * Delete quiz by ID
  */
-export async function deleteQuiz(id) {
-	await ensureCsrf();
-	const res = await api.delete(`/api/quizzes/${id}`);
-	return res.data;
+export async function deleteQuiz(id_quiz, id_owner) {
+	return api.delete(`/api/quizzes/${id_quiz}`, { params: { id_owner } });
 }
 
 /**
