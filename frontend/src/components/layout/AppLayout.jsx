@@ -179,13 +179,3 @@ const ConfirmButton = styled.button`
         background: #dc2626;
     }
 `;
-
-const AvatarCircle = styled.div`
-	width: 32; 
-	height: 32;
-	borderRadius: "50%";
-    display: "flex";
-	alignItems: "center"; 
-	justifyContent: "center";
-    fontWeight: 700;
-`;
