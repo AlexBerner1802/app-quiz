@@ -45,7 +45,7 @@
 		"clear": "Effacer",
 		"apply": "Appliquer",
 		"of": "sur",
-		"reduce": "Réduire",
+		"reduce": "Agrandir/Réduire",
 		"state": {
 			"on": "Activé",
 			"off": "Désactivé"

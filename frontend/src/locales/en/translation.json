@@ -45,7 +45,7 @@
 		"clear": "Clear",
 		"apply": "Apply",
 		"of": "of",
-		"reduce": "Reduce",
+		"reduce": "Enlarge/Reduce",
 		"state": {
 			"on": "Activated",
 			"off": "Deactivated"

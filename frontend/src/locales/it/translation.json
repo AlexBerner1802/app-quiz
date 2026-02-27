@@ -47,7 +47,7 @@
     	"clear": "Pulisci",
 		"apply": "Applica",
 		"of": "di",
-		"reduce": "Ridurre",
+		"reduce": "Ingrandisci/Riduci",
 		"state": {
       		"on": "Attivato",
       		"off": "Disattivato"
