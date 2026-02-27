@@ -113,26 +113,31 @@ export default function Sidebar({
 							)}
 						</Row>
 					) : (
-						<TooltipWrapper>
+						<AccountWrapper>
 							{profileTo ? (
-								<StyledLink to={profileTo}>
-									<IconButton
-										title={t("pages.accountPage")}
-										type="button"
-										$expanded={expanded}
-									>
-										<Avatar>{avatarText}</Avatar>
-									</IconButton>
-								</StyledLink>
+									<StyledLink to={profileTo}>
+										<IconButton
+											title={t("pages.accountPage")}
+											type="button"
+											$expanded={false}
+										>
+											<Avatar>{avatarText}</Avatar>
+										</IconButton>
+									</StyledLink>
 							) : (
-								<Avatar style={{ opacity: 0.6 }}>
-									{avatarText}
-								</Avatar>
+								<IconButton
+									type="button"
+									$expanded={false}
+									style={{ opacity: 0.6 }}
+								>
+									<Avatar>{avatarText}</Avatar>
+								</IconButton>
 							)}
-							<Tooltip className="tooltip">
+
+							<Tooltip className="account-tooltip">
 								{t("pages.accountPage")}
 							</Tooltip>
-						</TooltipWrapper>
+						</AccountWrapper>
 					)
 				) : null}
 			</Stack>
@@ -165,21 +170,6 @@ const StyledLink = styled(Link)`
 	text-decoration: none;
 `;
 
-const LogoCircle = styled.div`
-	width: 36px;
-	height: 36px;
-	display: grid;
-	place-items: center;
-	font-weight: bold;
-	overflow: hidden;
-
-	img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-	}
-`;
-
 const Row = styled.div`
 	position: relative;
 `;
@@ -187,9 +177,9 @@ const Row = styled.div`
 const IconWrapper = styled.span`
 	display: grid;
 	place-items: center;
-	width: 24px;
-	height: 24px;
-	flex: 0 0 24px;
+	width: 32px;
+	height: 32px;
+	flex: 0 0 32px;
 `;
 
 const Label = styled.span`
@@ -212,7 +202,6 @@ const IconButton = styled.button`
 	width: ${(p) => (p.$expanded ? "100%" : "auto")};
 	color: var(--gray-500);
 
-	/* hover */
 	&:hover {
 		background-color: var(--color-background-surface-3);
 
@@ -230,17 +219,16 @@ const IconButton = styled.button`
 `;
 
 const Avatar = styled.div`
-	width: 36px;
-	height: 36px;
+	width: 32px;
+	height: 32px;
 	border-radius: var(--border-radius-xs);
 	background-color: var(--color-background-surface-3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: var(--font-size-s);
+	font-size: 11px;
 	font-weight: bold;
 	color: var(--color-text-muted);
-	margin-bottom: var(--spacing-xs);
 `;
 
 const TooltipWrapper = styled.div`
@@ -274,52 +262,13 @@ const Tooltip = styled.div`
 	z-index: 10;
 `;
 
-const LogoButton = styled.button`
-	border: none;
-	background: none;
-	padding: var(--spacing-s);
-	border-radius: var(--border-radius-xs);
-	cursor: pointer;
-	transition: background 0.2s;
-	display: flex;
-	align-items: center;
-	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
-	gap: ${(p) => (p.$expanded ? "var(--spacing-s)" : "0")};
-	width: ${(p) => (p.$expanded ? "100%" : "auto")};
-	color: var(--color-text);
+const AccountWrapper = styled.div`
+	position: relative;
+	display: inline-block;
 
-	&:hover {
-		background-color: var(--color-background-surface-3);
-  }
-`;
-
-const LogoText = styled.span`
-	font-size: var(--font-size-s);
-	color: var(--color-text);
-	white-space: nowrap;
-	font-weight: 600;
-`;
-
-const ToggleButtonWrap = styled.div`
-	border: none;
-	background: none;
-	padding: var(--spacing-s);
-	border-radius: var(--border-radius-xs);
-	cursor: pointer;
-	transition: background 0.2s;
-	display: flex;
-	align-items: center;
-	justify-content: ${(p) => (p.$expanded ? "flex-start" : "center")};
-	gap: ${(p) => (p.$expanded ? "var(--spacing-s)" : "0")};
-	width: ${(p) => (p.$expanded ? "100%" : "auto")};
-
-	&:hover {
-		background-color: var(--color-background-surface-3);
+	&:hover .account-tooltip {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(-50%) translateX(8px);
 	}
-`;
-
-const ToggleLabel = styled.span`
-	font-size: var(--font-size-s);
-	color: var(--color-text);
-	white-space: nowrap;
 `;
