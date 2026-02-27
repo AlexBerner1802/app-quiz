@@ -39,20 +39,56 @@ class QuizController extends Controller
         }
     }
 
+    /**
+     * Helper: fetch quiz translations with fallback languages.
+     * Returns rows grouped by [element_id][lang] collections.
+     */
+    private function loadQuizTranslationsWithFallback(array $quizIds, string $lang): array
+    {
+        $fallbackLangs = collect([$lang, 'en', 'fr'])->unique()->values()->all();
+
+        $rows = DB::table('translations')
+            ->where('element_type', 'quiz')
+            ->whereIn('lang', $fallbackLangs)
+            ->whereIn('element_id', $quizIds ?: [-1])
+            ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
+            ->get()
+            ->groupBy(['element_id', 'lang']);
+
+        return [$rows, $fallbackLangs];
+    }
+
+    /**
+     * Helper: pick translation field with fallback.
+     */
+    private function pickTranslatedField($groupedRows, array $fallbackLangs, int $qid, string $field, string $default = ''): string
+    {
+        foreach ($fallbackLangs as $L) {
+            $rows = $groupedRows[$qid][$L] ?? collect();
+            $hit = $rows->firstWhere('field_name', $field);
+            if ($hit && isset($hit->element_text) && $hit->element_text !== '') {
+                return (string) $hit->element_text;
+            }
+        }
+        return $default;
+    }
+
     public function index(Request $request): JsonResponse
     {
         try {
             $lang = strtolower($request->query('lang', 'en'));
             $authUserId = $this->authUserId($request);
 
-            // Load quizzes with relations
+            // NOTE: pivot lang values might be uppercase in DB → accept both
+            $pivotLangs = [$lang, strtoupper($lang)];
+
             $quizzes = Quiz::with([
-                'modules:id_module,name,slug',
-                'tags:id_tag,name,slug',
-                'activeQuizzes' => fn($q) => $q->where('lang', $lang)
+                'modules' => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
+                'tags'    => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
+                'activeQuizzes' => fn($q) => $q->where('lang', $lang),
             ])
                 ->where(function ($q) use ($authUserId) {
-                    // Public: include quizzes that are active in requested lang
+                    // Public: include quizzes active in requested lang
                     $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1));
 
                     // Owner logged in: include his quizzes even if inactive
@@ -66,34 +102,40 @@ class QuizController extends Controller
                 return response()->json([]);
             }
 
-            // Fetch translations
+            // Fetch translations (with fallback)
             $quizIds = $quizzes->pluck('id_quiz')->all();
-            $tRows = DB::table('translations')
-                ->where('element_type', 'quiz')
-                ->where('lang', $lang)
-                ->whereIn('element_id', $quizIds)
-                ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
-                ->get()
-                ->groupBy('element_id');
+            [$tRows, $fallbackLangs] = $this->loadQuizTranslationsWithFallback($quizIds, $lang);
 
-            // Map quizzes
-            $mapped = $quizzes->map(function ($quiz) use ($tRows, $lang, $authUserId) {
-                $qid = $quiz->id_quiz;
-                $tmap = collect($tRows->get($qid, []))->keyBy('field_name');
+            $mapped = $quizzes->map(function ($quiz) use ($tRows, $fallbackLangs, $lang, $authUserId) {
+                $qid = (int) $quiz->id_quiz;
 
                 $activeRecord = $quiz->activeQuizzes->first();
-                $isActive = $activeRecord ? (bool)$activeRecord->is_active : false;
+                $isActive = $activeRecord ? (bool) $activeRecord->is_active : false;
 
-                $isOwner = $authUserId && ((int)$quiz->id_owner === (int)$authUserId);
+                $isOwner = $authUserId && ((int) $quiz->id_owner === (int) $authUserId);
+
+                $title = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'title', '');
+                $desc  = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'quiz_description', '');
+                $cover = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'cover_image_url', $quiz->cover_image_url ?? '');
 
                 return [
                     'id_quiz'           => $qid,
                     'lang'              => $lang,
-                    'title'             => optional($tmap->get('title'))->element_text ?? '',
-                    'description'       => optional($tmap->get('quiz_description'))->element_text ?? '',
-                    'cover_image_url'   => optional($tmap->get('cover_image_url'))->element_text ?? $quiz->cover_image_url,
-                    'modules'           => $quiz->modules->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name])->values(),
-                    'tags'              => $quiz->tags->map(fn($t) => ['id' => $t->id_tag, 'name' => $t->name])->values(),
+
+                    'title'             => $title,
+                    'description'       => $desc,
+                    'cover_image_url'   => $cover ?: ($quiz->cover_image_url ?? ''),
+
+                    'modules' => $quiz->modules->map(fn($m) => [
+                        'id'   => $m->id_module,
+                        'name' => $m->name,
+                    ])->values(),
+
+                    'tags' => $quiz->tags->map(fn($t) => [
+                        'id'   => $t->id_tag,
+                        'name' => $t->name,
+                    ])->values(),
+
                     'is_active'         => $isActive,
                     'id_owner'          => $quiz->id_owner,
                     'can_edit'          => (bool) $isOwner,
@@ -119,14 +161,18 @@ class QuizController extends Controller
     {
         try {
             $lang = strtolower($request->query('lang', 'en'));
+            $pivotLangs = [$lang, strtoupper($lang)];
 
-            $quiz = Quiz::with(['modules', 'tags'])->find($id);
+            $quiz = Quiz::with([
+                'modules' => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
+                'tags'    => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
+            ])->find($id);
 
             if (!$quiz) {
                 return response()->json(['message' => "Quiz not found for ID $id"], 404);
             }
 
-            $qid = $quiz->{$this->quizPk()};
+            $qid = (int) $quiz->{$this->quizPk()};
 
             $isActive = (int) DB::table('active_quiz')
                 ->where('id_quiz', $qid)
@@ -141,20 +187,14 @@ class QuizController extends Controller
                 return response()->json(['message' => 'Quiz is inactive'], 403);
             }
 
-            // Translation for quiz
-            $tQuiz = DB::table('translations')
-                ->where('element_type', 'quiz')
-                ->where('lang', $lang)
-                ->where('element_id', $qid)
-                ->whereIn('field_name', ['title', 'quiz_description', 'cover_image_url'])
-                ->get()
-                ->keyBy('field_name');
+            // Translation for quiz (with fallback)
+            [$tRows, $fallbackLangs] = $this->loadQuizTranslationsWithFallback([$qid], $lang);
 
-            $title       = optional($tQuiz->get('title'))->element_text ?? '';
-            $desc        = optional($tQuiz->get('quiz_description'))->element_text ?? '';
-            $coverImage  = optional($tQuiz->get('cover_image_url'))->element_text ?? $quiz->cover_image_url;
+            $title      = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'title', '');
+            $desc       = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'quiz_description', '');
+            $coverImage = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'cover_image_url', $quiz->cover_image_url ?? '');
 
-            // Fetch questions & answers
+            // Fetch questions & answers (requested lang only)
             $questions = DB::table('questions')
                 ->where('id_quiz', $qid)
                 ->where('lang', $lang)
@@ -226,7 +266,7 @@ class QuizController extends Controller
                 'lang'              => $lang,
                 'title'             => $title,
                 'description'       => $desc,
-                'cover_image_url'   => $coverImage,
+                'cover_image_url'   => $coverImage ?: ($quiz->cover_image_url ?? ''),
                 'is_active'         => (bool) $isActive,
                 'created_at'        => $quiz->created_at,
                 'updated_at'        => $quiz->updated_at,
