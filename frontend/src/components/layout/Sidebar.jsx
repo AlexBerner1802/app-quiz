@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import { useSidebar } from "../../context/sidebar/SidebarContext";
-import SidebarToggleButton from "../buttons/SidebarToggleButton";
+import {PanelLeftClose, PanelRightClose} from "lucide-react";
 
 export default function Sidebar({
 	logoSrc,
@@ -17,7 +17,7 @@ export default function Sidebar({
 }) {
 
 	const { t } = useTranslation();
-	const { expanded } = useSidebar();
+	const { expanded, toggle } = useSidebar();
 
 	// Get the current URL to know which button is active
 	const location = useLocation();
@@ -79,13 +79,33 @@ export default function Sidebar({
 	return (
 		<Aside $expanded={expanded}>
 
+
+			<Header $expanded={expanded}>
+				{expanded ? (
+					<HeaderExpand>
+						<LogoWrapper>
+							<img src={logoSrc} alt={logoAlt} />
+							<LogoText>{logoAlt}</LogoText>
+						</LogoWrapper>
+
+						<ToggleButton onClick={toggle}>
+							<PanelLeftClose size={20} strokeWidth={2} />
+						</ToggleButton>
+					</HeaderExpand>
+				) : (
+					<ToggleButton onClick={toggle}>
+						<PanelRightClose size={20} strokeWidth={2} />
+					</ToggleButton>
+				)}
+			</Header>
+
 			{/* Sidebar's upper part with itemsTop */}
-			<Stack $expanded={expanded}>
+			<TopStack $expanded={expanded}>
 				{itemsTop.map(renderItem)}
-			</Stack>
+			</TopStack>
 
 			{/* Down part of the sidebar with itemsBottom and the avatar */}
-			<Stack $expanded={expanded}>
+			<BottomStack $expanded={expanded}>
 				{itemsBottom.map(renderItem)}
 				{avatarText ? (
 					expanded ? (
@@ -140,30 +160,112 @@ export default function Sidebar({
 						</AccountWrapper>
 					)
 				) : null}
-			</Stack>
+			</BottomStack>
+
+
+			<ResizeHandle onClick={toggle} />
+
 		</Aside>
 	);
 }
 
 
 const Aside = styled.aside`
-	width: ${(p) => (p.$expanded ? "220px" : "var(--spacing-3xl)")};
-	border-right: 1px solid var(--color-border);
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	padding: var(--spacing) 0;
-	align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
-	background-color: var(--color-background-muted);
-	transition: width 0.2s ease;
+    position: relative;
+    width: ${(p) => (p.$expanded ? "240px" : "var(--spacing-3xl)")};
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing) 0;
+    align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
+    background-color: var(--color-background-muted);
+    transition: width 0.2s ease;
 `;
 
-const Stack = styled.div`
+const Header = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: ${(p) => (p.$expanded ? "space-between" : "center")};
+	padding: var(--spacing-s);
+	margin-bottom: var(--spacing);
+`;
+
+const HeaderExpand = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 var(--spacing-s);
+	width: 100%;
+`;
+
+const LogoWrapper = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--spacing-s);
+
+	img {
+		width: 28px;
+		height: 28px;
+		object-fit: contain;
+	}
+`;
+
+const LogoText = styled.span`
+	text-transform: uppercase;
+	font-size: var(--font-size-l);
+	color: var(--color-text);
+	font-weight: 600;
+	margin-top: 1px;
+`;
+
+const ToggleButton = styled.button`
+	border: none;
+	background: none;
+	cursor: pointer;
+	padding: var(--spacing-xs);
+	border-radius: var(--border-radius-xs);
+	color: var(--color-input-placeholder);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+	&:hover {
+		background: transparent;
+		color: var(--color-text);
+	}
+`;
+
+const TopStack = styled.div`
 	display: flex;
 	flex-direction: column;
-	gap: var(--spacing-s);
+	//gap: var(--spacing-s);
 	align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
 	padding: ${(p) => (p.$expanded ? "0 var(--spacing-s)" : "0")};
+	margin-bottom: auto;
+`;
+
+const BottomStack = styled.div`
+	display: flex;
+	flex-direction: column;
+	//gap: var(--spacing-s);
+	align-items: ${(p) => (p.$expanded ? "stretch" : "center")};
+	padding: ${(p) => (p.$expanded ? "0 var(--spacing-s)" : "0")};
+`;
+
+const ResizeHandle = styled.div`
+	position: absolute;
+	top: 0;
+	right: -4px;
+	width: 4px;
+	height: 100%;
+	cursor: ew-resize;
+	transition: all 0.2s ease;
+	z-index: 5;
+
+	&:hover {
+		background: var(--color-border);
+	}
 `;
 
 const StyledLink = styled(Link)`
@@ -179,7 +281,6 @@ const IconWrapper = styled.span`
 	place-items: center;
 	width: 32px;
 	height: 32px;
-	flex: 0 0 32px;
 `;
 
 const Label = styled.span`
@@ -203,10 +304,22 @@ const IconButton = styled.button`
 	color: var(--gray-500);
 
 	&:hover {
-		background-color: var(--color-background-surface-3);
+		//background-color: var(--color-background-surface-3);
+		background-color: transparent;
 
 		& svg {
 			stroke: var(--color-primary-bg);
+            transition: all 0.2s ease;
+		}
+		
+		& span {
+			color: var(--color-primary-bg);
+            transition: all 0.2s ease;
+		}
+		
+		& div {
+            color: var(--color-primary-bg);
+            transition: all 0.2s ease;
 		}
 	}
 
@@ -215,13 +328,19 @@ const IconButton = styled.button`
 		p.$active &&
 		`
 			color: var(--color-primary-bg);
-	`}
+			cursor: default;
+			
+			& span {
+				color: var(--color-primary-bg);
+			}
+		`
+	}
 `;
 
 const Avatar = styled.div`
 	width: 32px;
 	height: 32px;
-	border-radius: var(--border-radius-xs);
+	border-radius: var(--border-radius-full);
 	background-color: var(--color-background-surface-3);
 	display: flex;
 	align-items: center;
