@@ -1,29 +1,29 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {FlaskConical, Search, Plus, SearchX, Funnel, Loader2} from "lucide-react";
-import styled, {keyframes} from "styled-components";
+import { FlaskConical, Search, Plus, SearchX, Funnel, Loader2 } from "lucide-react";
+import styled, { keyframes } from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
 import Button from "../../components/ui/Button";
-import {getQuizzes, deleteQuiz, getModules, getTags} from "../../services/api";
+import { getQuizzes, deleteQuiz, getModules, getTags } from "../../services/api";
 import FaviconTitle from "../../components/layout/Icon.jsx";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import { getLangCode } from "../../services/i18n_lang";
 import Input from "../../components/ui/Input";
-import {useDrawer} from "../../context/drawer";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { useDrawer } from "../../context/drawer";
 import { safeNavigateToEditor } from "../../utils/navigation";
 import i18n from "i18next";
-import {useAuth} from "../../context/auth";
+import { useAuth } from "../../context/auth";
 import { useModal } from "../../context/modal/ModalContext";
+import { canManageContent } from "../../utils/permissions";
 
 export default function HomePage() {
-
 	const navigate = useNavigate();
 
 	const { openModal } = useModal();
 	const { openDrawer } = useDrawer();
-	const { user } = useAuth();
+	const { dbUser } = useAuth();
+	const canManage = canManageContent(dbUser);
 	const { t } = useTranslation();
 
 	const currentLang = i18n.language;
@@ -42,38 +42,31 @@ export default function HomePage() {
 		setErr("");
 
 		const init = async () => {
+			try {
+				const [allModules, allTags, quizzesData] = await Promise.all([
+					getModules(),
+					getTags(),
+					getQuizzes({ lang: getLangCode() }),
+				]);
 
-			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-			setModules(allModules[currentLang]);
-			setTags(allTags[currentLang]);
-
-			getQuizzes({
-				lang: getLangCode(),
-				id_owner: user.localAccountId
-			})
-				.then(data => {
-					console.log(data);
-					setQuizzes(data);
-				})
-				.catch(err => {
-					setErr(err.message || String(err))
-				})
-				.finally(() => {
-					setShowLoader(false);
-					setTimeout(() => setLoading(false), 1000);
-				});
-		}
+				setModules(allModules[currentLang] || []);
+				setTags(allTags[currentLang] || []);
+				setQuizzes(quizzesData);
+			} catch (error) {
+				setErr(error.message || String(error));
+			} finally {
+				setShowLoader(false);
+				setTimeout(() => setLoading(false), 1000);
+			}
+		};
 
 		init().then(() => false);
-
-	}, [currentLang, user.localAccountId]);
-
+	}, [currentLang]);
 
 	const filteredQuizzes = useMemo(() => {
 		return quizzes.filter((q) => {
 			const quiz = q || {};
 
-			// Search filter
 			const searchMatch =
 				(quiz.title || "").toLowerCase().includes(searchText.toLowerCase()) ||
 				(quiz.description || "").toLowerCase().includes(searchText.toLowerCase());
@@ -86,12 +79,10 @@ export default function HomePage() {
 				? quiz.tags.map((tag) => tag.id)
 				: [];
 
-			// Module filter by ID
 			const moduleMatch =
 				selectedModules.length === 0 ||
 				moduleIds.some((id) => selectedModules.includes(id));
 
-			// Tag filter by ID
 			const tagMatch =
 				selectedTags.length === 0 ||
 				tagIds.some((id) => selectedTags.includes(id));
@@ -100,33 +91,33 @@ export default function HomePage() {
 		});
 	}, [quizzes, searchText, selectedModules, selectedTags]);
 
-	// Open the editor
 	const handleEdit = (quiz) => {
 		const id = quiz?.id_quiz ?? quiz?.id;
-    	safeNavigateToEditor(navigate, id);
-  };
+		safeNavigateToEditor(navigate, id);
+	};
 
 	const handleDelete = useCallback(
 		(id_quiz) => {
 			openModal("confirm", {
-			title: t("quiz.confirmDeleteTitle"),
-			message: t("quiz.confirmDelete"),
-			onConfirm: async () => {
-				try {
-				await deleteQuiz(id_quiz, user.localAccountId);
-				setQuizzes((prev) => prev.filter((q) => q.id_quiz !== id_quiz));
-				} catch (e) {
-				alert(e.message || "Erreur lors de la suppression");
-				}
-			},
+				title: t("quiz.confirmDeleteTitle"),
+				message: t("quiz.confirmDelete"),
+				onConfirm: async () => {
+					try {
+						await deleteQuiz(id_quiz);
+						setQuizzes((prev) => prev.filter((q) => q.id_quiz !== id_quiz));
+					} catch (e) {
+						alert(e.message || "Erreur lors de la suppression");
+					}
+				},
 			});
-		}, [openModal, t, user.localAccountId]
+		},
+		[openModal, t]
 	);
 
 	const handleOpenFilterDrawer = () => {
 		openDrawer("filter", {
-			modules: modules,
-			tags: tags,
+			modules,
+			tags,
 			selectedModules,
 			selectedTags,
 			setSelectedModules,
@@ -139,10 +130,14 @@ export default function HomePage() {
 			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
 
 			<Main>
-
 				{loading && (
 					<LoadingWrapper $fadingOut={!showLoader}>
-						<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"}/>
+						<Loader2
+							className="spin"
+							size={32}
+							strokeWidth={2.5}
+							color={"var(--color-primary-bg, #2684ff)"}
+						/>
 					</LoadingWrapper>
 				)}
 
@@ -151,10 +146,14 @@ export default function HomePage() {
 
 					{!err && (
 						<AnimatedDiv>
-
 							<ContentHead>
 								<TitleContainer>
-									<FlaskConical size={29} strokeWidth={2.4} aria-hidden="true" color={"var(--color-text)"}/>
+									<FlaskConical
+										size={29}
+										strokeWidth={2.4}
+										aria-hidden="true"
+										color={"var(--color-text)"}
+									/>
 									<Title>{t("pages.home.title")}</Title>
 								</TitleContainer>
 
@@ -168,63 +167,69 @@ export default function HomePage() {
 										width="400px"
 									/>
 
-									{
-										modules && tags && (
-											<Button variant={"secondary"} key="filter" onClick={handleOpenFilterDrawer} aria-label="Filters">
-												<Funnel size={20} />
-												{t("common.filter")}
-											</Button>
-										)
-									}
+									{modules && tags && (
+										<Button
+											variant={"secondary"}
+											key="filter"
+											onClick={handleOpenFilterDrawer}
+											aria-label="Filters"
+										>
+											<Funnel size={20} />
+											{t("common.filter")}
+										</Button>
+									)}
 
-									<NewQuizButton
-										key="new"
-										onClick={() => navigate("/quizzes/new")}
-										aria-label={t("actions.newQuiz")}
-										title={t("actions.newQuiz")}
-									>
-										<Plus size={16} aria-hidden="true" />
-										{t("actions.newQuiz")}
-									</NewQuizButton>
+									{canManage && (
+										<NewQuizButton
+											key="new"
+											onClick={() => navigate("/quizzes/new")}
+											aria-label={t("actions.newQuiz")}
+											title={t("actions.newQuiz")}
+										>
+											<Plus size={16} aria-hidden="true" />
+											{t("actions.newQuiz")}
+										</NewQuizButton>
+									)}
 								</SearchFilterContainer>
 							</ContentHead>
 						</AnimatedDiv>
 					)}
 
-					{!err && (
-						filteredQuizzes.length === 0 && !loading ? (
+					{!err &&
+						(filteredQuizzes.length === 0 && !loading ? (
 							<NoCards>
 								<SearchX size={50} color={"var(--color-disabled)"} />
 								<NoCardsText>{t("quiz.empty")}</NoCardsText>
 							</NoCards>
 						) : (
-								<CardsGrid gutter={"var(--spacing)"}>
-									{filteredQuizzes.map((q, index) => (
-										<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
-											<QuizCard
-												quiz={q}
-												searchText={searchText}
-												loading={loading}
-												onEdit={(id) => safeNavigateToEditor(navigate, id)}
-												onDelete={(id) => handleDelete(id)}
-												onClick={() => {
-													if (!q.is_active) return;
-													openDrawer("quizPreview", {
+							<CardsGrid>
+								{filteredQuizzes.map((q, index) => (
+									<AnimatedDiv
+										key={q.id_quiz}
+										style={{ animationDelay: `${index * 0.05}s` }}
+									>
+										<QuizCard
+											quiz={q}
+											searchText={searchText}
+											loading={loading}
+											onEdit={() => handleEdit(q)}
+											onDelete={(id) => handleDelete(id)}
+											onClick={() => {
+												if (!q.is_active) return;
+												openDrawer("quizPreview", {
 													quiz: q,
 													onStart: () => navigate(`/quizzes/${q.id_quiz}`),
-													});
-												}}
-											/>
-										</AnimatedDiv>
-									))}
-								</CardsGrid>
-							)
-				)}
-
-			</Content>
-		</Main>
-	</>
-);
+												});
+											}}
+										/>
+									</AnimatedDiv>
+								))}
+							</CardsGrid>
+						))}
+				</Content>
+			</Main>
+		</>
+	);
 }
 
 const Main = styled.main`
@@ -232,34 +237,33 @@ const Main = styled.main`
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-    background-color: var(--color-background);
+	background-color: var(--color-background);
 `;
 
 const LoadingWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    inset: 0; // top:0; left:0; right:0; bottom:0;
-    background-color: var(--color-background, #fff);
-    color: var(--color-primary-bg, #2684ff);
-    opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
-    transition: opacity 0.4s ease;
-    z-index: 100;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	inset: 0;
+	background-color: var(--color-background, #fff);
+	color: var(--color-primary-bg, #2684ff);
+	opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+	transition: opacity 0.4s ease;
+	z-index: 100;
 
-    .spin {
-        animation: spin 1s linear infinite;
-    }
+	.spin {
+		animation: spin 1s linear infinite;
+	}
 
-    @keyframes spin {
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+	@keyframes spin {
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 `;
 
-const NewQuizButton = styled(Button)`
-`;
+const NewQuizButton = styled(Button)``;
 
 const Content = styled.section`
 	flex: 1;
@@ -278,8 +282,8 @@ const fadeIn = keyframes`
 
 const AnimatedDiv = styled.div`
 	opacity: 0;
-    width: 100%;
-  	animation: ${fadeIn} 0.5s ease forwards;
+	width: 100%;
+	animation: ${fadeIn} 0.5s ease forwards;
 `;
 
 const CardsGrid = styled.div`
@@ -289,10 +293,10 @@ const CardsGrid = styled.div`
 `;
 
 const ContentHead = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: var(--spacing-l);
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-end;
+	margin-bottom: var(--spacing-l);
 `;
 
 const TitleContainer = styled.div`
@@ -304,7 +308,7 @@ const TitleContainer = styled.div`
 const Title = styled.h1`
 	font-weight: 600;
 	font-size: var(--font-size-4xl);
-    font-family: "Poppins", sans-serif;
+	font-family: "Poppins", sans-serif;
 	line-height: 1;
 `;
 

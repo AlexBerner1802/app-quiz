@@ -56,7 +56,7 @@ export default function ReviewStep({ quiz, result, onClose }) {
 											return (
 												<AnswerBox
 													key={ans.id}
-													correct={isCorrect}
+													$correct={isCorrect}
 													selected={isUserSelected && !isCorrect}
 													style={{
 														color: isCorrect ? "var(--color-success-muted-text)" : isUserSelected ? "var(--color-error-muted-text)" : "var(--color-text)",
@@ -251,8 +251,8 @@ const AnswerBox = styled.div`
     }
 
     /* Background and color logic with gradient */
-    ${({ correct, selected }) => {
-        if (correct) {
+    ${({ $correct, selected }) => {
+        if ($correct) {
             return `
                 background: linear-gradient(
                     to bottom,

@@ -1,35 +1,61 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-const api = axios.create({
-	baseURL: API_URL,
-	withCredentials: true, // for Laravel Sanctum
+export const api = axios.create({
+	baseURL: import.meta.env.VITE_API_URL,
+	withCredentials: true,
 	headers: {
+		"X-Requested-With": "XMLHttpRequest",
 		Accept: "application/json",
 	},
+});
+
+api.defaults.xsrfCookieName = "XSRF-TOKEN";
+api.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
+
+let csrfPromise = null;
+
+export async function ensureCsrf() {
+	if (!csrfPromise) {
+		csrfPromise = api.get("/sanctum/csrf-cookie").catch((err) => {
+			csrfPromise = null;
+			throw err;
+		});
+	}
+  	return csrfPromise;
+}
+
+api.interceptors.request.use((config) => {
+	const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+	if (match && !config.headers["X-XSRF-TOKEN"]) {
+		config.headers["X-XSRF-TOKEN"] = decodeURIComponent(match[1]);
+	}
+	return config;
 });
 
 // Global response interceptor
 api.interceptors.response.use(
 	(response) => response,
 	(error) => {
-		// Get full backend response if available
-		const responseData = error?.response?.data;
+		if (!error?.response) {
+		console.error("Network/Abort error:", {
+			message: error?.message,
+			code: error?.code,
+			name: error?.name,
+		});
+		return Promise.reject(error);
+		}
+
+		const responseData = error.response.data;
 		let msg = error.message;
 
 		if (responseData) {
-			// Prefer message, then error, then full JSON string
-			msg =
-				responseData.message ||
-				responseData.error ||
-				JSON.stringify(responseData, null, 2);
+		msg =
+			responseData.message ||
+			responseData.error ||
+			JSON.stringify(responseData, null, 2);
 		}
 
-		// Log full backend error to console
 		console.error("Full backend response:", responseData);
-
-		// Reject with full message
 		return Promise.reject(new Error(msg));
 	}
 );

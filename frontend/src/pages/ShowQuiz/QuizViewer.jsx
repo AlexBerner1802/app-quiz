@@ -51,26 +51,19 @@ export default function QuizViewer({ quiz }) {
 
 		(async () => {
 			try {
-				const startResult = await startQuizAttempt(
-					quiz.id_quiz,
-					lang,
-					user.localAccountId
-				);
+				const startResult = await startQuizAttempt(quiz.id_quiz, lang);
 
-				// Random questions at launch
-				const allQuestions = Array.isArray(quiz.questions) ? quiz.questions : [];
-				const total = allQuestions.length;
+				const newAttemptId =
+					startResult?.attempt_id ??
+					startResult?.attempt?.id_attempt ??
+					startResult?.attempt?.id;
 
-				const rawWanted = quiz.questions_to_show;
-				const wanted =
-					rawWanted && Number.isFinite(Number(rawWanted))
-						? Math.max(1, Math.min(Number(rawWanted), total))
-						: total;
+				if (!newAttemptId) {
+					console.error("startQuizAttempt returned unexpected payload:", startResult);
+					throw new Error("Missing attempt id");
+				}
 
-				const chosen = pickRandomQuestions(allQuestions, wanted);
-
-				setRunQuiz({ ...quiz, questions: chosen });
-				setAttemptId(startResult.attempt_id);
+				setAttemptId(newAttemptId);
 
 				// reset run state
 				setCurrentIndex(0);
@@ -127,29 +120,35 @@ export default function QuizViewer({ quiz }) {
 		if (saving) return;
 		setSaving(true);
 
+		if (!attemptId) {
+			alert("Attempt not started yet (missing attemptId).");
+			setSaving(false);
+			return;
+		}
+
 		const payload = effectiveQuestions.map((q, index) => ({
-			id_question: q.id,
+			id_question: q.id_question ?? q.id,
 			answer_ids: answersMap[index] || [],
-			answer_text: String(answersMap[index]?.[0] ?? ""),
+			answer_text: null,
 		}));
 
 		try {
 			const result = await finishQuizAttempt(effectiveQuiz.id_quiz, attemptId, {
-				ended_at: new Date().toISOString(),
-				time_taken: timer,
-				lang,
-				answers: payload,
+			ended_at: new Date().toISOString(),
+			time_taken: timer,
+			lang,
+			answers: payload,
 			});
 
 			setSavedResult(result);
 			setStep("review");
 		} catch (err) {
+			console.error(err);
 			alert(t("quiz.saveError"));
 		} finally {
 			setSaving(false);
 		}
 	};
-
 	if (!quiz) return null;
 
 	return (

@@ -27,7 +27,7 @@ export default function PageHeader({
 		<Header $withBorder={withBorder}>
 			<Left>
 				{goBack ? (
-					<BackButton onClick={handleGoBack} title={t("actions.back")}>
+					<BackButton onClick={handleGoBack} title={t("common.back")}>
 						<ChevronLeft size={30} />
 					</BackButton>
 				) : null}

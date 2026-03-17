@@ -14,16 +14,16 @@ import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import CenterPanel from "./CenterPanel";
-import {getQuizEditor, getModules, getTags, saveQuiz} from "../../services/api";
-import {useAuth} from "../../context/auth";
-
+import { getQuizEditor, getModules, getTags, saveQuiz } from "../../services/api";
 
 export default function NewQuiz() {
 	const { t, i18n } = useTranslation();
-	const { user } = useAuth();
 	const params = useParams();
 	const rawQuizId = params.id ?? params.quizId ?? null;
-	const quizId = rawQuizId === "undefined" || rawQuizId === "null" || !rawQuizId ? null : rawQuizId;
+	const quizId =
+		rawQuizId === "undefined" || rawQuizId === "null" || !rawQuizId
+			? null
+			: rawQuizId;
 
 	const isEdit = !!quizId;
 
@@ -38,13 +38,15 @@ export default function NewQuiz() {
 	const [tags, setTags] = useState([]);
 	const [warnedLanguages, setWarnedLanguages] = useState(new Set());
 
-	// Define quiz languages based on i18n resources
 	const quizLanguages = useMemo(
-		() => Object.keys(i18n.options.resources).map((code) => ({ code, label: t(`lang.${code}`, { defaultValue: code }) })),
+		() =>
+			Object.keys(i18n.options.resources).map((code) => ({
+				code,
+				label: t(`lang.${code}`, { defaultValue: code }),
+			})),
 		[i18n, t]
 	);
 
-	// Template for empty translation
 	const emptyDraft = useMemo(
 		() => ({
 			title: "",
@@ -66,13 +68,11 @@ export default function NewQuiz() {
 	const [currentLang, setCurrentLang] = useState(initialLang);
 
 	const [translations, setTranslations] = useState({
-		[initialLang]: { ...emptyDraft }
+		[initialLang]: { ...emptyDraft },
 	});
 
 	const questionRefs = useRef({});
 
-
-	// ------------------ Init ------------------
 	useEffect(() => {
 		const init = async () => {
 			try {
@@ -80,40 +80,37 @@ export default function NewQuiz() {
 				setModules(allModules);
 				setTags(allTags);
 
-				//console.log(JSON.stringify(allModules));
-				//console.log(JSON.stringify(allTags));
-
 				if (!quizId) return;
 
 				const quizData = await getQuizEditor({
 					id_quiz: quizId,
-					langs: quizLanguages.map(l => l.code).join(","),
-					id_owner: user?.localAccountId,
+					langs: quizLanguages.map((l) => l.code).join(","),
 				});
+
 				console.log("Fetched quiz data:", quizData);
 
 				const newTranslations = {};
-				quizData.translations?.forEach((t) => {
-					newTranslations[t.lang] = {
-						title: t.title ?? "",
-						description: t.description ?? "",
-						modules: t.modules ?? [],
-						tags: t.tags ?? [],
-						is_active: t.is_active ?? false,
+				quizData.translations?.forEach((tr) => {
+					newTranslations[tr.lang] = {
+						title: tr.title ?? "",
+						description: tr.description ?? "",
+						modules: tr.modules ?? [],
+						tags: tr.tags ?? [],
+						is_active: tr.is_active ?? false,
 						has_translation: true,
 						is_dirty: false,
-						lang: t.lang,
-						questions: (t.questions || []).map((q) => ({
+						lang: tr.lang,
+						questions: (tr.questions || []).map((q) => ({
 							id: q.id,
 							title: q.title ?? "",
 							description: q.description ?? "",
 							options: q.answers?.map((a) => a.text ?? "") || [],
 							answer_ids: q.answers?.map((a) => a.id ?? undefined) || [],
-							correct_indices: q.answers
-								?.map((a, i) => (a.is_correct ? i : -1))
-								.filter((i) => i >= 0) || [],
+							correct_indices:
+								q.answers
+									?.map((a, i) => (a.is_correct ? i : -1))
+									.filter((i) => i >= 0) || [],
 						})),
-
 					};
 				});
 
@@ -126,7 +123,6 @@ export default function NewQuiz() {
 					questions_to_show: quizData.questions_to_show ?? null,
 				});
 
-				console.log("Translations data:", newTranslations);
 				setTranslations(newTranslations);
 			} catch (e) {
 				console.error("[NewQuiz] init error:", e);
@@ -138,22 +134,32 @@ export default function NewQuiz() {
 		};
 
 		init().then(() => false);
-	}, [quizId, user?.localAccountId, quizLanguages]);
+	}, [quizId, quizLanguages]);
 
 	const translation = translations[currentLang] ?? emptyDraft;
 
-
 	const updateQuizField = (updater) => {
-		setQuiz(prev => typeof updater === "function" ? updater(prev) : { ...prev, ...updater });
+		setQuiz((prev) =>
+			typeof updater === "function" ? updater(prev) : { ...prev, ...updater }
+		);
 	};
 
 	const updateTranslationField = (updater) => {
 		setTranslations((prev) => {
 			const prevDraft = prev[currentLang] || {};
-			const nextDraft = typeof updater === "function" ? updater(prevDraft) : { ...prevDraft, ...updater };
+			const nextDraft =
+				typeof updater === "function"
+					? updater(prevDraft)
+					: { ...prevDraft, ...updater };
+
 			return {
 				...prev,
-				[currentLang]: { ...prevDraft, ...nextDraft, questions: nextDraft.questions ?? prevDraft.questions, is_dirty: true },
+				[currentLang]: {
+					...prevDraft,
+					...nextDraft,
+					questions: nextDraft.questions ?? prevDraft.questions,
+					is_dirty: true,
+				},
 			};
 		});
 	};
@@ -161,19 +167,31 @@ export default function NewQuiz() {
 	const addSingleQuestion = () => {
 		const id = `q_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 		updateTranslationField((prev) => ({
-			questions: [...(prev.questions || []), { id, title: "", description: "", showDescription: false, options: ["", "", ""], correct_indices: [] }],
+			questions: [
+				...(prev.questions || []),
+				{
+					id,
+					title: "",
+					description: "",
+					showDescription: false,
+					options: ["", "", ""],
+					correct_indices: [],
+				},
+			],
 		}));
 	};
 
 	const moveQuestion = (index, direction) => {
 		const newQs = [...translation.questions];
-		if (direction === "up" && index > 0) [newQs[index - 1], newQs[index]] = [newQs[index], newQs[index - 1]];
-		if (direction === "down" && index < newQs.length - 1) [newQs[index], newQs[index + 1]] = [newQs[index + 1], newQs[index]];
+		if (direction === "up" && index > 0) {
+			[newQs[index - 1], newQs[index]] = [newQs[index], newQs[index - 1]];
+		}
+		if (direction === "down" && index < newQs.length - 1) {
+			[newQs[index], newQs[index + 1]] = [newQs[index + 1], newQs[index]];
+		}
 		updateTranslationField({ questions: newQs });
 	};
 
-
-	// ------------------ Save ------------------
 	const onSave = async ({ saveAll = true, navigateAfter = false } = {}) => {
 		try {
 			const { modules, tags, ...quizRest } = quiz;
@@ -184,52 +202,39 @@ export default function NewQuiz() {
 
 			const payload = {
 				...quizRest,
-				id_owner: user.localAccountId,
 				translations: Object.fromEntries(
-					Object.entries(translationsToSend).map(([lang, t]) => [
+					Object.entries(translationsToSend).map(([lang, tr]) => [
 						lang,
 						{
-							...t,
+							...tr,
 							lang,
-							is_active: t.is_active ?? false,
-							description: t.description ?? "",
-							questions: (t.questions || []).map((q) => ({
+							is_active: tr.is_active ?? false,
+							description: tr.description ?? "",
+							questions: (tr.questions || []).map((q) => ({
 								id: Number.isInteger(q.id) ? q.id : null,
 								title: q.title ?? "",
 								description: q.description ?? "",
 								options: q.options ?? [],
 								correct_indices: q.correct_indices ?? [],
 							})),
-							modules: (t.modules || []).map((m) => ({ id: m.id })),
-							tags: (t.tags || []).map((tg) => ({ id: tg.id })),
+							modules: (tr.modules || []).map((m) => ({ id: m.id })),
+							tags: (tr.tags || []).map((tg) => ({ id: tg.id })),
 						},
 					])
 				),
 			};
 
-			console.log("payload", payload);
 
-			// Use unified saveQuiz function
 			const res = await saveQuiz(payload, quizId ? quiz.id_quiz : null);
 
-			console.log("res", res);
+			alert(t("quiz.savedSuccessfully"));
 
-			if (res) {
-				alert(t("quiz.savedSuccessfully"));
-
-				if (navigateAfter) {
-					window.location.href = "/";
-				}
-			} else {
-				alert(t("quiz.savedSuccessfully"));
+			if (res && navigateAfter) {
+				window.location.href = "/";
 			}
 		} catch (e) {
 			console.error(e);
-
-			// If backend sent error_code
 			const backendErrorCode = e?.response?.error_code || e.message;
-
-			// Map to i18n key
 			const message = t(`errors.${backendErrorCode}`, e.message);
 			alert(message);
 		}
@@ -242,7 +247,6 @@ export default function NewQuiz() {
 
 		let saveAll = true;
 
-		// User chooses whether to save only current language
 		if (otherDirty) {
 			saveAll = window.confirm(t("actions.saveAllLangs"));
 		}
@@ -250,8 +254,9 @@ export default function NewQuiz() {
 		await onSave({ saveAll, navigateAfter: !isEdit });
 	};
 
-	const hasOtherDirty = quizLanguages.some((l) => l.code !== currentLang && translations[l.code]?.is_dirty);
-
+	const hasOtherDirty = quizLanguages.some(
+		(l) => l.code !== currentLang && translations[l.code]?.is_dirty
+	);
 
 	const onChangeLang = (langCode) => {
 		if (translation.is_dirty && !warnedLanguages.has(currentLang)) {
@@ -262,15 +267,31 @@ export default function NewQuiz() {
 	};
 
 	const onCreateTranslation = (langCode) => {
-		setTranslations((prev) => ({ ...prev, [langCode]: { ...emptyDraft, is_dirty: true, has_translation: false } }));
+		setTranslations((prev) => ({
+			...prev,
+			[langCode]: { ...emptyDraft, is_dirty: true, has_translation: false },
+		}));
 		setCurrentLang(langCode);
 	};
 
-	const onToggleActive = (langCode) => setTranslations((prev) => ({ ...prev, [langCode]: { ...prev[langCode], is_active: !prev[langCode].is_active, is_dirty: true } }));
+	const onToggleActive = (langCode) =>
+		setTranslations((prev) => ({
+			...prev,
+			[langCode]: {
+				...prev[langCode],
+				is_active: !prev[langCode].is_active,
+				is_dirty: true,
+			},
+		}));
 
 	const onDeleteLang = (langCode) => {
 		const otherLangs = Object.keys(translations).filter((c) => c !== langCode);
-		const otherHasData = otherLangs.some((c) => translations[c]?.has_translation || translations[c]?.title || (translations[c]?.questions?.length ?? 0) > 0);
+		const otherHasData = otherLangs.some(
+			(c) =>
+				translations[c]?.has_translation ||
+				translations[c]?.title ||
+				(translations[c]?.questions?.length ?? 0) > 0
+		);
 
 		if (!otherHasData) {
 			if (!window.confirm(t("actions.deleteLastLang"))) return;
@@ -286,9 +307,10 @@ export default function NewQuiz() {
 			return updated;
 		});
 
-		if (currentLang === langCode) setCurrentLang(otherLangs[0] || i18n.language);
+		if (currentLang === langCode) {
+			setCurrentLang(otherLangs[0] || i18n.language);
+		}
 	};
-
 
 	return (
 		<>
@@ -301,12 +323,18 @@ export default function NewQuiz() {
 					goBack
 					withBorder
 					actions={[
-						<Controls key="controls"><ToggleThemeSwitch /></Controls>,
+						<Controls key="controls">
+							<ToggleThemeSwitch />
+						</Controls>,
 						<Button
+							key="save"
 							variant="success"
 							onClick={handleSave}
 							style={{ width: "100%", minWidth: "var(--spacing-6xl)" }}
-						><Save size={16} />{t("actions.save")}</Button>,
+						>
+							<Save size={16} />
+							{t("actions.save")}
+						</Button>,
 					]}
 				/>
 				<Body>
@@ -316,7 +344,6 @@ export default function NewQuiz() {
 						</LoadingWrapper>
 					)}
 
-					{/* Left Sidebar */}
 					<>
 						<LeftSidebar
 							visible={leftSidebarVisible}
@@ -334,7 +361,6 @@ export default function NewQuiz() {
 						)}
 					</>
 
-					{/* Center Panel */}
 					<CenterPanel
 						currentLang={currentLang}
 						leftSidebarVisible={leftSidebarVisible}
@@ -354,7 +380,6 @@ export default function NewQuiz() {
 						questionRefs={questionRefs}
 					/>
 
-					{/* Right Sidebar */}
 					<>
 						<RightSidebar
 							visible={rightSidebarVisible}
@@ -363,7 +388,10 @@ export default function NewQuiz() {
 								const d = translations[l.code] ?? {};
 								return {
 									...l,
-									has_translation: d.has_translation || !!d.title || (d.questions?.length ?? 0) > 0,
+									has_translation:
+										d.has_translation ||
+										!!d.title ||
+										(d.questions?.length ?? 0) > 0,
 									is_active: d.is_active,
 									is_dirty: d.is_dirty,
 								};
@@ -386,72 +414,71 @@ export default function NewQuiz() {
 	);
 }
 
-
 const Main = styled.main`
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
-    background-color: var(--color-background);
-    overflow: hidden;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100vh;
+	background-color: var(--color-background);
+	overflow: hidden;
 `;
 
 const Controls = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
 `;
 
 const Body = styled.div`
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    height: 100%;
-    position: relative;
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+	position: relative;
 `;
 
 const ShowLeftSidebarButton = styled.div`
-    position: absolute;
-    top: var(--spacing-l);
-    left: var(--spacing);
-    z-index: 50;
-    cursor: pointer;
+	position: absolute;
+	top: var(--spacing-l);
+	left: var(--spacing);
+	z-index: 50;
+	cursor: pointer;
 
-    &:hover svg {
-        transition: all 0.2s ease;
-        stroke: var(--color-primary-bg);
-    }
+	&:hover svg {
+		transition: all 0.2s ease;
+		stroke: var(--color-primary-bg);
+	}
 `;
 
 const ShowRightSidebarButton = styled(ShowLeftSidebarButton)`
-    left: auto;
-    right: var(--spacing);
+	left: auto;
+	right: var(--spacing);
 `;
 
 const LoadingWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: var(--color-background, #fff);
-    color: var(--color-primary-bg, #2684ff);
-    opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
-    transition: opacity 0.4s ease;
-    z-index: 100;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: var(--color-background, #fff);
+	color: var(--color-primary-bg, #2684ff);
+	opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+	transition: opacity 0.4s ease;
+	z-index: 100;
 
-    .spin {
-        animation: spin 1s linear infinite;
-    }
+	.spin {
+		animation: spin 1s linear infinite;
+	}
 
-    @keyframes spin {
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+	@keyframes spin {
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 `;

@@ -1,74 +1,151 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef  } from "react";
 import * as msal from "@azure/msal-browser";
 import { AuthContext } from "./AuthContext";
-import api from "../../services/axiosClient";
+import api, { ensureCsrf } from "../../services/axiosClient";
 
-const redirectUri = import.meta.env.VITE_AZURE_REDIRECT_URI || window.location.origin;
+const redirectUri =
+	import.meta.env.VITE_AZURE_REDIRECT_URI || window.location.origin;
 
 const pca = new msal.PublicClientApplication({
 	auth: {
 		clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
 		authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID}`,
-		redirectUri: redirectUri,
+		redirectUri,
 	},
 });
 
+function getAzureId(account) {
+	return account?.localAccountId ?? "";
+}
+
+function getName(account) {
+	return account?.name ?? account?.username ?? "";
+}
+
+function getUsername(account) {
+	return account?.username ?? account?.name ?? "";
+}
+
+async function fetchMe() {
+	const res = await api.get("/api/me");
+	return res.data ?? null;
+}
+
 export function AuthProvider({ children }) {
-	const [user, setUser] = useState(null);
+	const [user, setUser] = useState(null);       // MSAL account
+	const [dbUser, setDbUser] = useState(null);   // Laravel user via /api/me
 	const [token, setToken] = useState(null);
+	const initStartedRef = useRef(false);
+	const backendBootstrapPromiseRef = useRef(null);
+
 	const [isInitialized, setIsInitialized] = useState(false);
-	const [isReady, setIsReady] = useState(false); // ensures initialize is finished
+	const [isReady, setIsReady] = useState(false);
+
+	const loadTheme = useCallback(async () => {
+		try {
+			const res = await api.get("/api/user/theme");
+			const serverTheme = res?.data?.theme;
+
+			if (serverTheme === "dark" || serverTheme === "light") {
+				localStorage.setItem("theme", serverTheme);
+			}
+		} catch (err) {
+			console.warn("Failed to load theme:", err);
+		}
+	}, []);
+
+	const ensureBackendSessionAndDbUser = useCallback(async (account) => {
+		if (backendBootstrapPromiseRef.current) {
+			return backendBootstrapPromiseRef.current;
+		}
+
+		backendBootstrapPromiseRef.current = (async () => {
+			await ensureCsrf();
+
+			const tokenResponse = await pca.acquireTokenSilent({
+				scopes: ["User.Read"],
+				account,
+			});
+
+			const accessToken = tokenResponse.accessToken;
+			const theme = localStorage.getItem("theme") ?? "dark";
+
+
+			await api.post("/api/auth/azure/bootstrap", {
+				access_token: accessToken,
+				theme,
+			});
+
+			const me = await fetchMe();
+
+			setDbUser(me);
+			await loadTheme();
+
+			return me;
+		})();
+
+		try {
+			return await backendBootstrapPromiseRef.current;
+		} finally {
+			backendBootstrapPromiseRef.current = null;
+		}
+	}, [loadTheme]);
 
 	useEffect(() => {
+		if (initStartedRef.current) return;
+		initStartedRef.current = true;
+
 		const initAuth = async () => {
+
 			try {
 				await pca.initialize();
-				setIsReady(true); // mark MSAL as ready
+
+				setIsReady(true);
 
 				const accounts = pca.getAllAccounts();
+
 				if (accounts.length > 0) {
-					setUser(accounts[0]);
+					const account = accounts[0];
+					setUser(account);
+
 					try {
 						const tokenResponse = await pca.acquireTokenSilent({
 							scopes: ["User.Read"],
-							account: accounts[0],
+							account,
 						});
 						setToken(tokenResponse.accessToken);
 					} catch (silentErr) {
-						console.warn("Silent token acquisition failed:", silentErr);
+						console.warn("[auth] token failed", silentErr);
 					}
+
+					try {
+						await ensureBackendSessionAndDbUser(account);
+					} catch (err) {
+						console.warn("[auth] backend bootstrap failed", err);
+					}
+				} else {
+					console.log("[auth] no account found");
 				}
 			} catch (err) {
-				console.error("Auth init failed:", err);
+				console.error("[auth] init failed", err);
 			} finally {
 				setIsInitialized(true);
 			}
 		};
+
 		initAuth();
-	}, []);
+	}, [ensureBackendSessionAndDbUser]);
 
-	const personalLogin = async (azureRes) => {
-		const account = azureRes.account;
-		const name = account.name;
-		const username = account.username;
-		const id_owner = account.localAccountId;
-		const theme = localStorage.getItem("theme");
-
+	const refreshMe = useCallback(async () => {
 		try {
-			await api.post('/api/user', {
-				name,
-				username,
-				id_owner,
-				theme
-			});
-
-			// Fetch theme data
-			const themeRes = await api.get(`/api/user/theme`, { params: { id_owner } });
-			localStorage.setItem("theme", themeRes.data.theme);
+			const me = await fetchMe();
+			setDbUser(me);
+			return me;
 		} catch (err) {
-			console.error("Error logging in:", err);
+			setDbUser(null);
+			throw err;
 		}
-	};
+	}, []);
 
 	const login = async () => {
 		if (!isReady) {
@@ -78,16 +155,22 @@ export function AuthProvider({ children }) {
 
 		try {
 			const loginResponse = await pca.loginPopup({ scopes: ["User.Read"] });
-			setUser(loginResponse.account);
+			const account = loginResponse.account;
+			setUser(account);
 
-			const tokenResponse = await pca.acquireTokenSilent({
-				scopes: ["User.Read"],
-				account: loginResponse.account,
-			});
-			setToken(tokenResponse.accessToken);
-			await personalLogin(loginResponse);
+			try {
+				const tokenResponse = await pca.acquireTokenSilent({
+					scopes: ["User.Read"],
+					account,
+				});
+				setToken(tokenResponse.accessToken);
+			} catch (silentErr) {
+				console.warn("Token acquisition failed after login:", silentErr);
+			}
+
+			await ensureBackendSessionAndDbUser(account);
 		} catch (err) {
-			console.error("Login failed", err);
+			console.error("Login failed:", err);
 		}
 	};
 
@@ -98,9 +181,16 @@ export function AuthProvider({ children }) {
 		}
 
 		try {
+			try {
+				await ensureCsrf();
+				await api.post("/api/auth/logout");
+			} catch (_) {}
+
 			await pca.logoutPopup();
 			setUser(null);
+			setDbUser(null);
 			setToken(null);
+
 			localStorage.removeItem("token");
 			localStorage.removeItem("user");
 		} catch (err) {
@@ -108,10 +198,18 @@ export function AuthProvider({ children }) {
 		}
 	};
 
-	if (!isInitialized) return null;
-
 	return (
-		<AuthContext.Provider value={{ user, token, login, logout, isInitialized }}>
+		<AuthContext.Provider
+			value={{
+				user,
+				dbUser,
+				token,
+				login,
+				logout,
+				refreshMe,
+				isInitialized,
+			}}
+		>
 			{children}
 		</AuthContext.Provider>
 	);

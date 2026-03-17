@@ -6,7 +6,8 @@ import Skeleton from "react-loading-skeleton";
 import { Highlight } from "../utils/hightlight.jsx";
 import Invader from "./icons/Invader";
 import Button from "./ui/Button";
-
+import { canManageContent } from "../utils/permissions.js";
+import { useAuth } from "../context/auth";
 
 export default function QuizCard({
 									 quiz,
@@ -18,6 +19,8 @@ export default function QuizCard({
 								 }) {
 
 	const { t } = useTranslation();
+	const { dbUser } = useAuth();
+	const canManage = canManageContent(dbUser)
 
 	const {
 		id,
@@ -75,8 +78,7 @@ export default function QuizCard({
 				) : (
 					<>
 						<Image style={{ backgroundImage: `url(${resolvedImg})` }} data-inactive={!is_active} />
-
-						{can_edit && (
+						{canManage && can_edit && (
 							<EditButton
 								variant="ghost"
 								isIcon
@@ -89,7 +91,7 @@ export default function QuizCard({
 							</EditButton>
 						)}
 
-						{can_delete && (
+						{canManage && can_delete && (
 							<DeleteButton
 								type="button"
 								onClick={(e) => {

@@ -26,17 +26,20 @@ export const routes = [
 		path: "/quizzes/new",
 		element: <NewQuiz />,
 		protected: true,
+		roles: [2, 3],
 	},
 	{
 		path: "/quizzes/:id/edit",
 		element: <NewQuiz />,
 		protected: true,
+		roles: [2, 3],
 	},
 	{
 		path: "/content",
 		element: <ContentPage />,
 		protected: true,
 		layout: AppLayout
+		
 	},
 	{
 		path: "/settings",

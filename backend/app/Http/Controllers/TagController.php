@@ -8,7 +8,20 @@ use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
-    // Fetch tags with translations
+    private function ensureCanManage(Request $request): void
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
+        $roleId = (int) ($user->id_role ?? 0);
+        if ($roleId < 2) {
+            abort(403, 'Forbidden');
+        }
+    }
+
     public function index(Request $request)
     {
         $langsQuery = $request->query('langs', 'en');
@@ -22,12 +35,10 @@ class TagController extends Controller
 
         foreach ($allowed as $lang) {
             $tagsForLang = $tags->where('lang', $lang)
-                ->map(function ($tag) {
-                    return [
-                        'id' => $tag->id_tag,
-                        'name' => $tag->name,
-                    ];
-                })
+                ->map(fn ($tag) => [
+                    'id' => $tag->id_tag,
+                    'name' => $tag->name,
+                ])
                 ->values();
 
             $result[$lang] = $tagsForLang;
@@ -36,12 +47,19 @@ class TagController extends Controller
         return response()->json($result);
     }
 
-    // Update tags in bulk: add new + delete removed
     public function update(Request $request)
     {
+        $this->ensureCanManage($request);
+
         $data = $request->validate([
-            'tags' => 'required|array',      // input: { en: [..], fr: [..], ... }
-            'removedTags' => 'array',
+            'tags' => ['required', 'array'],
+            'tags.*' => ['array'],
+            'tags.*.*.id' => ['nullable', 'integer'],
+            'tags.*.*.name' => ['required', 'string', 'max:255'],
+
+            'removedTags' => ['nullable', 'array'],
+            'removedTags.*' => ['array'],
+            'removedTags.*.*.id' => ['nullable', 'integer'],
         ]);
 
         DB::beginTransaction();
@@ -55,14 +73,17 @@ class TagController extends Controller
                     if ($name === '') continue;
 
                     if (!empty($tag['id'])) {
-                        // Update existing tag
-                        Tag::where('id_tag', $tag['id'])
-                            ->update([
-                                'name' => $name,
-                                'lang' => $lang,
-                            ]);
+                        Tag::where('id_tag', $tag['id'])->update([
+                            'name' => $name,
+                            'lang' => $lang,
+                        ]);
                     } else {
-                        // Create new tag
+                        $existing = Tag::where('lang', $lang)
+                            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                            ->first();
+
+                        if ($existing) continue;
+
                         $slug = strtolower(preg_replace('/[^\w-]/', '', preg_replace('/\s+/', '-', $name)));
 
                         Tag::create([
@@ -73,28 +94,26 @@ class TagController extends Controller
                     }
                 }
 
-                // --- Remove deleted tags ---
                 foreach ($data['removedTags'][$lang] ?? [] as $tag) {
                     $id = $tag['id'] ?? null;
                     if ($id) {
-                        Tag::where('id_tag', $id)->delete();
+                        $tagModel = Tag::find($id);
+                        if ($tagModel) {
+                            $tagModel->quiz()->detach();
+                            $tagModel->delete();
+                        }
                     }
                 }
             }
 
             DB::commit();
             return response()->json(['success' => true]);
-
         } catch (\Exception $e) {
-
             DB::rollBack();
             return response()->json([
                 'message' => 'Failed to update tags',
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
-
-
 }

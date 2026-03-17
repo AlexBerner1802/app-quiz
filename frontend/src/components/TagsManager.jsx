@@ -1,26 +1,25 @@
 import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import TagInput from "../components/ui/TagInput";
+import Tag from "./ui/Tag";
 import i18n from "i18next";
 import { updateTags } from "../services/api";
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import Button from "./ui/Button";
-import {useTranslation} from "react-i18next";
-import {Loader2} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Loader2 } from "lucide-react";
 
-
-const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
-
+const TagsManager = ({ tags: initialTags, loading, showLoader, canManage = false }) => {
 	const { t } = useTranslation();
 
 	const langs = useMemo(
-		() => Object.keys(i18n.options.resources).map(c => c.toLowerCase()),
+		() => Object.keys(i18n.options.resources).map((c) => c.toLowerCase()),
 		[]
 	);
 
 	const [inputs, setInputs] = useState({});
 	const [tempTags, setTempTags] = useState({});
-	const [isSaving, setIsSaving] = useState(false)
+	const [isSaving, setIsSaving] = useState(false);
 	const [removedTags, setRemovedTags] = useState({});
 
 	useEffect(() => {
@@ -29,9 +28,9 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 			const inputsState = {};
 			const removedState = {};
 
-			langs.forEach(lang => {
+			langs.forEach((lang) => {
 				const existing = initialTags[lang] || [];
-				tempState[lang] = existing.map(t => ({ id: t.id, name: t.name }));
+				tempState[lang] = existing.map((t) => ({ id: t.id, name: t.name }));
 				inputsState[lang] = "";
 				removedState[lang] = [];
 			});
@@ -42,17 +41,16 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 		}
 	}, [initialTags, loading, langs]);
 
-	// Add tag on input change (Enter or comma)
 	const handleInputChange = (lang, value) => {
 		if (value.includes(",")) {
-			const parts = value.split(",").map(t => t.trim()).filter(Boolean);
-			setTempTags(prev => ({
+			const parts = value.split(",").map((t) => t.trim()).filter(Boolean);
+			setTempTags((prev) => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), ...parts.map(name => ({ id: null, name }))]
+				[lang]: [...(prev[lang] || []), ...parts.map((name) => ({ id: null, name }))],
 			}));
-			setInputs(prev => ({ ...prev, [lang]: "" }));
+			setInputs((prev) => ({ ...prev, [lang]: "" }));
 		} else {
-			setInputs(prev => ({ ...prev, [lang]: value }));
+			setInputs((prev) => ({ ...prev, [lang]: value }));
 		}
 	};
 
@@ -64,26 +62,27 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 	};
 
 	const removeTag = (lang, tag) => {
-		setTempTags(prev => ({
+		setTempTags((prev) => ({
 			...prev,
-			[lang]: (prev[lang] || []).filter(t => (t.name ?? t) !== (tag.name ?? tag)),
+			[lang]: (prev[lang] || []).filter((t) => (t.name ?? t) !== (tag.name ?? tag)),
 		}));
 
 		if (tag.id) {
-			setRemovedTags(prev => ({
+			setRemovedTags((prev) => ({
 				...prev,
-				[lang]: [...(prev[lang] || []), tag]
+				[lang]: [...(prev[lang] || []), tag],
 			}));
 		}
 	};
 
 	const handleSaveAll = async () => {
-		if (isSaving) return;
+		if (isSaving || !canManage) return;
 		setIsSaving(true);
 
 		try {
 			const payload = { tags: {}, removedTags: {} };
-			langs.forEach(lang => {
+
+			langs.forEach((lang) => {
 				payload.tags[lang] = tempTags[lang] || [];
 				payload.removedTags[lang] = removedTags[lang] || [];
 			});
@@ -98,73 +97,89 @@ const TagsManager = ({ tags: initialTags, loading, showLoader }) => {
 		}
 	};
 
-
 	return (
 		<Container>
-			{
-				loading && (
-					<LoadingWrapper $fadingOut={!showLoader}>
-						<Loader2 className="spin" size={32} strokeWidth={2.5} color={"var(--color-primary-bg, #2684ff)"}/>
-					</LoadingWrapper>
-				)
-			}
+			{loading && (
+				<LoadingWrapper $fadingOut={!showLoader}>
+					<Loader2
+						className="spin"
+						size={32}
+						strokeWidth={2.5}
+						color={"var(--color-primary-bg, #2684ff)"}
+					/>
+				</LoadingWrapper>
+			)}
 
 			<Content>
-				<ResponsiveMasonry
-					columnsCountBreakPoints={{ 600: 1, 1000: 2, 1800: 3 }}
-				>
+				<ResponsiveMasonry columnsCountBreakPoints={{ 600: 1, 1000: 2, 1800: 3 }}>
 					<Masonry gutter="16px">
-						{langs.map(lang => (
+						{langs.map((lang) => (
 							<LanguageBlock key={lang}>
 								<Label>
 									{t("pages.content.tagLang", { lang: lang.toUpperCase() })}
 								</Label>
-								<TagInput
-									lang={lang}
-									tags={tempTags[lang] || []}
-									inputValue={inputs[lang] || ""}
-									onInputChange={value => handleInputChange(lang, value)}
-									onKeyDown={e => handleKeyDown(e, lang)}
-									onRemoveTag={(tag, fromTemp) => removeTag(lang, tag, fromTemp)}
-									placeholder={t("common.typeAndPressEnterOrComma")}
-								/>
+
+								{canManage ? (
+									<TagInput
+										lang={lang}
+										tags={tempTags[lang] || []}
+										inputValue={inputs[lang] || ""}
+										onInputChange={(value) => handleInputChange(lang, value)}
+										onKeyDown={(e) => handleKeyDown(e, lang)}
+										onRemoveTag={(tag) => removeTag(lang, tag)}
+										placeholder={t("common.typeAndPressEnterOrComma")}
+									/>
+								) : (
+									<ReadOnlyTags>
+										{(tempTags[lang] || []).length > 0 ? (
+											(tempTags[lang] || []).map((tag) => (
+												<Tag key={`${lang}-${tag.id ?? tag.name}`} size="s" variant="secondary">
+													{tag.name}
+												</Tag>
+											))
+										) : (
+											<EmptyText>{t("common.noData")}</EmptyText>
+										)}
+									</ReadOnlyTags>
+								)}
 							</LanguageBlock>
 						))}
 					</Masonry>
 				</ResponsiveMasonry>
 			</Content>
 
-			<SaveButton variant={"success"} onClick={handleSaveAll} disabled={isSaving}>
-				{t("actions.save")}
-			</SaveButton>
+			{canManage && (
+				<SaveButton variant={"success"} onClick={handleSaveAll} disabled={isSaving}>
+					{t("actions.save")}
+				</SaveButton>
+			)}
 		</Container>
 	);
 };
 
 export default TagsManager;
 
-
 const LoadingWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    inset: 0; // top:0; left:0; right:0; bottom:0;
-    background-color: var(--color-background, #fff);
-    color: var(--color-primary-bg, #2684ff);
-    opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
-    transition: opacity 0.4s ease;
-    z-index: 100;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: absolute;
+	inset: 0;
+	background-color: var(--color-background, #fff);
+	color: var(--color-primary-bg, #2684ff);
+	opacity: ${({ $fadingOut }) => ($fadingOut ? 0 : 1)};
+	transition: opacity 0.4s ease;
+	z-index: 100;
 
-    .spin {
-        animation: spin 1s linear infinite;
-    }
+	.spin {
+		animation: spin 1s linear infinite;
+	}
 
-    @keyframes spin {
-        100% {
-            transform: rotate(360deg);
-        }
-    }
+	@keyframes spin {
+		100% {
+			transform: rotate(360deg);
+		}
+	}
 `;
 
 const Container = styled.div`
@@ -177,21 +192,33 @@ const Content = styled.div`
 	margin-bottom: var(--spacing);
 `;
 
-const LanguageBlock = styled.div`    
+const LanguageBlock = styled.div`
 	width: 100%;
-    box-shadow: var(--box-shadow-xs);
-    border-radius: var(--border-radius-xs);
-    background-color: var(--color-background-surface-1);
-    padding: var(--spacing);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-s);
+	box-shadow: var(--box-shadow-xs);
+	border-radius: var(--border-radius-xs);
+	background-color: var(--color-background-surface-1);
+	padding: var(--spacing);
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-s);
 `;
 
 const Label = styled.label`
-    font-weight: 500;
-    font-size: var(--font-size);
-    color: var(--color-text);
+	font-weight: 500;
+	font-size: var(--font-size);
+	color: var(--color-text);
+`;
+
+const ReadOnlyTags = styled.div`
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--spacing-xs);
+	min-height: 36px;
+`;
+
+const EmptyText = styled.p`
+	color: var(--color-text-muted);
+	font-size: var(--font-size-s);
 `;
 
 const SaveButton = styled(Button)`

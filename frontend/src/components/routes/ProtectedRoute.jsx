@@ -1,16 +1,19 @@
-import { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
-import {AuthContext, useAuth} from "../../context/auth";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/auth";
 
-export default function ProtectedRoute() {
-	const { user, isInitialized } = useAuth();
+export default function ProtectedRoute({ roles }) {
+	const { user, dbUser, isInitialized } = useAuth();
+	const location = useLocation();
 
-	// Optionally show a loading spinner while checking auth
-	if (!isInitialized) return <div>Loading...</div>;
+	
+	if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
-	// Redirect if not logged in
-	if (!user) return <Navigate to="/login" replace />;
+	if (Array.isArray(roles) && roles.length > 0) {
+		const roleId = Number(dbUser?.id_role);
+		if (!roles.includes(roleId)) {
+			return <Navigate to="/home" replace />;
+		}
+	}
 
-	// Render protected content
 	return <Outlet />;
 }

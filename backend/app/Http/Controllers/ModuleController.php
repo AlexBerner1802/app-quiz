@@ -8,6 +8,20 @@ use Illuminate\Support\Facades\DB;
 
 class ModuleController extends Controller
 {
+    private function ensureCanManage(Request $request): void
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            abort(401, 'Unauthenticated');
+        }
+
+        $roleId = (int) ($user->id_role ?? 0);
+        if ($roleId < 2) {
+            abort(403, 'Forbidden');
+        }
+    }
+
     public function index(Request $request)
     {
         $langsQuery = $request->query('langs', 'en');
@@ -21,12 +35,11 @@ class ModuleController extends Controller
 
         foreach ($allowed as $lang) {
             $modulesForLang = $modules->where('lang', $lang)
-                ->map(function ($module) {
-                    return [
-                        'id' => $module->id_module,
-                        'name' => $module->name,
-                    ];
-                })->values();
+                ->map(fn ($module) => [
+                    'id' => $module->id_module,
+                    'name' => $module->name,
+                ])
+                ->values();
 
             $result[$lang] = $modulesForLang;
         }
@@ -36,9 +49,17 @@ class ModuleController extends Controller
 
     public function update(Request $request)
     {
+        $this->ensureCanManage($request);
+
         $data = $request->validate([
-            'modules' => 'required|array',       // modules from frontend
-            'removedModules' => 'array',         // optional removed modules
+            'modules' => ['required', 'array'],
+            'modules.*' => ['array'],
+            'modules.*.*.id' => ['nullable', 'integer'],
+            'modules.*.*.name' => ['required', 'string', 'max:255'],
+
+            'removedModules' => ['nullable', 'array'],
+            'removedModules.*' => ['array'],
+            'removedModules.*.*.id' => ['nullable', 'integer'],
         ]);
 
         DB::beginTransaction();
@@ -52,15 +73,19 @@ class ModuleController extends Controller
                     if ($name === '') continue;
 
                     if (!empty($module['id'])) {
-                        // Update existing module
-                        Module::where('id_module', $module['id'])
-                            ->update([
-                                'name' => $name,
-                                'lang' => $lang,
-                            ]);
+                        Module::where('id_module', $module['id'])->update([
+                            'name' => $name,
+                            'lang' => $lang,
+                        ]);
                     } else {
-                        // Create new module
+                        $existing = Module::where('lang', $lang)
+                            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                            ->first();
+
+                        if ($existing) continue;
+
                         $slug = strtolower(preg_replace('/[^\w-]/', '', preg_replace('/\s+/', '-', $name)));
+
                         Module::create([
                             'slug' => $slug,
                             'name' => $name,
@@ -69,11 +94,14 @@ class ModuleController extends Controller
                     }
                 }
 
-                // Remove deleted modules
                 foreach ($data['removedModules'][$lang] ?? [] as $module) {
                     $id = $module['id'] ?? null;
                     if ($id) {
-                        Module::where('id_module', $id)->delete();
+                        $moduleModel = Module::find($id);
+                        if ($moduleModel) {
+                            $moduleModel->quiz()->detach();
+                            $moduleModel->delete();
+                        }
                     }
                 }
             }
@@ -85,10 +113,7 @@ class ModuleController extends Controller
             return response()->json([
                 'message' => 'Failed to update modules',
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
-
-
 }

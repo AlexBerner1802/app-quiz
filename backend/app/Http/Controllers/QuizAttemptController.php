@@ -2,54 +2,97 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
-use Illuminate\Support\Facades\DB;
 
 class QuizAttemptController extends Controller
 {
-    public function start(Request $request, Quiz $quiz)
+    public function start(Request $request, Quiz $quiz): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
         $data = $request->validate([
-            'id_owner' => 'required|string',
-            'lang'     => 'required|string',
+            'lang' => ['required', 'string', 'max:10'],
         ]);
 
-        $user = User::where('id_azure', $data['id_owner'])->first();
+        $quizId = $quiz->id_quiz ?? $quiz->id;
+        $userId = $user->id_user ?? $user->id;
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        $existing = QuizAttempt::query()
+            ->where('id_quiz', $quizId)
+            ->where('id_user', $userId)
+            ->whereNull('ended_at')
+            ->first();
+
+        if ($existing) {
+            return response()->json([
+                'message' => 'Attempt already in progress',
+                'attempt' => $existing,
+            ], 200);
         }
 
         $attempt = QuizAttempt::create([
-            'id_quiz'    => $quiz->id_quiz,
-            'id_user'    => $user->id_user,
-            'started_at' => now(),
+            'id_quiz'    => $quizId,
+            'id_user'    => $userId,
             'lang'       => $data['lang'],
-            'status'     => 'in_progress',
+            'started_at' => now(),
         ]);
 
         return response()->json([
             'message' => 'Attempt started',
-            'attempt_id' => $attempt->id_attempt,
-            'started_at' => $attempt->started_at,
+            'attempt' => $attempt,
         ], 201);
     }
 
-    public function finish(Request $request, Quiz $quiz, QuizAttempt $attempt)
+    public function finish(Request $request, Quiz $quiz, QuizAttempt $attempt): JsonResponse
     {
+        $authUser = $request->user();
+        if (!$authUser) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        $quizId = $quiz->id_quiz ?? $quiz->id;
+        $userId = $authUser->id_user ?? $authUser->id;
+
+        // attempt must match quiz
+        if ((int)$attempt->id_quiz !== (int)$quizId) {
+            return response()->json(['message' => 'Attempt does not belong to this quiz'], 404);
+        }
+
+        // attempt must belong to current user
+        if ((int)$attempt->id_user !== (int)$userId) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        // prevent double finish
+        if (!is_null($attempt->ended_at)) {
+            return response()->json([
+                'message' => 'Attempt already finished',
+                'attempt' => $attempt,
+            ], 200);
+        }
+
         $data = $request->validate([
-            'ended_at'   => 'required|date',
-            'time_taken' => 'required|integer',
-            'answers'    => 'required|array',
-            'lang'       => 'required|string',
+            'ended_at'   => ['required', 'date'],
+            'time_taken' => ['required', 'integer', 'min:0'],
+            'answers'    => ['required', 'array', 'min:1'],
+            'lang'       => ['required', 'string', 'max:10'],
+
+            'answers.*.id_question' => ['required', 'integer', 'min:1'],
+            'answers.*.answer_ids'  => ['nullable', 'array'],
+            'answers.*.answer_ids.*'=> ['integer', 'min:1'],
+            'answers.*.answer_text' => ['nullable', 'string'],
         ]);
 
-        if ($attempt->id_quiz !== $quiz->id_quiz) {
-            return response()->json(['message' => 'Attempt does not belong to quiz'], 400);
+        $qids = array_map(fn($a) => (int)$a['id_question'], $data['answers']);
+        if (count($qids) !== count(array_unique($qids))) {
+            throw ValidationException::withMessages([
+                'answers' => ['Duplicate id_question detected in answers payload.'],
+            ]);
         }
 
         DB::beginTransaction();
@@ -60,11 +103,17 @@ class QuizAttemptController extends Controller
             $results = [];
             $lang = $data['lang'];
 
+            $attempt->answers()->delete();
+
             foreach ($data['answers'] as $answer) {
                 $question = $quiz->questions()->with('answers')->find($answer['id_question']);
                 if (!$question) continue;
 
-                $correctAnswerIds = $question->answers->filter(fn($a) => $a->is_correct)->pluck('id_answer')->toArray();
+                $correctAnswerIds = $question->answers
+                    ->filter(fn($a) => (bool)$a->is_correct)
+                    ->pluck('id_answer')
+                    ->toArray();
+
                 $userAnswerIds = $answer['answer_ids'] ?? [];
 
                 $numCorrectSelected = count(array_intersect($userAnswerIds, $correctAnswerIds));
@@ -75,14 +124,12 @@ class QuizAttemptController extends Controller
                 $totalScore += $questionScore;
                 $bestPossibleScore += 1;
 
-                // Save attempt answers
                 $attempt->answers()->create([
-                    'id_question' => $answer['id_question'],
+                    'id_question' => (int)$answer['id_question'],
                     'answer_ids'  => $userAnswerIds,
                     'answer_text' => $answer['answer_text'] ?? null,
                 ]);
 
-                // Fetch translations for answers from DB
                 $answerTranslations = DB::table('translations')
                     ->where('element_type', 'answer')
                     ->where('lang', $lang)
@@ -92,13 +139,17 @@ class QuizAttemptController extends Controller
                     ->toArray();
 
                 $answersResult = $question->answers->map(function ($a) use ($userAnswerIds, $correctAnswerIds, $answerTranslations) {
-                    return array_merge([
+                    $base = [
                         'id' => $a->id_answer,
                         'text' => $a->text,
                         'translation' => $answerTranslations[$a->id_answer] ?? null,
-                    ], in_array($a->id_answer, $userAnswerIds) ? [
-                        'is_correct' => in_array($a->id_answer, $correctAnswerIds),
-                    ] : []);
+                    ];
+
+                    if (in_array($a->id_answer, $userAnswerIds)) {
+                        $base['is_correct'] = in_array($a->id_answer, $correctAnswerIds);
+                    }
+
+                    return $base;
                 });
 
                 $tQuestion = DB::table('translations')
@@ -116,24 +167,23 @@ class QuizAttemptController extends Controller
                 ];
             }
 
-            $finalScore = $totalScore;
-
             $attempt->update([
-                'ended_at' => Carbon::parse($data['ended_at']),
+                'ended_at'   => Carbon::parse($data['ended_at']),
                 'time_taken' => $data['time_taken'],
-                'score' => round($finalScore, 2),
-                'status' => 'completed',
+                'score'      => round($totalScore, 2),
+                'lang'       => $data['lang'],
             ]);
 
             DB::commit();
 
             return response()->json([
                 'message' => 'Quiz attempt completed',
-                'score' => round($finalScore, 2),
+                'score' => round($totalScore, 2),
                 'best_possible_score' => $bestPossibleScore,
                 'time_taken' => $attempt->time_taken,
                 'answers' => $results,
-            ]);
+            ], 200);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -142,8 +192,4 @@ class QuizAttemptController extends Controller
             ], 500);
         }
     }
-
-
-
-
 }

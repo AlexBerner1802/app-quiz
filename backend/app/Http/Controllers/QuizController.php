@@ -16,26 +16,56 @@ use Throwable;
 
 class QuizController extends Controller
 {
+    private const ROLE_APPRENTICE = 1;
+    private const ROLE_TRAINER    = 2;
+    private const ROLE_ADMIN      = 3;
+    private const ROLE_SUPERADMIN = 4;
+
     private function quizPk(): string { return 'id_quiz'; }
 
-    private function authUserId(Request $request): ?int
+    private function roleId($user): int
     {
-        $u = $request->user();
-        if ($u && isset($u->id_user)) return (int) $u->id_user;
-        if ($u && isset($u->id)) return (int) $u->id;
-
-        $azure = $request->query('id_owner') ?? $request->input('id_owner');
-        if (!$azure) return null;
-
-        $dbUser = User::where('id_azure', $azure)->first();
-        return $dbUser ? (int) $dbUser->id_user : null;
+        return (int) ($user->id_role ?? 0);
     }
 
-    private function ensureOwnerOr403(Request $request, Quiz $quiz): void
+    private function isTrainer($user): bool
     {
-        $authUserId = $this->authUserId($request);
-        if (!$authUserId || (int)$quiz->id_owner !== (int)$authUserId) {
-            abort(403, 'Unauthorized: you are not the owner');
+        return $this->roleId($user) >= self::ROLE_TRAINER;
+    }
+
+    private function isAdmin($user): bool
+    {
+        return $this->roleId($user) >= self::ROLE_ADMIN;
+    }
+
+    private function canCreateQuiz($user): bool
+    {
+        return $this->isTrainer($user);
+    }
+
+    private function canEditOrDeleteQuiz($user, $quiz): bool
+    {
+        if (!$user) return false;
+
+        // Admin override: can manage everything
+        if ($this->isAdmin($user)) return true;
+
+        // Trainers can manage only their own quizzes
+        if (!$this->isTrainer($user)) return false;
+
+        $userId  = (int) ($user->id_user ?? 0);
+        $ownerId = (int) ($quiz->id_owner ?? 0);
+
+        return $userId !== 0 && $ownerId !== 0 && $userId === $ownerId;
+    }
+
+    private function ensureCanManageOr403(Request $request, Quiz $quiz): void
+    {
+        $u = $request->user();
+        if (!$u) abort(401, 'Unauthenticated');
+
+        if (!$this->canEditOrDeleteQuiz($u, $quiz)) {
+            abort(403, 'Forbidden');
         }
     }
 
@@ -58,9 +88,6 @@ class QuizController extends Controller
         return [$rows, $fallbackLangs];
     }
 
-    /**
-     * Helper: pick translation field with fallback.
-     */
     private function pickTranslatedField($groupedRows, array $fallbackLangs, int $qid, string $field, string $default = ''): string
     {
         foreach ($fallbackLangs as $L) {
@@ -77,10 +104,10 @@ class QuizController extends Controller
     {
         try {
             $lang = strtolower($request->query('lang', 'en'));
-            $authUserId = $this->authUserId($request);
-
-            // NOTE: pivot lang values might be uppercase in DB → accept both
             $pivotLangs = [$lang, strtoupper($lang)];
+
+            $authUser = $request->user();
+            $authUserId = $authUser ? (int)($authUser->id_user ?? 0) : null;
 
             $quizzes = Quiz::with([
                 'modules' => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
@@ -88,35 +115,32 @@ class QuizController extends Controller
                 'activeQuizzes' => fn($q) => $q->where('lang', $lang),
             ])
                 ->where(function ($q) use ($authUserId) {
-                    // Public: include quizzes active in requested lang
+                    // Public: active quizzes
                     $q->whereHas('activeQuizzes', fn($aq) => $aq->where('is_active', 1));
 
-                    // Owner logged in: include his quizzes even if inactive
+                    // Owner: see own even if inactive
                     if ($authUserId) {
                         $q->orWhere('id_owner', $authUserId);
                     }
                 })
                 ->get();
 
-            if ($quizzes->isEmpty()) {
-                return response()->json([]);
-            }
+            if ($quizzes->isEmpty()) return response()->json([]);
 
-            // Fetch translations (with fallback)
             $quizIds = $quizzes->pluck('id_quiz')->all();
             [$tRows, $fallbackLangs] = $this->loadQuizTranslationsWithFallback($quizIds, $lang);
 
-            $mapped = $quizzes->map(function ($quiz) use ($tRows, $fallbackLangs, $lang, $authUserId) {
+            $mapped = $quizzes->map(function ($quiz) use ($tRows, $fallbackLangs, $lang, $authUser) {
                 $qid = (int) $quiz->id_quiz;
 
                 $activeRecord = $quiz->activeQuizzes->first();
                 $isActive = $activeRecord ? (bool) $activeRecord->is_active : false;
 
-                $isOwner = $authUserId && ((int) $quiz->id_owner === (int) $authUserId);
-
                 $title = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'title', '');
                 $desc  = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'quiz_description', '');
                 $cover = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'cover_image_url', $quiz->cover_image_url ?? '');
+
+                $canManage = $authUser ? $this->canEditOrDeleteQuiz($authUser, $quiz) : false;
 
                 return [
                     'id_quiz'           => $qid,
@@ -138,8 +162,11 @@ class QuizController extends Controller
 
                     'is_active'         => $isActive,
                     'id_owner'          => $quiz->id_owner,
-                    'can_edit'          => (bool) $isOwner,
-                    'can_delete'        => (bool) $isOwner,
+
+                    // IMPORTANT: admin override + trainer owner => true
+                    'can_edit'          => (bool) $canManage,
+                    'can_delete'        => (bool) $canManage,
+
                     'created_at'        => $quiz->created_at,
                     'updated_at'        => $quiz->updated_at,
                     'questions_to_show' => $quiz->questions_to_show,
@@ -147,10 +174,8 @@ class QuizController extends Controller
             });
 
             return response()->json($mapped->values()->all());
-
         } catch (Throwable $e) {
             return response()->json([
-                'request' => $request->all(),
                 'message' => 'Error mapping quizzes',
                 'error'   => $e->getMessage(),
             ], 500);
@@ -168,9 +193,7 @@ class QuizController extends Controller
                 'tags'    => fn($q) => $q->wherePivotIn('lang', $pivotLangs),
             ])->find($id);
 
-            if (!$quiz) {
-                return response()->json(['message' => "Quiz not found for ID $id"], 404);
-            }
+            if (!$quiz) return response()->json(['message' => "Quiz not found for ID $id"], 404);
 
             $qid = (int) $quiz->{$this->quizPk()};
 
@@ -179,22 +202,22 @@ class QuizController extends Controller
                 ->where('lang', $lang)
                 ->value('is_active');
 
-            $authUserId = $this->authUserId($request);
+            $authUser = $request->user();
+            $authUserId = $authUser ? (int)($authUser->id_user ?? 0) : null;
+
             $isOwner = $authUserId && ((int)$quiz->id_owner === (int)$authUserId);
 
-            // If inactive: only owner can view
-            if (!$isActive && !$isOwner) {
+            // If inactive: only owner or admin can view
+            if (!$isActive && !($authUser && $this->isAdmin($authUser)) && !$isOwner) {
                 return response()->json(['message' => 'Quiz is inactive'], 403);
             }
 
-            // Translation for quiz (with fallback)
             [$tRows, $fallbackLangs] = $this->loadQuizTranslationsWithFallback([$qid], $lang);
 
             $title      = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'title', '');
             $desc       = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'quiz_description', '');
             $coverImage = $this->pickTranslatedField($tRows, $fallbackLangs, $qid, 'cover_image_url', $quiz->cover_image_url ?? '');
 
-            // Fetch questions & answers (requested lang only)
             $questions = DB::table('questions')
                 ->where('id_quiz', $qid)
                 ->where('lang', $lang)
@@ -226,30 +249,37 @@ class QuizController extends Controller
                 ->get()
                 ->groupBy('element_id');
 
-            $questionBlocks = collect($questions)->map(function ($q) use ($answers, $tQuestions, $tAnswers) {
+            // IMPORTANT: don't leak correct answers to apprentices/participants
+            $canSeeCorrect = $authUser
+                ? ($this->isTrainer($authUser) || $this->isAdmin($authUser) || $isOwner)
+                : false;
+
+            $questionBlocks = collect($questions)->map(function ($q) use ($answers, $tQuestions, $tAnswers, $canSeeCorrect) {
                 $qt = collect($tQuestions->get($q->id_question, []))->keyBy('field_name');
 
-                $title = optional($qt->get('question_title'))->element_text ?? '';
-                $desc  = optional($qt->get('question_description'))->element_text ?? '';
+                $qTitle = optional($qt->get('question_title'))->element_text ?? '';
+                $qDesc  = optional($qt->get('question_description'))->element_text ?? '';
 
-                $ans = collect($answers->get($q->id_question, []))->map(function ($a) use ($tAnswers) {
+                $ans = collect($answers->get($q->id_question, []))->map(function ($a) use ($tAnswers, $canSeeCorrect) {
                     $txt = optional(collect($tAnswers->get($a->id_answer, []))->first())->element_text ?? '';
-                    return [
-                        'id'         => $a->id_answer,
-                        'text'       => $txt,
-                        'is_correct' => (bool) $a->is_correct,
+                    $row = [
+                        'id'   => $a->id_answer,
+                        'text' => $txt,
                     ];
+                    if ($canSeeCorrect) {
+                        $row['is_correct'] = (bool) $a->is_correct;
+                    }
+                    return $row;
                 })->values();
 
                 return [
                     'id'          => $q->id_question,
-                    'title'       => $title,
-                    'description' => $desc,
+                    'title'       => $qTitle,
+                    'description' => $qDesc,
                     'answers'     => $ans,
                 ];
             })->values();
 
-            // Fetch owner info including role
             $owner = DB::table('users')
                 ->join('roles', 'users.id_role', '=', 'roles.id_role')
                 ->where('users.id_user', $quiz->id_owner)
@@ -261,6 +291,8 @@ class QuizController extends Controller
                 ])
                 ->first();
 
+            $canManage = $authUser ? $this->canEditOrDeleteQuiz($authUser, $quiz) : false;
+
             return response()->json([
                 $this->quizPk()     => $qid,
                 'lang'              => $lang,
@@ -271,8 +303,13 @@ class QuizController extends Controller
                 'created_at'        => $quiz->created_at,
                 'updated_at'        => $quiz->updated_at,
                 'questions_to_show' => $quiz->questions_to_show,
+
                 'owner'             => $owner,
                 'is_owner'          => (bool) $isOwner,
+
+                // useful for UI on show page too
+                'can_edit'          => (bool) $canManage,
+                'can_delete'        => (bool) $canManage,
 
                 'modules' => collect($quiz->modules)
                     ->map(fn($m) => ['id' => $m->id_module, 'name' => $m->name, 'slug' => $m->slug])
@@ -284,7 +321,6 @@ class QuizController extends Controller
 
                 'questions' => $questionBlocks,
             ]);
-
         } catch (Throwable $e) {
             return response()->json([
                 'message' => 'Error loading quiz',
@@ -295,12 +331,22 @@ class QuizController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
+        if (!$this->canCreateQuiz($user)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         $quiz = $this->saveQuiz($request, null);
         return response()->json(['quiz' => $quiz], 201);
     }
 
     public function update(Request $request, $id): JsonResponse
     {
+        $user = $request->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
         $quiz = Quiz::find($id);
         if (!$quiz) {
             return response()->json([
@@ -309,226 +355,22 @@ class QuizController extends Controller
             ], 404);
         }
 
-        $this->ensureOwnerOr403($request, $quiz);
+        // ✅ admin override / trainer owner
+        $this->ensureCanManageOr403($request, $quiz);
 
         $quiz = $this->saveQuiz($request, $quiz);
         return response()->json(['quiz' => $quiz], 200);
     }
 
-    /**
-     * @throws Throwable
-     */
-    private function saveQuiz(Request $request, ?Quiz $quiz = null): ?Quiz
-    {
-        $isNew = !$quiz;
-
-        if ($isNew) {
-            if (is_string($request->input('translations'))) {
-                $request->merge([
-                    'translations' => json_decode($request->input('translations'), true) ?? [],
-                ]);
-            }
-
-            // Validate first
-            $request->validate([
-                'cover_image_url' => 'nullable|string',
-                'id_owner' => 'required|string',
-                'cover_image_file' => 'nullable|file|image|max:5120',
-                'translations' => 'required|array',
-                'questions_to_show' => 'nullable|integer|min:1',
-            ]);
-
-            $quiz = new Quiz();
-            $quiz->cover_image_url = $request->input('cover_image_url') ?? null;
-
-            $user = User::where('id_azure', $request->input('id_owner'))->first();
-            if (!$user) {
-                throw new \Exception('Owner user not found');
-            }
-            $quiz->id_owner = $user->id_user;
-            $quiz->save();
-        }
-
-        // Decode translations if sent as JSON string
-        if (is_string($request->input('translations'))) {
-            $request->merge([
-                'translations' => json_decode($request->input('translations'), true) ?? [],
-            ]);
-        }
-
-        $request->validate([
-            'cover_image_url' => 'nullable|string',
-            'cover_image_file' => 'nullable|file|image|max:5120',
-            'translations' => 'required|array',
-            'questions_to_show' => 'nullable|integer|min:1',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            // --- Handle cover image ---
-            $newCoverUrl  = $request->input('cover_image_url');
-            $newCoverFile = $request->file('cover_image_file');
-            $wanted = $request->input('questions_to_show');
-
-            $oldPath = $quiz->cover_image_url
-                ? ltrim(str_replace('/storage/', '', parse_url($quiz->cover_image_url, PHP_URL_PATH)), '/')
-                : null;
-
-            if ($newCoverFile) {
-                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-                $filename = 'quiz-cards/' . uniqid() . '.' . $newCoverFile->getClientOriginalExtension();
-                Storage::disk('public')->putFileAs('quiz-cards', $newCoverFile, basename($filename));
-                $quiz->cover_image_url = Storage::url($filename);
-            } elseif ($newCoverUrl === null) {
-                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
-                    Storage::disk('public')->delete($oldPath);
-                }
-                $quiz->cover_image_url = null;
-            }
-
-            if ($wanted === null || $wanted === '') {
-                $quiz->questions_to_show = null;
-            } else {
-                $quiz->questions_to_show = max(1, (int) $wanted);
-            }
-
-            $quiz->save();
-
-            // --- Handle translations per language ---
-            $translations = $request->input('translations', []);
-            foreach ($translations as $lang => $data) {
-
-                // --- Quiz title and description translations ---
-                foreach (['title', 'description'] as $field) {
-                    $fieldName = $field === 'description' ? 'quiz_description' : $field;
-                    DB::table('translations')->updateOrInsert(
-                        [
-                            'element_type' => 'quiz',
-                            'element_id' => $quiz->id_quiz,
-                            'lang' => $lang,
-                            'field_name' => $fieldName,
-                        ],
-                        ['element_text' => $data[$field] ?? '']
-                    );
-                }
-
-                // --- Active flag per language ---
-                DB::table('active_quiz')->updateOrInsert(
-                    ['id_quiz' => $quiz->id_quiz, 'lang' => $lang],
-                    ['is_active' => !empty($data['is_active']) ? 1 : 0]
-                );
-
-                // --- Modules & tags per language ---
-                $moduleIds = collect($data['modules'] ?? [])->pluck('id')->filter()->all();
-                $moduleSync = collect($moduleIds)->mapWithKeys(fn($id) => [$id => ['lang' => $lang]])->all();
-                $quiz->modules()->syncWithoutDetaching($moduleSync);
-
-                $tagIds = collect($data['tags'] ?? [])->pluck('id')->filter()->all();
-                $tagSync = collect($tagIds)->mapWithKeys(fn($id) => [$id => ['lang' => $lang]])->all();
-                $quiz->tags()->syncWithoutDetaching($tagSync);
-
-                // --- Questions & answers per language ---
-                $questions = $data['questions'] ?? [];
-                $existingQuestions = DB::table('questions')
-                    ->where('id_quiz', $quiz->id_quiz)
-                    ->where('lang', $lang)
-                    ->pluck('id_question')
-                    ->all();
-
-                $incomingQuestionIds = collect($questions)->pluck('id')->filter()->all();
-
-                // Delete removed questions
-                $toDelete = array_diff($existingQuestions, $incomingQuestionIds);
-                if (!empty($toDelete)) {
-                    DB::table('answers')->whereIn('id_question', $toDelete)->delete();
-                    DB::table('translations')->where('element_type', 'question')->whereIn('element_id', $toDelete)->delete();
-                    DB::table('questions')->whereIn('id_question', $toDelete)->delete();
-                }
-
-                foreach ($questions as $orderIndex => $q) {
-                    // Insert or update question
-                    $questionId = $q['id'] ?? DB::table('questions')->insertGetId([
-                        'id_quiz' => $quiz->id_quiz,
-                        'lang' => $lang,
-                        'order' => $orderIndex + 1,
-                    ]);
-
-                    if (!isset($q['id'])) {
-                        DB::table('questions')->where('id_question', $questionId)->update(['order' => $orderIndex + 1]);
-                    }
-
-                    // Question translations
-                    foreach (['title', 'description'] as $field) {
-                        $fieldName = $field === 'description' ? 'question_description' : 'question_title';
-                        DB::table('translations')->updateOrInsert(
-                            [
-                                'element_type' => 'question',
-                                'element_id' => $questionId,
-                                'lang' => $lang,
-                                'field_name' => $fieldName,
-                            ],
-                            ['element_text' => $q[$field] ?? '']
-                        );
-                    }
-
-                    // Answers
-                    $existingAnswers = DB::table('answers')->where('id_question', $questionId)->pluck('id_answer')->all();
-                    $incomingAnswerIds = [];
-                    $correctIndices = $q['correct_indices'] ?? [];
-
-                    foreach ($q['options'] ?? [] as $index => $text) {
-                        if (empty($text)) continue;
-                        $answerId = $q['answer_ids'][$index] ?? null;
-                        $isCorrect = in_array($index, $correctIndices) ? 1 : 0;
-
-                        if ($answerId && in_array($answerId, $existingAnswers)) {
-                            DB::table('answers')->where('id_answer', $answerId)->update(['is_correct' => $isCorrect]);
-                        } else {
-                            $answerId = DB::table('answers')->insertGetId([
-                                'id_question' => $questionId,
-                                'is_correct' => $isCorrect,
-                            ]);
-                        }
-
-                        DB::table('translations')->updateOrInsert(
-                            [
-                                'element_type' => 'answer',
-                                'element_id' => $answerId,
-                                'lang' => $lang,
-                                'field_name' => 'answer_text',
-                            ],
-                            ['element_text' => $text]
-                        );
-
-                        $incomingAnswerIds[] = $answerId;
-                    }
-
-                    // Delete removed answers
-                    $toDeleteAnswers = array_diff($existingAnswers, $incomingAnswerIds);
-                    if (!empty($toDeleteAnswers)) {
-                        DB::table('translations')->where('element_type', 'answer')->whereIn('element_id', $toDeleteAnswers)->delete();
-                        DB::table('answers')->whereIn('id_answer', $toDeleteAnswers)->delete();
-                    }
-                }
-            }
-
-            DB::commit();
-            return $quiz;
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            logger($e);
-            throw $e;
-        }
-    }
-
     public function destroy(Request $request, $id): Response
     {
+        $user = $request->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
         $quiz = Quiz::findOrFail($id);
 
-        $this->ensureOwnerOr403($request, $quiz);
+        // ✅ admin override / trainer owner
+        $this->ensureCanManageOr403($request, $quiz);
 
         DB::transaction(function () use ($quiz) {
             $quiz->modules()->detach();
@@ -547,30 +389,32 @@ class QuizController extends Controller
 
     public function editor(Request $request, $id): JsonResponse
     {
-        // Owner-only
+        $user = $request->user();
+        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+
         $quiz = Quiz::with([
             'modules:id_module,name,slug',
             'tags:id_tag,name,slug'
         ])->find($id);
 
-        if (!$quiz) {
-            return response()->json(['message' => "Quiz not found for ID $id"], 404);
-        }
+        if (!$quiz) return response()->json(['message' => "Quiz not found for ID $id"], 404);
 
-        $this->ensureOwnerOr403($request, $quiz);
+        // ✅ admin override / trainer owner
+        $this->ensureCanManageOr403($request, $quiz);
 
         $langsQuery = $request->query('langs', 'en');
         $allowed = array_filter(array_map('strtolower', explode(',', $langsQuery)));
 
         $qid = $quiz->{$this->quizPk()};
 
-        // Determine which languages are present for this quiz
         $langsPresent = DB::table('translations')
             ->where('element_type', 'quiz')
             ->where('element_id', $qid)
             ->distinct()
             ->pluck('lang')
-            ->filter(fn($l) => in_array($l, $allowed, true))
+            ->filter(fn($l) => in_array(strtolower($l), $allowed, true))
+            ->map(fn($l) => strtolower($l))
+            ->unique()
             ->values()
             ->all();
 
@@ -585,7 +429,6 @@ class QuizController extends Controller
             ]);
         }
 
-        // Fetch active flags per language
         $actives = DB::table('active_quiz')
             ->where('id_quiz', $qid)
             ->whereIn('lang', $langsPresent)
@@ -597,7 +440,6 @@ class QuizController extends Controller
         $translations = [];
 
         foreach ($langsPresent as $lang) {
-            // Fetch questions for this language
             $questions = DB::table('questions')
                 ->where('id_quiz', $qid)
                 ->where('lang', $lang)
@@ -606,7 +448,6 @@ class QuizController extends Controller
 
             $qIds = $questions->pluck('id_question')->all();
 
-            // Fetch answers for these questions
             $answersByQ = DB::table('answers')
                 ->whereIn('id_question', $qIds ?: [-1])
                 ->get()
@@ -614,8 +455,8 @@ class QuizController extends Controller
 
             $answerIds = $answersByQ->flatten()->pluck('id_answer')->all();
 
-            // Pre-load all translations for this language
             $allElementIds = array_merge([$qid], $qIds, $answerIds, $moduleIds, $tagIds);
+
             $allTranslations = DB::table('translations')
                 ->where('lang', $lang)
                 ->whereIn('element_type', ['quiz','question','answer','module','tag'])
@@ -627,15 +468,16 @@ class QuizController extends Controller
             $tQ = $allTranslations['question'] ?? collect();
             $tA = $allTranslations['answer'] ?? collect();
 
-            // Build questions array (language-specific)
             $quizQuestions = collect($questions)->map(function($q) use ($answersByQ, $tQ, $tA) {
                 $qtTranslations = collect($tQ->get($q->id_question, []))->keyBy('field_name');
 
                 $answers = collect($answersByQ->get($q->id_question, []))->map(function($a) use ($tA) {
                     $answerTranslations = collect($tA->get($a->id_answer, []))->keyBy('field_name');
+                    $txt = $answerTranslations->get('answer_text')->element_text ?? null;
+
                     return [
                         'id' => $a->id_answer,
-                        'text' => $answerTranslations->get('answer_text')->element_text ?? null,
+                        'text' => $txt,
                         'is_correct' => (bool) $a->is_correct,
                     ];
                 })->filter(fn($a) => $a['text'] !== null)->values();
@@ -649,7 +491,7 @@ class QuizController extends Controller
             })->filter(fn($q) => $q['title'] !== null || count($q['answers']) > 0)->values();
 
             $modulesArray = $quiz->modules
-                ->filter(fn($m) => $m->pivot->lang === $lang)
+                ->filter(fn($m) => strtolower($m->pivot->lang) === $lang)
                 ->map(fn($m) => [
                     'id' => $m->id_module,
                     'name' => $m->name,
@@ -657,7 +499,7 @@ class QuizController extends Controller
                 ])->values();
 
             $tagsArray = $quiz->tags
-                ->filter(fn($t) => $t->pivot->lang === $lang)
+                ->filter(fn($t) => strtolower($t->pivot->lang) === $lang)
                 ->map(fn($t) => [
                     'id' => $t->id_tag,
                     'name' => $t->name,
@@ -683,6 +525,233 @@ class QuizController extends Controller
             'questions_to_show' => $quiz->questions_to_show,
             'translations' => $translations,
         ]);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    private function saveQuiz(Request $request, ?Quiz $quiz = null): ?Quiz
+    {
+        $isNew = !$quiz;
+
+        if (is_string($request->input('translations'))) {
+            $request->merge([
+                'translations' => json_decode($request->input('translations'), true) ?? [],
+            ]);
+        }
+
+        $request->validate([
+            'cover_image_url' => 'nullable|string',
+            'cover_image_file' => 'nullable|file|image|max:5120',
+            'translations' => 'required|array',
+            'questions_to_show' => 'nullable|integer|min:1',
+        ]);
+
+        if ($isNew) {
+            $quiz = new Quiz();
+
+            $authUser = $request->user();
+            if (!$authUser) throw new \Exception('Unauthenticated');
+
+            $quiz->id_owner = (int) ($authUser->id_user ?? 0);
+            $quiz->cover_image_url = $request->input('cover_image_url') ?? null;
+            $quiz->save();
+        }
+
+        DB::beginTransaction();
+        try {
+            // --- Cover image ---
+            $newCoverUrl  = $request->input('cover_image_url');
+            $newCoverFile = $request->file('cover_image_file');
+            $wanted = $request->input('questions_to_show');
+
+            $oldPath = $quiz->cover_image_url
+                ? ltrim(str_replace('/storage/', '', parse_url($quiz->cover_image_url, PHP_URL_PATH)), '/')
+                : null;
+
+            if ($newCoverFile) {
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $filename = 'quiz-cards/' . uniqid() . '.' . $newCoverFile->getClientOriginalExtension();
+                Storage::disk('public')->putFileAs('quiz-cards', $newCoverFile, basename($filename));
+                $quiz->cover_image_url = Storage::url($filename);
+            } elseif ($newCoverUrl === null) {
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $quiz->cover_image_url = null;
+            }
+
+            $quiz->questions_to_show = ($wanted === null || $wanted === '') ? null : max(1, (int) $wanted);
+            $quiz->save();
+
+            $translations = $request->input('translations', []);
+
+            foreach ($translations as $lang => $data) {
+                $lang = strtolower((string)$lang);
+
+                // Quiz title + description
+                foreach (['title', 'description'] as $field) {
+                    $fieldName = $field === 'description' ? 'quiz_description' : $field;
+
+                    DB::table('translations')->updateOrInsert(
+                        [
+                            'element_type' => 'quiz',
+                            'element_id' => $quiz->id_quiz,
+                            'lang' => $lang,
+                            'field_name' => $fieldName,
+                        ],
+                        ['element_text' => $data[$field] ?? '']
+                    );
+                }
+
+                // Active per language
+                DB::table('active_quiz')->updateOrInsert(
+                    ['id_quiz' => $quiz->id_quiz, 'lang' => $lang],
+                    ['is_active' => !empty($data['is_active']) ? 1 : 0]
+                );
+
+                // ✅ Modules/Tags: replace for THIS lang (avoid accumulating old ones)
+                $quiz->modules()->wherePivot('lang', $lang)->detach();
+                $quiz->tags()->wherePivot('lang', $lang)->detach();
+
+                $moduleIds = collect($data['modules'] ?? [])->pluck('id')->filter()->all();
+                if (!empty($moduleIds)) {
+                    $sync = collect($moduleIds)->mapWithKeys(fn($id) => [(int)$id => ['lang' => $lang]])->all();
+                    $quiz->modules()->attach($sync);
+                }
+
+                $tagIds = collect($data['tags'] ?? [])->pluck('id')->filter()->all();
+                if (!empty($tagIds)) {
+                    $sync = collect($tagIds)->mapWithKeys(fn($id) => [(int)$id => ['lang' => $lang]])->all();
+                    $quiz->tags()->attach($sync);
+                }
+
+                // Questions per language
+                $questions = $data['questions'] ?? [];
+                $existingQuestions = DB::table('questions')
+                    ->where('id_quiz', $quiz->id_quiz)
+                    ->where('lang', $lang)
+                    ->pluck('id_question')
+                    ->all();
+
+                $incomingQuestionIds = collect($questions)->pluck('id')->filter()->map(fn($v) => (int)$v)->all();
+
+                $toDelete = array_diff($existingQuestions, $incomingQuestionIds);
+                if (!empty($toDelete)) {
+                    DB::table('answers')->whereIn('id_question', $toDelete)->delete();
+                    DB::table('translations')->where('element_type', 'question')->whereIn('element_id', $toDelete)->delete();
+                    DB::table('questions')->whereIn('id_question', $toDelete)->delete();
+                }
+
+                foreach ($questions as $orderIndex => $q) {
+                    $questionId = isset($q['id']) && $q['id']
+                        ? (int)$q['id']
+                        : (int) DB::table('questions')->insertGetId([
+                            'id_quiz' => $quiz->id_quiz,
+                            'lang' => $lang,
+                            'order' => $orderIndex + 1,
+                        ]);
+
+                    DB::table('questions')->where('id_question', $questionId)->update([
+                        'order' => $orderIndex + 1
+                    ]);
+
+                    foreach (['title', 'description'] as $field) {
+                        $fieldName = $field === 'description' ? 'question_description' : 'question_title';
+
+                        DB::table('translations')->updateOrInsert(
+                            [
+                                'element_type' => 'question',
+                                'element_id' => $questionId,
+                                'lang' => $lang,
+                                'field_name' => $fieldName,
+                            ],
+                            ['element_text' => $q[$field] ?? '']
+                        );
+                    }
+
+                    $existingAnswers = DB::table('answers')->where('id_question', $questionId)->pluck('id_answer')->all();
+                    $incomingAnswerIds = [];
+
+                    // Support both old payload shape (options/correct_indices/answer_ids)
+                    // and editor shape (answers: [{id,text,is_correct}])
+                    if (!empty($q['answers']) && is_array($q['answers'])) {
+                        foreach ($q['answers'] as $a) {
+                            $txt = $a['text'] ?? null;
+                            if ($txt === null || $txt === '') continue;
+
+                            $answerId = isset($a['id']) ? (int)$a['id'] : null;
+                            $isCorrect = !empty($a['is_correct']) ? 1 : 0;
+
+                            if ($answerId && in_array($answerId, $existingAnswers)) {
+                                DB::table('answers')->where('id_answer', $answerId)->update(['is_correct' => $isCorrect]);
+                            } else {
+                                $answerId = (int) DB::table('answers')->insertGetId([
+                                    'id_question' => $questionId,
+                                    'is_correct' => $isCorrect,
+                                ]);
+                            }
+
+                            DB::table('translations')->updateOrInsert(
+                                [
+                                    'element_type' => 'answer',
+                                    'element_id' => $answerId,
+                                    'lang' => $lang,
+                                    'field_name' => 'answer_text',
+                                ],
+                                ['element_text' => $txt]
+                            );
+
+                            $incomingAnswerIds[] = $answerId;
+                        }
+                    } else {
+                        $correctIndices = $q['correct_indices'] ?? [];
+                        foreach ($q['options'] ?? [] as $index => $text) {
+                            if (empty($text)) continue;
+
+                            $answerId = $q['answer_ids'][$index] ?? null;
+                            $isCorrect = in_array($index, $correctIndices) ? 1 : 0;
+
+                            if ($answerId && in_array($answerId, $existingAnswers)) {
+                                DB::table('answers')->where('id_answer', $answerId)->update(['is_correct' => $isCorrect]);
+                            } else {
+                                $answerId = (int) DB::table('answers')->insertGetId([
+                                    'id_question' => $questionId,
+                                    'is_correct' => $isCorrect,
+                                ]);
+                            }
+
+                            DB::table('translations')->updateOrInsert(
+                                [
+                                    'element_type' => 'answer',
+                                    'element_id' => $answerId,
+                                    'lang' => $lang,
+                                    'field_name' => 'answer_text',
+                                ],
+                                ['element_text' => $text]
+                            );
+
+                            $incomingAnswerIds[] = $answerId;
+                        }
+                    }
+
+                    $toDeleteAnswers = array_diff($existingAnswers, $incomingAnswerIds);
+                    if (!empty($toDeleteAnswers)) {
+                        DB::table('translations')->where('element_type', 'answer')->whereIn('element_id', $toDeleteAnswers)->delete();
+                        DB::table('answers')->whereIn('id_answer', $toDeleteAnswers)->delete();
+                    }
+                }
+            }
+
+            DB::commit();
+            return $quiz;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            logger($e);
+            throw $e;
+        }
     }
 
     private function deleteQuizQuestions(Quiz $quiz): void

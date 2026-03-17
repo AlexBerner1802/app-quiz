@@ -1,37 +1,23 @@
-// src/components/layout/AppLayout.jsx
-
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
-import { Award, Settings as SettingsIcon, Search, LogOut, FlaskConical, Layers, Menu } from "lucide-react";
+import {
+	Award,
+	Settings as SettingsIcon,
+	Search,
+	LogOut,
+	FlaskConical,
+	Layers,
+	Menu,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Sidebar from "./Sidebar";
 import MyLogo from "../../assets/images/raflogo.png";
-import {useAuth} from "../../context/auth";
-
+import { useAuth } from "../../context/auth";
 
 export default function AppLayout({ children }) {
 	const { t } = useTranslation();
 	const [showLogoutModal, setShowLogoutModal] = useState(false);
-	const { user, logout } = useAuth();
-	const [dbUser, setDbUser] = useState(null);
-
-	useEffect(() => {
-		(async () => {
-			try {
-			const id_azure = user?.localAccountId;
-			if (!id_azure) return;
-
-			const res = await fetch(`${import.meta.env.VITE_API_URL}/api/me?id_azure=${encodeURIComponent(id_azure)}`);
-			if (!res.ok) throw new Error("Failed to load /me");
-			const data = await res.json();
-			setDbUser(data);
-			} catch (e) {
-			console.error(e);
-			setDbUser(null);
-			}
-		})();
-	}, [user?.localAccountId]);
-
+	const { user, dbUser, logout } = useAuth();
 
 	const handleLogoutClick = () => setShowLogoutModal(true);
 
@@ -39,50 +25,58 @@ export default function AppLayout({ children }) {
 		try {
 			await logout();
 		} catch (error) {
-			console.error(`Error logging out:`, error);
+			console.error("Error logging out:", error);
 		}
 	};
 
 	const myProfilePath = dbUser?.id_user ? `/profile/${dbUser.id_user}` : null;
 
-	const avatarText =
-		user?.name
-			? (user.name.slice(0, 2) || "AB").toUpperCase()
-			: "AB";
+	const avatarText = user?.name
+		? (user.name.slice(0, 2) || "AB").toUpperCase()
+		: "AB";
 
-
-	const itemsTop = useMemo(() => ([
-		{
-			key: "logo",
-			title: t("app.name"),
-			icon: (
-				<img
-					src={MyLogo}
-					alt={t("app.name")}
-					style={{ width: 24, height: 24, objectFit: "contain" }}
-				/>
-			),
-			to: "/home",
-		},
-		{
-			key: "toggle",
-			title: t("common.reduce"),
-			icon: <Menu size={24} />,
-			onClick: () => {
-				window.dispatchEvent(new Event("sidebar-toggle"));
+	const itemsTop = useMemo(
+		() => [
+			{
+				key: "logo",
+				title: t("app.name"),
+				icon: (
+					<img
+						src={MyLogo}
+						alt={t("app.name")}
+						style={{ width: 24, height: 24, objectFit: "contain" }}
+					/>
+				),
+				to: "/home",
 			},
-		},
-		{ key: "quiz",    title: t("nav.quiz"),    icon: <FlaskConical size={24} />, to: "/home" },
-		{ key: "results", title: t("nav.results"), icon: <Award size={24} />,        to: "/results" },
-		{ key: "search",  title: t("nav.search"),  icon: <Search size={24} />,       to: "/search" },
-	]), [t]);
+			{
+				key: "toggle",
+				title: t("common.reduce"),
+				icon: <Menu size={24} />,
+				onClick: () => {
+					window.dispatchEvent(new Event("sidebar-toggle"));
+				},
+			},
+			{ key: "quiz", title: t("nav.quiz"), icon: <FlaskConical size={24} />, to: "/home" },
+			{ key: "results", title: t("nav.results"), icon: <Award size={24} />, to: "/results" },
+			{ key: "search", title: t("nav.search"), icon: <Search size={24} />, to: "/search" },
+		],
+		[t]
+	);
 
-	const itemsBottom = useMemo(() => ([
-		{ key: "content",  title: t("nav.content"),  icon: <Layers size={24} />,       to: "/content" },
-		{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
-		{ key: "logout",   title: t("nav.logout"),   icon: <LogOut size={24} color="#ef4444" />, onClick: handleLogoutClick },
-	]), [t, myProfilePath, avatarText, user?.avatar]);
-
+	const itemsBottom = useMemo(
+		() => [
+			{ key: "content", title: t("nav.content"), icon: <Layers size={24} />, to: "/content" },
+			{ key: "settings", title: t("nav.settings"), icon: <SettingsIcon size={24} />, to: "/settings" },
+			{
+				key: "logout",
+				title: t("nav.logout"),
+				icon: <LogOut size={24} color="#ef4444" />,
+				onClick: handleLogoutClick,
+			},
+		],
+		[t]
+	);
 
 	return (
 		<>
@@ -104,8 +98,12 @@ export default function AppLayout({ children }) {
 						<ModalTitle>{t("modals.logout.title")}</ModalTitle>
 						<ModalText>{t("modals.logout.text")}</ModalText>
 						<ModalActions>
-							<CancelButton onClick={() => setShowLogoutModal(false)}>{t("common.cancel")}</CancelButton>
-							<ConfirmButton onClick={confirmLogout}>{t("common.confirm")}</ConfirmButton>
+							<CancelButton onClick={() => setShowLogoutModal(false)}>
+								{t("common.cancel")}
+							</CancelButton>
+							<ConfirmButton onClick={confirmLogout}>
+								{t("common.confirm")}
+							</ConfirmButton>
 						</ModalActions>
 					</ModalBox>
 				</ModalOverlay>
@@ -115,67 +113,67 @@ export default function AppLayout({ children }) {
 }
 
 const Container = styled.div`
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    background: #fff;
-    color: #333;
-    font-family: Arial, sans-serif;
+	display: flex;
+	height: 100vh;
+	width: 100vw;
+	background: #fff;
+	color: #333;
+	font-family: Arial, sans-serif;
 `;
 const PageArea = styled.div`
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    overflow: auto;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	overflow: auto;
 `;
 
 const ModalOverlay = styled.div`
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
 `;
 const ModalBox = styled.div`
-    padding: 20px 24px;
-    border-radius: 10px;
-    max-width: 360px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    background-color: var(--color-background);
+	padding: 20px 24px;
+	border-radius: 10px;
+	max-width: 360px;
+	width: 100%;
+	text-align: center;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+	background-color: var(--color-background);
 `;
 const ModalTitle = styled.h2`
-    margin: 0 0 8px;
-    font-size: 18px;
+	margin: 0 0 8px;
+	font-size: 18px;
 `;
 const ModalText = styled.p`
-    margin: 0 0 16px;
-    color: #555;
+	margin: 0 0 16px;
+	color: #555;
 `;
 const ModalActions = styled.div`
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
 `;
 const CancelButton = styled.button`
-    padding: 8px 12px;
-    background-color: var(--color-primary-bg);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+	padding: 8px 12px;
+	background-color: var(--color-primary-bg);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
 `;
 const ConfirmButton = styled.button`
-    background: #ef4444;
-    color: white;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    &:hover {
-        background: #dc2626;
-    }
+	background: #ef4444;
+	color: white;
+	padding: 8px 16px;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	&:hover {
+		background: #dc2626;
+	}
 `;

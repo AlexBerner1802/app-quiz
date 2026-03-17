@@ -9,9 +9,12 @@ import TagsManager from "../../components/TagsManager";
 import ModulesManager from "../../components/ModulesManager";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/Tabs";
 import { getModules, getTags } from "../../services/api";
+import { useAuth } from "../../context/auth";
+import { canManageContent } from "../../utils/permissions";
 
 export default function ContentPage() {
 	const { t } = useTranslation();
+	const { dbUser } = useAuth();
 
 	const [loading, setLoading] = useState(true);
 	const [showLoader, setShowLoader] = useState(true);
@@ -19,25 +22,27 @@ export default function ContentPage() {
 	const [tags, setTags] = useState([]);
 	const [error, setError] = useState(null);
 
+	const canManage = canManageContent(dbUser);
+
 	useEffect(() => {
 		let timeoutId;
 
 		const init = async () => {
-		try {
-			setLoading(true);
-			setShowLoader(true);
-			setError(null);
+			try {
+				setLoading(true);
+				setShowLoader(true);
+				setError(null);
 
-			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-			setModules(allModules || []);
-			setTags(allTags || []);
-		} catch (e) {
-			console.error(e);
-			setError(e);
-		} finally {
-			setShowLoader(false);
-			timeoutId = window.setTimeout(() => setLoading(false), 300);
-		}
+				const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
+				setModules(allModules || []);
+				setTags(allTags || []);
+			} catch (e) {
+				console.error(e);
+				setError(e);
+			} finally {
+				setShowLoader(false);
+				timeoutId = window.setTimeout(() => setLoading(false), 300);
+			}
 		};
 
 		init();
@@ -49,8 +54,8 @@ export default function ContentPage() {
 
 	const isBusy = loading || showLoader;
 
-  	return (
-    	<>
+	return (
+		<>
 			<FaviconTitle title={t("pages.contentPage")} iconHref={faviconUrl} />
 			<Main>
 				<Header title={t("pages.content.title")} icon={<Settings size={20} />} />
@@ -62,9 +67,7 @@ export default function ContentPage() {
 							<span>{t("common.loading")}</span>
 						</LoadingWrap>
 					) : error ? (
-						<ErrorBox>
-							{t("common.errorLoading")}
-						</ErrorBox>
+						<ErrorBox>{t("common.errorLoading")}</ErrorBox>
 					) : (
 						<Tabs defaultValue="tags">
 							<TabsList>
@@ -73,11 +76,19 @@ export default function ContentPage() {
 							</TabsList>
 
 							<TabsContent value="tags">
-								<TagsManager tags={tags} loading={false} showLoader={false} />
+								<TagsManager
+									tags={tags}
+									loading={false}
+									showLoader={false}
+									canManage={canManage}
+								/>
 							</TabsContent>
 
 							<TabsContent value="modules">
-								<ModulesManager modules={modules} />
+								<ModulesManager
+									modules={modules}
+									canManage={canManage}
+								/>
 							</TabsContent>
 						</Tabs>
 					)}
@@ -113,7 +124,9 @@ const LoadingWrap = styled.div`
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 `;
 

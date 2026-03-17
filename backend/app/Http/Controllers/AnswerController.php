@@ -9,29 +9,39 @@ use Illuminate\Http\Request;
 
 class AnswerController extends Controller
 {
-    // POST /api/answers
-    // body: { id_user, id_quiz, id_question, id_answers }
     public function store(Request $req)
     {
+        $user = $req->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
         $data = $req->validate([
-            'id_user'     => 'required|integer',
-            'id_quiz'     => 'required|integer|exists:quiz,id',
-            'id_question'=> 'required|integer|exists:questions,id',
-            'id_answers'  => 'required|integer|exists:answers,id',
+            'id_quiz' => 'required|integer|exists:quiz,id',
+            'id_question' => 'required|integer|exists:questions,id',
+            'id_answers' => 'required|integer|exists:answers,id',
         ]);
 
-        $uqa = UserQuizAnswer::create($data);
+        $uqa = UserQuizAnswer::create([
+            'id_user' => $user->id_user,
+            'id_quiz' => $data['id_quiz'],
+            'id_question' => $data['id_question'],
+            'id_answers' => $data['id_answers'],
+        ]);
+
         return response()->json($uqa, 201);
     }
 
-    // GET /api/results/{quizId}?user_id=123
-    public function userResults($quizId, Request $req)
+    public function myResults($quizId, Request $req)
     {
-        $userId = (int) $req->query('user_id');
-        if (!$userId) {
-            return response()->json(['message' => 'user_id requis'], 422);
+        $user = $req->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
+        $userId = (int) $user->id_user;
         $quiz = Quiz::with(['questions.answers'])->findOrFail($quizId);
 
         $rows = UserQuizAnswer::where('id_user', $userId)
