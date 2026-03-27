@@ -1,8 +1,8 @@
 // QuizEditor/_index.jsx
 
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import { FilePenLine, Languages, BadgeQuestionMark, Loader2, Save } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { FilePenLine, Languages, BadgeQuestionMark, Loader2, Save, Trash2 } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import faviconUrl from "../../assets/images/favicon.ico?url";
 import Button from "../../components/ui/Button";
@@ -14,10 +14,14 @@ import ToggleThemeSwitch from "../../components/ui/ToggleThemeSwitch";
 import LeftSidebar from "./LeftSidebar";
 import RightSidebar from "./RightSidebar";
 import CenterPanel from "./CenterPanel";
-import { getQuizEditor, getModules, getTags, saveQuiz } from "../../services/api";
+import { deleteQuiz, getQuizEditor, getModules, getTags, saveQuiz } from "../../services/api";
+import { useModal } from "../../context/modal/ModalContext";
 
 export default function NewQuiz() {
 	const { t, i18n } = useTranslation();
+	const navigate = useNavigate();
+	const { openModal } = useModal();
+
 	const params = useParams();
 	const rawQuizId = params.id ?? params.quizId ?? null;
 	const quizId =
@@ -86,8 +90,6 @@ export default function NewQuiz() {
 					id_quiz: quizId,
 					langs: quizLanguages.map((l) => l.code).join(","),
 				});
-
-				console.log("Fetched quiz data:", quizData);
 
 				const newTranslations = {};
 				quizData.translations?.forEach((tr) => {
@@ -224,13 +226,12 @@ export default function NewQuiz() {
 				),
 			};
 
-
 			const res = await saveQuiz(payload, quizId ? quiz.id_quiz : null);
 
 			alert(t("quiz.savedSuccessfully"));
 
 			if (res && navigateAfter) {
-				window.location.href = "/";
+				navigate("/");
 			}
 		} catch (e) {
 			console.error(e);
@@ -252,6 +253,24 @@ export default function NewQuiz() {
 		}
 
 		await onSave({ saveAll, navigateAfter: !isEdit });
+	};
+
+	const handleDeleteQuiz = () => {
+		if (!isEdit || !quiz?.id_quiz) return;
+
+		openModal("confirm", {
+			title: t("quiz.confirmDeleteTitle"),
+			message: t("quiz.confirmDelete"),
+			onConfirm: async () => {
+				try {
+					await deleteQuiz(quiz.id_quiz);
+					navigate("/");
+				} catch (e) {
+					console.error(e);
+					alert(e.message || t("errors.defaultDeleteError", "Erreur lors de la suppression"));
+				}
+			},
+		});
 	};
 
 	const hasOtherDirty = quizLanguages.some(
@@ -297,7 +316,7 @@ export default function NewQuiz() {
 			if (!window.confirm(t("actions.deleteLastLang"))) return;
 			setTranslations({});
 			setCurrentLang(null);
-			window.location.href = "/";
+			navigate("/");
 			return;
 		}
 
@@ -326,6 +345,17 @@ export default function NewQuiz() {
 						<Controls key="controls">
 							<ToggleThemeSwitch />
 						</Controls>,
+						isEdit && quiz?.id_quiz ? (
+							<Button
+								key="delete"
+								variant="destructive"
+								onClick={handleDeleteQuiz}
+								style={{ width: "100%", minWidth: "var(--spacing-6xl)" }}
+							>
+								<Trash2 size={16} />
+								{t("common.delete")}
+							</Button>
+						) : null,
 						<Button
 							key="save"
 							variant="success"
@@ -335,7 +365,7 @@ export default function NewQuiz() {
 							<Save size={16} />
 							{t("actions.save")}
 						</Button>,
-					]}
+					].filter(Boolean)}
 				/>
 				<Body>
 					{loaderVisible && (

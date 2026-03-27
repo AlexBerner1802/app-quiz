@@ -16,12 +16,18 @@ let csrfPromise = null;
 
 export async function ensureCsrf() {
 	if (!csrfPromise) {
-		csrfPromise = api.get("/sanctum/csrf-cookie").catch((err) => {
-			csrfPromise = null;
-			throw err;
-		});
+		csrfPromise = api.get("/sanctum/csrf-cookie")
+			.then((response) => {
+				csrfPromise = null;
+				return response;
+			})
+			.catch((err) => {
+				csrfPromise = null;
+				throw err;
+			});
 	}
-  	return csrfPromise;
+
+	return csrfPromise;
 }
 
 api.interceptors.request.use((config) => {
@@ -37,26 +43,27 @@ api.interceptors.response.use(
 	(response) => response,
 	(error) => {
 		if (!error?.response) {
-		console.error("Network/Abort error:", {
-			message: error?.message,
-			code: error?.code,
-			name: error?.name,
-		});
-		return Promise.reject(error);
+			console.error("Network/Abort error:", {
+				message: error?.message,
+				code: error?.code,
+				name: error?.name,
+			});
+			return Promise.reject(error);
 		}
 
 		const responseData = error.response.data;
 		let msg = error.message;
 
 		if (responseData) {
-		msg =
-			responseData.message ||
-			responseData.error ||
-			JSON.stringify(responseData, null, 2);
+			msg =
+				responseData.message ||
+				responseData.error ||
+				JSON.stringify(responseData, null, 2);
 		}
 
+		error.message = msg;
 		console.error("Full backend response:", responseData);
-		return Promise.reject(new Error(msg));
+		return Promise.reject(error);
 	}
 );
 

@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FlaskConical, Search, Plus, SearchX, Funnel, Loader2 } from "lucide-react";
+import {
+	FlaskConical,
+	Search,
+	Plus,
+	SearchX,
+	Funnel,
+	Loader2,
+	Eye,
+	EyeOff,
+} from "lucide-react";
 import styled, { keyframes } from "styled-components";
 import QuizCard from "../../components/QuizCard";
 import { useTranslation } from "react-i18next";
@@ -22,7 +31,7 @@ export default function HomePage() {
 
 	const { openModal } = useModal();
 	const { openDrawer } = useDrawer();
-	const { dbUser } = useAuth();
+	const { dbUser, isInitialized } = useAuth();
 	const canManage = canManageContent(dbUser);
 	const { t } = useTranslation();
 
@@ -38,7 +47,12 @@ export default function HomePage() {
 	const [tags, setTags] = useState([]);
 
 	useEffect(() => {
+		if (!isInitialized) return;
+
+		let cancelled = false;
+
 		setLoading(true);
+		setShowLoader(true);
 		setErr("");
 
 		const init = async () => {
@@ -49,19 +63,29 @@ export default function HomePage() {
 					getQuizzes({ lang: getLangCode() }),
 				]);
 
+				if (cancelled) return;
+
 				setModules(allModules[currentLang] || []);
 				setTags(allTags[currentLang] || []);
 				setQuizzes(quizzesData);
 			} catch (error) {
+				if (cancelled) return;
 				setErr(error.message || String(error));
 			} finally {
+				if (cancelled) return;
 				setShowLoader(false);
-				setTimeout(() => setLoading(false), 1000);
+				setTimeout(() => {
+					if (!cancelled) setLoading(false);
+				}, 1000);
 			}
 		};
 
-		init().then(() => false);
-	}, [currentLang]);
+		init();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [currentLang, isInitialized, dbUser?.id_user, dbUser?.id_role]);
 
 	const filteredQuizzes = useMemo(() => {
 		return quizzes.filter((q) => {
@@ -90,6 +114,16 @@ export default function HomePage() {
 			return searchMatch && moduleMatch && tagMatch;
 		});
 	}, [quizzes, searchText, selectedModules, selectedTags]);
+
+	const activeQuizzes = useMemo(
+		() => filteredQuizzes.filter((q) => q?.is_active),
+		[filteredQuizzes]
+	);
+
+	const inactiveQuizzes = useMemo(
+		() => filteredQuizzes.filter((q) => !q?.is_active),
+		[filteredQuizzes]
+	);
 
 	const handleEdit = (quiz) => {
 		const id = quiz?.id_quiz ?? quiz?.id;
@@ -123,6 +157,38 @@ export default function HomePage() {
 			setSelectedModules,
 			setSelectedTags,
 		});
+	};
+
+	const renderQuizGrid = (quizList) => {
+		const shouldScroll = quizList.length > 8;
+
+		return (
+			<GridViewport $scrollable={shouldScroll}>
+				<CardsGrid>
+					{quizList.map((q, index) => (
+						<AnimatedDiv
+							key={q.id_quiz}
+							style={{ animationDelay: `${index * 0.05}s` }}
+						>
+							<QuizCard
+								quiz={q}
+								searchText={searchText}
+								loading={loading}
+								onEdit={() => handleEdit(q)}
+								onDelete={(id) => handleDelete(id)}
+								onClick={() => {
+									if (!q.is_active) return;
+									openDrawer("quizPreview", {
+										quiz: q,
+										onStart: () => navigate(`/quizzes/${q.id_quiz}`),
+									});
+								}}
+							/>
+						</AnimatedDiv>
+					))}
+				</CardsGrid>
+			</GridViewport>
+		);
 	};
 
 	return (
@@ -195,37 +261,48 @@ export default function HomePage() {
 						</AnimatedDiv>
 					)}
 
-					{!err &&
-						(filteredQuizzes.length === 0 && !loading ? (
-							<NoCards>
-								<SearchX size={50} color={"var(--color-disabled)"} />
-								<NoCardsText>{t("quiz.empty")}</NoCardsText>
-							</NoCards>
-						) : (
-							<CardsGrid>
-								{filteredQuizzes.map((q, index) => (
-									<AnimatedDiv
-										key={q.id_quiz}
-										style={{ animationDelay: `${index * 0.05}s` }}
-									>
-										<QuizCard
-											quiz={q}
-											searchText={searchText}
-											loading={loading}
-											onEdit={() => handleEdit(q)}
-											onDelete={(id) => handleDelete(id)}
-											onClick={() => {
-												if (!q.is_active) return;
-												openDrawer("quizPreview", {
-													quiz: q,
-													onStart: () => navigate(`/quizzes/${q.id_quiz}`),
-												});
-											}}
-										/>
-									</AnimatedDiv>
-								))}
-							</CardsGrid>
-						))}
+					{!err && !loading && filteredQuizzes.length === 0 ? (
+						<NoCards>
+							<SearchX size={50} color={"var(--color-disabled)"} />
+							<NoCardsText>{t("quiz.empty")}</NoCardsText>
+						</NoCards>
+					) : (
+						<>
+							<SectionBlock>
+								<SectionHeader>
+									<SectionTitle>
+										<Eye size={18} />
+										{t("quiz.activeQuizzes", "Quiz actifs")}
+									</SectionTitle>
+									<SectionCount>{activeQuizzes.length}</SectionCount>
+								</SectionHeader>
+
+								{activeQuizzes.length > 0 ? (
+									renderQuizGrid(activeQuizzes)
+								) : (
+									<EmptySection>{t("quiz.noActiveQuizzes", "Aucun quiz actif")}</EmptySection>
+								)}
+							</SectionBlock>
+
+							<SectionBlock>
+								<SectionHeader>
+									<SectionTitle>
+										<EyeOff size={18} />
+										{t("quiz.inactiveQuizzes", "Quiz inactifs")}
+									</SectionTitle>
+									<SectionCount>{inactiveQuizzes.length}</SectionCount>
+								</SectionHeader>
+
+								{inactiveQuizzes.length > 0 ? (
+									renderQuizGrid(inactiveQuizzes)
+								) : (
+									<EmptySection>
+										{t("quiz.noInactiveQuizzes", "Aucun quiz inactif")}
+									</EmptySection>
+								)}
+							</SectionBlock>
+						</>
+					)}
 				</Content>
 			</Main>
 		</>
@@ -273,6 +350,7 @@ const Content = styled.section`
 	width: 100%;
 	max-width: var(--spacing-16xl);
 	margin: 0 auto;
+	gap: var(--spacing-xl);
 `;
 
 const fadeIn = keyframes`
@@ -284,6 +362,37 @@ const AnimatedDiv = styled.div`
 	opacity: 0;
 	width: 100%;
 	animation: ${fadeIn} 0.5s ease forwards;
+`;
+
+const GridViewport = styled.div`
+	${({ $scrollable }) =>
+		$scrollable
+			? `
+		max-height: 860px;
+		overflow-y: auto;
+		padding-right: 6px;
+	`
+			: `
+		overflow: visible;
+	`}
+
+	&::-webkit-scrollbar {
+		width: 10px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: var(--color-background-surface-1);
+		border-radius: 999px;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: var(--color-border-subtle);
+		border-radius: 999px;
+	}
+
+	&::-webkit-scrollbar-thumb:hover {
+		background: var(--color-text-muted);
+	}
 `;
 
 const CardsGrid = styled.div`
@@ -315,6 +424,51 @@ const Title = styled.h1`
 const SearchFilterContainer = styled.div`
 	display: flex;
 	gap: var(--spacing-s);
+`;
+
+const SectionBlock = styled.section`
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing);
+`;
+
+const SectionHeader = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--spacing);
+`;
+
+const SectionTitle = styled.h2`
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	margin: 0;
+	font-size: var(--font-size-2xl);
+	font-weight: 600;
+	color: var(--color-text);
+`;
+
+const SectionCount = styled.span`
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 32px;
+	height: 32px;
+	padding: 0 10px;
+	border-radius: 999px;
+	background: var(--color-background-surface-2);
+	color: var(--color-text-muted);
+	font-size: var(--font-size-s);
+	font-weight: 600;
+`;
+
+const EmptySection = styled.div`
+	padding: var(--spacing-l);
+	border-radius: var(--border-radius-l);
+	background: var(--color-background-surface-1);
+	color: var(--color-text-muted);
+	box-shadow: var(--box-shadow);
 `;
 
 const NoCards = styled.div`

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Tag from "./ui/Tag";
-import {Pen, SquareArrowOutUpRight, Trash} from "lucide-react";
+import { Pen } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Skeleton from "react-loading-skeleton";
 import { Highlight } from "../utils/hightlight.jsx";
@@ -14,7 +14,6 @@ export default function QuizCard({
 									 searchText = "",
 									 loading = false,
 									 onEdit,
-									 onDelete,
 									 onClick
 								 }) {
 
@@ -34,7 +33,6 @@ export default function QuizCard({
 		updated_at,
 		is_active = true,
 		can_edit = false,
-		can_delete = false,
 	} = quiz || {};
 
 	const resolvedId = id_quiz ?? id;
@@ -89,18 +87,6 @@ export default function QuizCard({
 							>
 								<Pen size={20} />
 							</EditButton>
-						)}
-
-						{canManage && can_delete && (
-							<DeleteButton
-								type="button"
-								onClick={(e) => {
-									e.stopPropagation();
-									onDelete?.(resolvedId);
-								}}
-							>
-								<Trash size={16} />
-							</DeleteButton>
 						)}
 
 						<AvatarWrapper onClick={(e) => e.stopPropagation()}>
@@ -209,28 +195,6 @@ const EditButton = styled(Button)`
 	
 	&:hover {
         background-color: var(--color-background-overlay)!important;
-	}
-`;
-
-const DeleteButton = styled.button`
-	position: absolute;
-	top: var(--spacing-s);
-	right: calc(var(--spacing-s) + 56px);
-	z-index: 10;
-	
-	background: rgba(220, 38, 38, 0.8);
-	color: white;
-	border: none;
-	border-radius: var(--border-radius);
-	padding: var(--spacing-2xs) var(--spacing-xs);
-	
-	cursor: pointer;
-	backdrop-filter: blur(4px);
-	transition: background 0.2s ease, transform 0.2s ease;
-	
-	&:hover {
-		background: rgba(185, 28, 28, 0.9);
-		transform: translateY(-1px);
 	}
 `;
 
