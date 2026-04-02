@@ -107,7 +107,7 @@ const sizes = {
 	s: css`
         font-size: var(--font-size-xs);
         font-weight: 500;
-		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-2xs) var(--spacing-xs) var(--spacing-2xs) var(--spacing-s)" : "var(--spacing-2xs) var(--spacing-s)")};
+		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-2xs) var(--spacing-s) var(--spacing-2xs) var(--spacing-s)" : "var(--spacing-2xs) var(--spacing-s)")};
         border-radius: var(--border-radius-2xs);
 		min-height: var(--tag-height-s);
 		
@@ -119,8 +119,8 @@ const sizes = {
 	m: css`
         font-size: var(--font-size-s);
         font-weight: 500;
-        padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-xs) var(--spacing-xs) var(--spacing-xs) var(--spacing-s)" : "var(--spacing-xs) var(--spacing-s)")};
-        border-radius: var(--border-radius-2xs);
+        padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-xs) var(--spacing-s) var(--spacing-xs) var(--spacing-s)" : "var(--spacing-xs) var(--spacing-s)")};
+        border-radius: var(--border-radius-xs);
         min-height: var(--tag-height);
 
 		& svg {
@@ -131,8 +131,8 @@ const sizes = {
 	l: css`
         font-size: var(--font-size);
         font-weight: 500;
-		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-s) var(--spacing-s) var(--spacing-s) var(--spacing)" : "var(--spacing-s) var(--spacing)")};
-		border-radius: var(--border-radius-2xs);
+		padding: ${({ $canDelete }) => ($canDelete ? "var(--spacing-s) var(--spacing) var(--spacing-s) var(--spacing)" : "var(--spacing-s) var(--spacing)")};
+		border-radius: var(--border-radius-xs);
         min-height: var(--tag-height-l);
 
 		& svg {

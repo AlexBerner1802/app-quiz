@@ -11,11 +11,13 @@ import faviconUrl from "../../assets/images/favicon.ico?url";
 import { getLangCode } from "../../services/i18n_lang";
 import Input from "../../components/ui/Input";
 import {useDrawer} from "../../context/drawer";
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { safeNavigateToEditor } from "../../utils/navigation";
-import i18n from "i18next";
 import {useAuth} from "../../context/auth";
-import { useModal } from "../../context/modal/ModalContext";
+import { useModal } from "../../context/modal";
+import BackgroundIcon from "../../components/ui/BackgroundIcon";
+import Invader from "../../components/icons/Invader";
+import i18n from "i18next";
+
 
 export default function HomePage() {
 
@@ -42,7 +44,6 @@ export default function HomePage() {
 		setErr("");
 
 		const init = async () => {
-
 			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
 			setModules(allModules[currentLang]);
 			setTags(allTags[currentLang]);
@@ -100,12 +101,6 @@ export default function HomePage() {
 		});
 	}, [quizzes, searchText, selectedModules, selectedTags]);
 
-	// Open the editor
-	const handleEdit = (quiz) => {
-		const id = quiz?.id_quiz ?? quiz?.id;
-    	safeNavigateToEditor(navigate, id);
-  };
-
 	const handleDelete = useCallback(
 		(id_quiz) => {
 			openModal("confirm", {
@@ -134,11 +129,14 @@ export default function HomePage() {
 		});
 	};
 
+
 	return (
-		<>
+		<Main>
 			<FaviconTitle title={t("pages.homePage")} iconHref={faviconUrl} />
 
-			<Main>
+			<BackgroundIcon icon={Invader} />
+
+			<Container>
 
 				{loading && (
 					<LoadingWrapper $fadingOut={!showLoader}>
@@ -198,41 +196,51 @@ export default function HomePage() {
 								<NoCardsText>{t("quiz.empty")}</NoCardsText>
 							</NoCards>
 						) : (
-								<CardsGrid gutter={"var(--spacing)"}>
-									{filteredQuizzes.map((q, index) => (
-										<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
-											<QuizCard
-												quiz={q}
-												searchText={searchText}
-												loading={loading}
-												onEdit={(id) => safeNavigateToEditor(navigate, id)}
-												onDelete={(id) => handleDelete(id)}
-												onClick={() => {
-													if (!q.is_active) return;
-													openDrawer("quizPreview", {
-													quiz: q,
-													onStart: () => navigate(`/quizzes/${q.id_quiz}`),
-													});
-												}}
-											/>
-										</AnimatedDiv>
-									))}
-								</CardsGrid>
-							)
-				)}
-
-			</Content>
+							<CardsGrid gutter={"var(--spacing)"}>
+								{filteredQuizzes.map((q, index) => (
+									<AnimatedDiv key={q.id_quiz} style={{ animationDelay: `${index * 0.05}s` }}>
+										<QuizCard
+											key={location.pathname}
+											quiz={q}
+											searchText={searchText}
+											loading={loading}
+											onEdit={(id) => safeNavigateToEditor(navigate, id)}
+											onDelete={(id) => handleDelete(id)}
+											onClick={() => {
+												if (!q.is_active) return;
+												openDrawer("quizPreview", {
+												quiz: q,
+												onStart: () => navigate(`/quizzes/${q.id_quiz}`),
+												});
+											}}
+										/>
+									</AnimatedDiv>
+								))}
+							</CardsGrid>
+						)
+					)}
+				</Content>
+			</Container>
 		</Main>
-	</>
-);
+	);
 }
 
-const Main = styled.main`
+const Main = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--color-background);
+	position: relative;
+	overflow: hidden;
+`;
+
+const Container = styled.main`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
-    background-color: var(--color-background);
+	overflow: auto;
 `;
 
 const LoadingWrapper = styled.div`

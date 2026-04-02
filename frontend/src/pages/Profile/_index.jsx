@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
@@ -14,9 +14,10 @@ import { useDrawer } from "../../context/drawer";
 import Skeleton from "react-loading-skeleton";
 import Invader from "../../components/icons/Invader";
 import Button from "../../components/ui/Button";
+import BackgroundIcon from "../../components/ui/BackgroundIcon";
+import Spinner from "../../components/ui/Spinner";
 
 
-/* ───── TIME FORMATTING ───── */
 function formatTime(sec) {
 	if (sec >= 3600) return `> 1h`;
 	const s = Math.max(0, Math.floor(sec || 0));
@@ -166,8 +167,7 @@ export function ProfilePage() {
 	});
 	const [quizzes, setQuizzes] = useState([]);
 	const [searchText, setSearchText] = useState("");
-
-	const progressRef = React.useRef(null);
+	useRef(null);
 
 
 	useEffect(() => {
@@ -264,7 +264,7 @@ export function ProfilePage() {
 			<Main>
 				<FaviconTitle icon={faviconUrl} title={t("pages.accountPage")} />
 				<LoadingWrapper>
-					<LoadingBar />
+					<Spinner />
 				</LoadingWrapper>
 			</Main>
 		);
@@ -274,9 +274,7 @@ export function ProfilePage() {
 		<Main>
 			<FaviconTitle icon={faviconUrl} title={t("pages.accountPage")}/>
 
-			<InvaderIconWrapper>
-				<Invader size={1200} color="var(--color-text)"/>
-			</InvaderIconWrapper>
+			<BackgroundIcon icon={Invader} />
 
 			<ContentWrapper>
 				<Content>
@@ -402,10 +400,9 @@ export function ProfilePage() {
 							/>
 						</ResultsHeader>
 
-
 						<GridScroller>
 							<QuizGrid>
-								{filteredQuizzes.map((quiz) => (
+								{filteredQuizzes.length > 0 && filteredQuizzes.map((quiz) => (
 									<QuizCard key={quiz.id} onClick={() => handleQuizClick(quiz)} title={quiz.title}>
 										<QuizCardInfo>
 											<QuizCardHead>
@@ -454,29 +451,6 @@ const LoadingWrapper = styled.div`
 	justify-content: center;
 `;
 
-const LoadingBar = styled.div`
-	width: 320px;
-	height: 6px;
-	border-radius: 4px;
-	background: linear-gradient(
-		90deg,
-		var(--color-primary-bg) 0%,
-		var(--color-primary-muted-text) 50%,
-		var(--color-primary-bg) 100%
-	);
-	background-size: 200% 100%;
-	animation: loading 1.2s infinite linear;
-
-	@keyframes loading {
-		from {
-			background-position: 0% 0;
-		}
-		to {
-			background-position: 200% 0;
-		}
-	}
-`;
-
 const ContentWrapper = styled.div`
     flex: 1;
     display: flex;
@@ -495,16 +469,6 @@ const Content = styled.div`
     width: 100%;
     max-width: var(--spacing-15xl);
     margin: 0 auto;
-`;
-
-const InvaderIconWrapper = styled.div`
-    position: absolute;
-    bottom: -360px;
-    right: -200px;
-    transform: rotate(-30deg);
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.2;
 `;
 
 const ContentHead = styled.div`
@@ -528,7 +492,6 @@ const Title = styled.h1`
 `;
 
 const CardBase = styled.div`
-    background: var(--liquidglass-bg);
     border-radius: var(--border-radius-2xl);
     background: var(--liquidglass-bg);
     backdrop-filter: var(--liquidglass-blur);
@@ -537,6 +500,7 @@ const CardBase = styled.div`
     box-shadow: var(--liquidglass-shadow);
 	padding: var(--spacing-xl);
 	z-index: 1;
+	overflow: hidden;
 `;
 
 const ProfileCard = styled(CardBase)`
@@ -636,8 +600,7 @@ const StatRow = styled.div`
     display: flex;
     justify-content: space-between;
 	padding: var(--spacing-l);
-	border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-xs);
+	border-radius: var(--border-radius-s);
     background-image: repeating-linear-gradient(
             -126deg,
             var(--color-background),
@@ -835,6 +798,32 @@ const CircleDesc = styled.div`
 `;
 
 const ResultsPanel = styled(CardBase)`
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+
+        /* diagonal stripes */
+        background-image: repeating-linear-gradient(
+                -128deg,
+                var(--color-background) 0px,
+                var(--color-background) 5px,
+                rgba(0,0,0,0) 5px,
+                rgba(0,0,0,0) 10px
+        );
+
+        /* fade from transparent (right) to opaque (left) */
+        -webkit-mask-image: linear-gradient(310deg, rgba(0,0,0,0) 70%, rgba(0,0,0,1) 80%);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+
+        mask-image: linear-gradient(310deg, rgba(0,0,0,0) 70%, rgba(0,0,0,1) 80%);
+        mask-repeat: no-repeat;
+        mask-size: cover;
+    }
 `;
 
 const ResultsHeader = styled.div`
@@ -859,16 +848,15 @@ const GridScroller = styled.div`
 const QuizGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing);
+    gap: var(--spacing-s);
 `;
 
 const QuizCard = styled.div`
-	border: 1px solid var(--color-border-subtle);
-
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow-xs);
-    background-image: repeating-linear-gradient(-126deg, var(--color-background), var(--color-background) 5px, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 0) 10px);
-	
+	position: relative;
+    border-radius: var(--border-radius-s);
+   	background: var(--color-background);
+    border: 2px solid var(--color-background);
+	box-shadow: var(--box-shadow);
     padding: var(--spacing-l);
     cursor: pointer;
     display: flex;
@@ -876,13 +864,20 @@ const QuizCard = styled.div`
 	transition: all .2s ease;
 	
 	&:hover {
-		background: var(--color-primary-muted);
-		border-color: var(--color-primary-bg);
+		border: 2px solid var(--color-primary-bg);
+        background:
+                linear-gradient(
+                        to bottom,
+                        transparent 0%,
+                        var(--color-primary-bg) 180%
+                ),
+                var(--color-primary-muted);
 		
 		& div {
-			color: var(--color-primary-muted-text);
+			color: var(--color-primary-muted-text)!important;
 		}
 	}
+	
 `;
 
 const QuizCardInfo = styled.div`
@@ -903,7 +898,7 @@ const QuizCardHead = styled.div`
 const QuizCardTitle = styled.div`
 	width: 100%;
 	flex: 1;
-    font-weight: 400;
+    font-weight: 500;
 	font-size: var(--font-size);
 	color: var(--color-text);
 	letter-spacing: 0.015rem;

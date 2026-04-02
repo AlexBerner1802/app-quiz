@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Settings, Loader2 } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import Header from "../../components/layout/Header";
 import FaviconTitle from "../../components/layout/Icon.jsx";
@@ -9,6 +9,10 @@ import TagsManager from "../../components/TagsManager";
 import ModulesManager from "../../components/ModulesManager";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/Tabs";
 import { getModules, getTags } from "../../services/api";
+import Invader from "../../components/icons/Invader";
+import BackgroundIcon from "../../components/ui/BackgroundIcon";
+import Spinner from "../../components/ui/Spinner";
+
 
 export default function ContentPage() {
 	const { t } = useTranslation();
@@ -23,24 +27,24 @@ export default function ContentPage() {
 		let timeoutId;
 
 		const init = async () => {
-		try {
-			setLoading(true);
-			setShowLoader(true);
-			setError(null);
+			try {
+				setLoading(true);
+				setShowLoader(true);
+				setError(null);
 
-			const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
-			setModules(allModules || []);
-			setTags(allTags || []);
-		} catch (e) {
-			console.error(e);
-			setError(e);
-		} finally {
-			setShowLoader(false);
-			timeoutId = window.setTimeout(() => setLoading(false), 300);
-		}
+				const [allModules, allTags] = await Promise.all([getModules(), getTags()]);
+				setModules(allModules || []);
+				setTags(allTags || []);
+			} catch (e) {
+				console.error(e);
+				setError(e);
+			} finally {
+				setShowLoader(false);
+				timeoutId = window.setTimeout(() => setLoading(false), 300);
+			}
 		};
 
-		init();
+		init().then(() => false);
 
 		return () => {
 			if (timeoutId) window.clearTimeout(timeoutId);
@@ -49,19 +53,29 @@ export default function ContentPage() {
 
 	const isBusy = loading || showLoader;
 
-  	return (
-    	<>
-			<FaviconTitle title={t("pages.contentPage")} iconHref={faviconUrl} />
+
+	if (isBusy) {
+		return (
 			<Main>
+				<FaviconTitle title={t("pages.contentPage")} iconHref={faviconUrl} />
+				<LoadingWrapper>
+					<Spinner />
+				</LoadingWrapper>
+			</Main>
+		)
+	}
+
+  	return (
+    	<Main>
+			<FaviconTitle title={t("pages.contentPage")} iconHref={faviconUrl} />
+
+			<BackgroundIcon icon={Invader} />
+
+			<Container>
 				<Header title={t("pages.content.title")} icon={<Settings size={20} />} />
 
 				<Content>
-					{isBusy ? (
-						<LoadingWrap>
-							<Loader2 size={22} className="spin" />
-							<span>{t("common.loading")}</span>
-						</LoadingWrap>
-					) : error ? (
+					{error ? (
 						<ErrorBox>
 							{t("common.errorLoading")}
 						</ErrorBox>
@@ -82,17 +96,30 @@ export default function ContentPage() {
 						</Tabs>
 					)}
 				</Content>
-			</Main>
-		</>
+			</Container>
+		</Main>
 	);
 }
 
-const Main = styled.main`
+
+const Main = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--color-background);
+    position: relative;
+    overflow: hidden;
+`;
+
+const Container = styled.main`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	background-color: var(--color-background);
+    min-height: 100vh;
+	overflow: auto;
 `;
 
 const Content = styled.section`
@@ -100,26 +127,16 @@ const Content = styled.section`
 	padding: 24px;
 `;
 
-const LoadingWrap = styled.div`
-	min-height: 240px;
+const LoadingWrapper = styled.div`
+	flex: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 12px;
-	color: var(--color-text);
-
-	.spin {
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to { transform: rotate(360deg); }
-	}
 `;
 
 const ErrorBox = styled.div`
 	padding: 16px;
 	border-radius: 12px;
-	background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+	background: color-mix(in srgb, var(--color-error-bg) 10%, transparent);
 	color: var(--color-text);
 `;

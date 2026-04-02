@@ -175,7 +175,39 @@ const DataRow = styled.div`
     color: var(--color-text);
     line-height: var(--spacing-xl);
     margin: var(--spacing-2xs) 0;
-    border-radius: var(--border-radius-full);
+    border-radius: var(--border-radius);
+    background: var(--liquidglass-bg);
+    border: 1px solid var(--color-border-subtle);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+	position: relative;
+	overflow: hidden;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+
+        /* diagonal stripes */
+        background-image: repeating-linear-gradient(
+                -128deg,
+                var(--color-background) 0px,
+                var(--color-background) 5px,
+                rgba(0,0,0,0) 5px,
+                rgba(0,0,0,0) 10px
+        );
+
+        /* fade from transparent (right) to opaque (left) */
+        -webkit-mask-image: linear-gradient(310deg, rgba(0,0,0,0) 70%, rgba(0,0,0,1) 80%);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: cover;
+
+        mask-image: linear-gradient(310deg, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 80%);
+        mask-repeat: no-repeat;
+        mask-size: cover;
+    }
 `;
 
 const Cell = styled.div`
@@ -183,6 +215,7 @@ const Cell = styled.div`
     align-items: center;
     font-weight: 500;
     font-size: var(--font-size-s);
+	z-index: 2;
     justify-content: ${({ $align }) =>
             $align === "right" ? "flex-end" :
                     $align === "center" ? "center" :

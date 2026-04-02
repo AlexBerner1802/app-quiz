@@ -169,11 +169,17 @@ const Container = styled.div`
 
 	&[data-inactive="true"] {
 		cursor: not-allowed;
-		opacity: 0.9;
 	}
+	
 	&[data-inactive="true"]:hover {
 		transform: none;
 	}
+
+
+    background: var(--liquidglass-bg);
+    backdrop-filter: var(--liquidglass-blur);
+    border: 1px solid var(--color-border-subtle);
+    -webkit-backdrop-filter: var(--liquidglass-blur);
 `;
 
 const ImageWrapper = styled.div`
@@ -282,9 +288,13 @@ const Section = styled.div`
 	gap: var(--spacing-xs);
     padding: var(--spacing-l);
 	transition: height 0.3s ease-in-out, opacity 0.2s ease, visibility 0.2s ease, padding 0.2s ease;
-	border-radius: var(--border-radius);
+	border-radius: 0 0 var(--border-radius);
 	position: relative;
 	z-index: 5;
+
+    background: var(--liquidglass-bg);
+    backdrop-filter: var(--liquidglass-blur);
+    -webkit-backdrop-filter: var(--liquidglass-blur);
 `;
 
 const Title = styled.p`

@@ -16,6 +16,8 @@ import { applyScoreMultiplier } from "../../../utils/score";
 
 
 import api from "../../../services/axiosClient";
+import BackgroundIcon from "../../../components/ui/BackgroundIcon";
+import Invader from "../../../components/icons/Invader";
 
 export default function ResultsPage() {
 	const { t, i18n } = useTranslation();
@@ -158,11 +160,14 @@ export default function ResultsPage() {
 
 	const pageTitle = t("pages.leaderboardPage") || "Global leaderboard";
 
+
 	return (
-		<>
+		<Main>
 			<FaviconTitle title={pageTitle} iconHref={faviconUrl} />
 
-			<Main>
+			<BackgroundIcon icon={Invader} />
+
+			<Container>
 				<Content>
 					<ContentHead>
 						<TitleContainer>
@@ -287,8 +292,8 @@ export default function ResultsPage() {
 						</Tabs>
 					</AnimatedBlock>
 				</Content>
-			</Main>
-		</>
+			</Container>
+		</Main>
 	);
 }
 
@@ -392,11 +397,18 @@ function buildQuizzesLeaderboard(rows) {
 
 
 const Main = styled.main`
+	position: relative;
+	overflow: hidden;
+`;
+
+const Container = styled.main`
 	flex: 1;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	min-height: 100vh;
 	background: var(--color-background);
+    overflow: auto;
 `;
 
 const Content = styled.section`

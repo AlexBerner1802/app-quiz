@@ -69,6 +69,7 @@ const Input = styled.input`
 	outline: none;
 	min-width: 120px;
 	font-size: 14px;
-	padding: 4px 0;
+	padding: var(--spacing-s) 0;
 	background-color: transparent;
+	margin-left: var(--spacing-2xs);
 `;

@@ -186,6 +186,10 @@ const LanguageBlock = styled.div`
     display: flex;
     flex-direction: column;
     gap: var(--spacing-s);
+    background: var(--liquidglass-bg);
+    backdrop-filter: var(--liquidglass-blur);
+    border: 1px solid var(--color-border-subtle);
+    -webkit-backdrop-filter: var(--liquidglass-blur);
 `;
 
 const Label = styled.label`
